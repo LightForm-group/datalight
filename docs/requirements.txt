@@ -1,0 +1,5 @@
+sphinx
+sphinx-bootstrap-theme
+recommonmark
+numpydoc
+pyqt5
