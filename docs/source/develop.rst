@@ -11,8 +11,8 @@ Requirements
 
 To install the required package for the development::
 
-    pip install -r requirements.txt
-    
+    pip install -r requirements-dev.txt
+
 That will install the following package:
 
 Needed to use the software:
@@ -33,21 +33,21 @@ Advised for development:
 - `pylint <https://www.pylint.org/>`_
 - flake8
 
-pylint does offer more advise to improve the code and give a note at 
-the code which reflected some good coding practice. 
+pylint does offer more advise to improve the code and give a note at
+the code which reflected some good coding practice.
 It is advised to be as close to 10 as possible.
 
 For the unit test the following packages are needed:
 
-- `pytest <https://docs.pytest.org/en/latest/>`_ 
-- `testfixture <http://testfixtures.readthedocs.io/en/latest/>`_ 
+- `pytest <https://docs.pytest.org/en/latest/>`_
+- `testfixture <http://testfixtures.readthedocs.io/en/latest/>`_
 
 To run all the tests present in the ``tests`` directory::
 
     pytest
 
-When modifiying the code it is important to verify that all 
-the tests are still working. It is also strongly advised to 
+When modifiying the code it is important to verify that all
+the tests are still working. It is also strongly advised to
 expand them when adding or modifying the codes.
 
 It is also encouraged to use:
@@ -55,13 +55,13 @@ It is also encouraged to use:
 - `pytest-cov <https://pypi.python.org/pypi/pytest-cov>`_
 - `coverage <https://pypi.python.org/pypi/coverage>`_
 
-It is also advised to use `tox <https://tox.readthedocs.io/en/latest/>`_ 
+It is also advised to use `tox <https://tox.readthedocs.io/en/latest/>`_
 to automate testing using a virtual environment.
 
 To use it::
 
     tox
-    
+
 
 
 

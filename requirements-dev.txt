@@ -1,0 +1,9 @@
+## Useful numerical packages
+############################
+
+#numpy
+#matplotlib
+
+## Zenodo
+
+requests
