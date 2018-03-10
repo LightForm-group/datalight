@@ -18,7 +18,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'default': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            'format': '%(levelname)s - %(asctime)s - %(name)s - %(funcName)s - %(message)s'
         },
     },
     'handlers': {
@@ -32,7 +32,7 @@ LOGGING = {
         },
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'ERROR',
+            'level': 'DEBUG',
             'formatter': 'default',
         }
     },
