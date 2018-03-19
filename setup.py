@@ -11,7 +11,8 @@ with open('HISTORY.rst') as history_file:
 package_data = os.path.join('template', '*')
 
 requirements = [
-    'requests'
+    'requests',
+    'docopt'
 ]
 
 test_requirements = [
@@ -49,10 +50,10 @@ setup(name='datalight',
           'dev': ['pylint', 'pytest', 'pytest-cov', 'testfixtures', 'coverage'],
           'test': ['pytest', 'pytest-cov', 'testfixtures', 'coverage'],
           'doc': ['sphinx', 'numpydoc']},
-#      entry_points={
-#          'console_scripts': [
-#              ' XXX = XXX ']
-#                    },
+     entry_points={
+         'console_scripts': [
+             ' datalight = datalight.datalight:main']
+                   },
       package_data={
           '': ['LICENSE'],
           'datalight': [package_data],
