@@ -17,6 +17,8 @@ except ImportError:
     from conf import logger
 
 import requests
+# import configparser
+import json
 
 
 class ZenodoException(Exception):
@@ -25,119 +27,12 @@ class ZenodoException(Exception):
     pass
 
 
-class ZenodoMetadata(object):
-
-    # _upload_type = ('publication',
-    #                 'poster',
-    #                 'presentation',
-    #                 'dataset',
-    #                 'image',
-    #                 'video',
-    #                 'software',
-    #                 'lesson',
-    #                 'other')
-    #
-    # _publication_type = ('book',
-    #                      'section',
-    #                      'conferencepaper',
-    #                      'article',
-    #                      'patent',
-    #                      'preprint',
-    #                      'report',
-    #                      'softwaredocumentation',
-    #                      'thesis',
-    #                      'technicalnote',
-    #                      'workingpaper',
-    #                      'other')
-    #
-    # _image_type = ('figure',
-    #                'plot',
-    #                'drawing',
-    #                'diagram',
-    #                'photo',
-    #                'other')
-    #
-    # _access_right = ('open',
-    #                  'embargoed',
-    #                  'restricted',
-    #                  'closed')
-    #
-    # # dependency contains the
-    # _metadata_requirement = { 'upload_type': {'required': True,
-    #                                           'default': None,
-    #                                           'child': ('publication',
-    #                                                     'image')},
-    #                           'image_type': }
-
-    def __init__(self):
-        pass
-
-    def verify_minimal_metadata(self):
-        # TODO
-        pass
-
-    @staticmethod
-    def __verify_upload_type(self, upload_type):
-        """
-
-        :param self:
-        :param upload_type:
-        :return:
-        """
-
-        # if upload_type is not in _publication_type:
-        #     message = 'Upload type not available'
-        #     logger.error(message)
-        #     raise ZenodoException(message)
-        pass
-
-    def modify_metadata(self, metadata):
-        """Method to modify the metadata after having upload a file.
-
-        Metadata dictionary should contains at least the following keys:
-        title: str
-        upload_type: str ['publication', 'poster', 'presentation', 'dataset',
-                          'image', video', 'software', 'lesson', 'other']
-        'description': str
-        'creators': list of dictionaries which contains name and affiliation
-        e.g.:
-        {
-            'title': 'My first upload',
-            'upload_type': 'poster',
-            'description': 'This is my first upload',
-            'creators': [{'name': 'Doe, John',
-                          'affiliation': 'Zenodo'}]
-        }
-
-
-
-        Parameters
-        ----------
-        metadata: dict,
-            dictionary which will contains the zenodo metadata associated
-            to the file(s) uploaded using the deposition id.
-
-        Return
-        ------
-        boolean
-            return True if everything went well, false in other hand.
-        """
-
-        if metadata is not dict:
-            logger.error('Metadata should be given in a dictionary form')
-
-
-
-
-        pass
-
-
 class Zenodo(object):
     """Class to upload and download files on Zenodo
 
     Attributes
     ----------
-    access_token: str, optional
+    token: str, optional
         Token that need to be provided to Zenodo to be able to upload.
         The attribute is optional.
     sandbox_token: str
@@ -150,8 +45,7 @@ class Zenodo(object):
 
     def __init__(self, token, sandbox=False):
 
-        self._token = token
-        self.sandbox = sandbox
+        self.token = token
 
         if sandbox:
             self.api_baseurl = 'https://sandbox.zenodo.org/api/'
@@ -163,7 +57,10 @@ class Zenodo(object):
 
         self.status_code = None
 
-    def __test_token(self):
+    def get_token(self, tokenfile=None):
+        pass
+
+    def _verify_token(self):
         """ Function to test if token could be valid
 
         Exception
@@ -172,8 +69,44 @@ class Zenodo(object):
             if token not define (token = None).
 
         """
-        if self._token is None:
+        if self.token is None:
             message = 'No Zenodo token provided'
+            logger.error(message)
+            raise ZenodoException(message)
+
+    def _check_status_code(self, status_code):
+        """Method to test that the request went as expected.
+
+        Parameters
+        ----------
+        status_code: int
+            status code return by the request (requests.status_code)
+
+        Exceptions
+        ----------
+        ZenodoException:
+            Raise exception if the request ended with a problem
+
+        .. note:
+            If the error is a Server conncetion problem,
+            the exception is not raised (problem with the test in other hand)
+        """
+        # Test that everything went as expected
+        if status_code < 400:
+            logger.debug('Request succeed '
+                         'with status code: {}'.format(status_code))
+            return status_code
+
+        if status_code >= 500:
+            message = 'Server connection failed ' \
+                      'with error: {}'.format(status_code)
+            logger.error(message)
+            #raise ZenodoException(message) # Break the test....
+            return status_code
+
+        if status_code >= 400:
+            message = 'Request failed ' \
+                      'with error: {}'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
@@ -187,10 +120,10 @@ class Zenodo(object):
             if connection return status >= 400
         """
         # Test if Token defined and access zenodo to test the token if exist
-        self.__test_token()
+        self._verify_token()
 
         request = requests.get(self.depositions_url,
-                               params={'access_token': self._token})
+                               params={'access_token': self.token})
         self.status_code = request.status_code
         logger.debug('Status code: {}'.format(self.status_code))
 
@@ -199,7 +132,7 @@ class Zenodo(object):
             message = 'Access token not accepted by Zenodo. ' \
                       'Error: {}'.format(self.status_code)
             logger.error(message)
-            self._token = None
+            self.token = None
             raise ZenodoException(message)
 
     def get_deposition_id(self):
@@ -222,10 +155,10 @@ class Zenodo(object):
         headers = {'Content-Type': 'application/json'}
 
         # Test if Token defined and access zenodo to test the token if exist
-        self.__test_token()
+        self._verify_token()
 
         request = requests.post(self.depositions_url,
-                                params={'access_token': self._token},
+                                params={'access_token': self.token},
                                 json={},
                                 headers=headers)
         self.status_code = request.status_code
@@ -255,7 +188,7 @@ class Zenodo(object):
             if connection return status >= 400
         """
         # Test if token was defined
-        self.__test_token()
+        self._verify_token()
 
         # Use provided if if not None. If not provided use self.deposition_id
 
@@ -265,32 +198,33 @@ class Zenodo(object):
         # Create the request url
         request_url = (self.depositions_url + '/{}'.format(self.deposition_id))
 
-        if self.depositions_url is not None:
-            logger.info('Delete url: {}'.format(request_url))
+        logger.info('Delete url: {}'.format(request_url))
+        try:
             request = requests.delete(request_url,
-                                      params={'access_token': self._token})
+                                      params={'access_token': self.token})
             self.status_code = request.status_code
             logger.debug('Status code: {}'.format(self.status_code))
-        else:
+            if self.status_code >= 400:
+                raise ZenodoException
+        except ZenodoException:
             message = 'Request_url does not exist or bad token. ' \
                       'Error: {}'.format(self.status_code)
             logger.error(message)
             raise ZenodoException(message)
 
-        if self.status_code >= 400:
-            message = "Delete failed with error: {}".format(self.status_code)
-            logger.error(message)
-            raise ZenodoException(message)
+#        self._check_status_code(self.status_code)
 
-    def upload_file(self, filename, path=None):
+    def upload_files(self, filenames, path=None, id=None):
         """Method to upload a file to Zenodo
 
         Parameters
         ----------
-        filename: str
-            Name of the file to upload
+        filenames: str
+            Name of the file(s) to upload
         path: str, optional
-            Path of where the file is. If given the file that will be upload
+            Path of where the file(s) is.
+        id: int
+            deposition id of the record where the file(s) will be updated
 
         Exception
         ---------
@@ -300,57 +234,94 @@ class Zenodo(object):
         """
 
         # Test if token was defined
-        self.__test_token()
+        self._verify_token()
 
         # If the deposition_id was not run before to obtain the id to uploads
-        if type(self.deposition_id) is not int:
-            self.get_deposition_id()
+        # TODO: Perhaps is it better to raise an exception
+        # if type(self.deposition_id) is not int:
+        #     self.get_deposition_id()
 
-        if path is not None:
-            filename = os.path.join(path, filename)
-
-        # Create the data dictionary which contain the name of the file
-        data = {'filename': filename}
-        logger.info('filename: {}'.format(filename))
-
-        # Open the file to upload in binary mode.
-        files = {'file': open(filename, 'rb')}
+        if type(id) is int:
+            self.deposition_id = id
 
         # Create the url to upload with the deposition_id
         url = self.depositions_url + '/{}/files'.format(self.deposition_id)
         logger.info('url: {}'.format(url))
 
-        # upload the file
+        # if filenames is only a file convert it to list
+        if type(filenames) is str:
+            filenames = [filenames]
 
-        request = requests.post(url,
-                                params={'access_token': self._token},
-                                data=data,
-                                files=files)
+        logger.info('Deposition id: {}'.format(self.deposition_id))
+
+        status_code = []
+        for filename in filenames:
+            if path is not None:
+                filename = os.path.join(path, filename)
+
+            # Create the zenodo data dictionary which contain
+            # the name of the file
+            data = {'filename': filename}
+            logger.info('filename: {}'.format(filename))
+
+            # Open the file to upload in binary mode.
+            files = {'file': open(filename, 'rb')}
+
+            # upload the file
+
+            request = requests.post(url,
+                                    params={'access_token': self.token},
+                                    data=data,
+                                    files=files)
+            status_code.append(request.status_code)
+            self._check_status_code(request.status_code)
+
+        self.status_code = max(status_code)
+        self._check_status_code(self.status_code)
+
+    def upload_metadata(self, metadata, id=None):
+        """Upload metadata to Zenodo repository.
+
+        After creating the
+
+        Parameters
+        ----------
+        metadata: dict
+            dictionary which contains zenodo metadata
+
+        id: int
+            deposition id of the record where the metadata will be updated
+
+        """
+        self._verify_token()
+
+        # Todo replace by test of zenodometadata
+        if type(metadata) is not dict or 'metadata' not in metadata:
+            raise ZenodoException('Metadata should be '
+                                  'dictionary with one key: "metadata" ')
+
+        if type(id) is int:
+            self.deposition_id = id
+
+        # Create the url to upload with the deposition_id
+        url = self.depositions_url + '/{}'.format(self.deposition_id)
+        logger.info('url: {}'.format(url))
+
+        headers = {"Content-Type": "application/json"}
+        request = requests.put(url,
+                               params={'access_token': self.token},
+                               data=json.dumps(metadata),
+                               headers=headers)
+
         self.status_code = request.status_code
-
-        # Test that everything went as expected
-        if self.status_code < 400:
-            logger.info('Deposition id: {}'.format(self.deposition_id))
-            logger.debug('Status code: {}'.format(self.status_code))
-            return
-
-        if self.status_code >= 500:
-            message = 'Server connection failed ' \
-                      'with error: {}'.format(self.status_code)
-            logger.error(message)
-            #raise ZenodoException(message) # Break the test....
-            return
-
-        if self.status_code >= 400:
-            message = 'upload file failed ' \
-                      'with error: {}'.format(self.request.status_code)
-            logger.error(message)
-            raise ZenodoException(message)
+        self._check_status_code(self.status_code)
 
     def publish(self):
         """Method which will publish the deposition linked with the id.
 
-        BE CAREFUL: after publishing it is not possible to delete anything.
+        .. warning:
+
+            After publishing it is not possible to delete anything.
 
         Exception
         ---------
@@ -359,12 +330,12 @@ class Zenodo(object):
             if connection return status >= 400
         """
         # Test if token was defined
-        self.__test_token()
+        self._verify_token()
 
         publish_url = self.depositions_url + \
                       '/{}/actions/publish'.format(self.deposition_id)
         request = requests.post(publish_url,
-                                params={'access_token': self._token})
+                                params={'access_token': self.token})
 
         self.status_code = request.status_code
 
