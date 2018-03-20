@@ -1,9 +1,9 @@
 # Datalight
 docopt
+pyaml
 
 # Zenodo
 requests
-
 
 # For documentation
 numpy

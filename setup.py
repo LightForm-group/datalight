@@ -12,7 +12,8 @@ package_data = os.path.join('template', '*')
 
 requirements = [
     'requests',
-    'docopt'
+    'docopt',
+    'pyaml',
 ]
 
 test_requirements = [
