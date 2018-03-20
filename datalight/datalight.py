@@ -10,6 +10,7 @@ Main module for datalight
 import sys
 import os
 import configparser
+import yaml
 
 # To get the home directory
 from pathlib import Path
@@ -34,14 +35,15 @@ def main(args=None):
 
     Command line::
 
-        Usage:
-            datalight <files> [--metadata=<metadata>] [--repository=<repository>] [--sandbox=<sandbox>]
-            datalight -h | --help
-            datalight --version
+        Usage: datalight [-h | --help] <files>... --metadata=<metadata> [options]
 
         Options:
-            -h --help                   Show this screen.
-            --version                   Show version.
+
+        --metadata=<metadata>     File which contains the metadata information
+        --repository=<repository> Name of a data repository [default: zenodo].
+        --sandbox=<sandbox>]
+        -h, --help                Print this help
+        --version                 Print version of the software
 
         Examples:
             datalight file1 file2
@@ -61,7 +63,15 @@ def main(args=None):
     fname = arguments['<files>']
     metadata = arguments['--metadata']
     repository = arguments['--repository']
+
+    if repository is None:
+        repository = 'zenodo'
+
     sandbox = arguments['--sandbox']
+
+    # Read metadata from file
+    if metadata is not None:
+        metadata = {'metadata': yaml.load(open(metadata))}
 
     if repository == 'zenodo':
         try:
@@ -72,7 +82,7 @@ def main(args=None):
             from zenodo import ZenodoException as DataRepoException
 
         # Read zenodo token file from home repository
-        tokenfile = os.path.join(home,'.zenodo')
+        tokenfile = os.path.join(home, '.zenodo')
         zenoconfig = configparser.ConfigParser()
         zenoconfig.read(tokenfile)
 
@@ -83,14 +93,25 @@ def main(args=None):
                 token = zenoconfig['zenodo.org']['lightForm']
         except KeyError:
             token = input('Provide Zenodo token: ')
-            # todo implement save token
+
+            # Save the token to the ~/.zenodo
+            config = configparser.ConfigParser()
+            if sandbox:
+                config['sanbox.zenodo.org'] = {'lightForm': token}
+            else:
+                config['zenodo.org'] = {'lightForm': token}
+
+            with open(tokenfile, 'a') as configfile:
+                config.write(configfile)
 
     try:
-        if os.path.isdir(fname):
-            directory = fname.strip(os.pathsep)
+        if len(fname) == 1 and os.path.isdir(fname[0]):
+            directory = fname[0].strip(os.pathsep)
             files = os.listdir(directory)
         else:
             files, directory = [fname], ''
+    except TypeError:
+        files, directory = fname, ''
     except FileNotFoundError:
         error = 'Error: path {} for text files ' \
                 'not found'.format(directory)
@@ -100,7 +121,8 @@ def main(args=None):
     datarepo = DataRepo(token=token, sandbox=sandbox)
     datarepo.get_deposition_id()
     datarepo.upload_files(files, path=directory)
-    #datarepo.upload_metadata(metadata=metadata)
+    if type(metadata) is dict:
+        datarepo.upload_metadata(metadata=metadata)
     logger.info("Finished " + logger.name)
 
 
