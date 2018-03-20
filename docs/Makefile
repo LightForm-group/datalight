@@ -32,7 +32,7 @@ GITHUBBUILDDIR = ../$(notdir $(CURDIR))-html
 endif
 
 # Define github repository to commit
-GITREPO = https://github.com/MechMicroMan/datalight
+GITREPO = https://github.com/gruel/datalight
 
 PDFBUILDDIR   = /tmp
 

@@ -164,7 +164,7 @@ class TestZenodo(object):
                       'error {} on the server'.format(zeno.status_code))
             else:
                 assert type(zeno.status_code) is int
-            #zeno.delete()
+            zeno.delete()
         else:
             with pytest.raises(ZenodoException):
                 zeno.upload_files(filenames)
@@ -183,7 +183,7 @@ class TestZenodo(object):
                       'error {} on the server'.format(zeno.status_code))
             else:
                 assert type(zeno.status_code) is int
-            #zeno.delete()
+            zeno.delete()
         else:
             with pytest.raises(ZenodoException):
                 zeno.upload_files(filenames)

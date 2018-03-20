@@ -109,7 +109,7 @@ def main(args=None):
             directory = fname[0].strip(os.pathsep)
             files = os.listdir(directory)
         else:
-            files, directory = [fname], ''
+            files, directory = fname, ''
     except TypeError:
         files, directory = fname, ''
     except FileNotFoundError:
