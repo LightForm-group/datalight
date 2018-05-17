@@ -13,7 +13,10 @@ _build
 .project
 *.tmp
 *.log
+.mypy_cache
+.pytest_cache
 htmlcov
 .coverage
 .tox
 .benchmarks
+.zenodo
