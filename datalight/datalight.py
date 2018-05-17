@@ -7,10 +7,9 @@ Main module for datalight
 :Copyright: IT Services, The University of Mancheste
 """
 
-import sys
 import os
+import sys
 import configparser
-import yaml
 
 # To get the home directory
 from pathlib import Path
@@ -71,7 +70,13 @@ def main(args=None):
 
     # Read metadata from file
     if metadata is not None:
-        metadata = {'metadata': yaml.load(open(metadata))}
+        with open(metadata, encoding="utf-8") as f:
+            try:
+                from ruamel.yaml import YAML
+                metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
+            except ImportError:
+                import yaml
+                metadata = {'metadata': yaml.load(f)}
 
     if repository == 'zenodo':
         try:
@@ -101,7 +106,7 @@ def main(args=None):
             else:
                 config['zenodo.org'] = {'lightForm': token}
 
-            with open(tokenfile, 'a') as configfile:
+            with open(tokenfile, 'a', encoding="utf-8") as configfile:
                 config.write(configfile)
 
     try:

@@ -36,9 +36,14 @@ def zeno(request):
     #     'creators': [{'name': 'Doe, John',
     #                   'affiliation': 'Zenodo'}]
     # }}
-    import yaml
-    tmp = yaml.load(open(_dir_data + '/lightform.yml'))
-    zeno.metadata = {'metadata': tmp}
+
+    with open(_dir_data + '/lightform.yml', encoding="utf-8") as f:
+        try:
+            from ruamel.yaml import YAML
+            zeno.metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
+        except ImportError:
+            import yaml
+            zeno.metadata = {'metadata': yaml.load(f)}
 
     def fin():
         print('teardown zeno')
