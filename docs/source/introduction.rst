@@ -4,7 +4,7 @@
 Introduction
 ############
 
-Description of the package
+Description of the package {{project_name}}
 
 Python version used
 

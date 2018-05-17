@@ -31,12 +31,13 @@ Tables of Contents
    source/scope
    source/acronyms
    source/introduction
+   source/prerequirements
    source/installation
    source/howto
    source/develop
    source/modules
    source/uml
-   source/markdown.md
+..   source/markdown.md
 
 .. topic:: Keywords
 
