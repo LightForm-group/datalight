@@ -64,19 +64,7 @@ properties:
   creators:
     type: array
     items:
-      type: object
-      properties:
-        name:
-          type: string
-        affiliation:
-          type: string
-        orcid:
-          type: string
-        gnd:
-          type: string
-      required: [name]
-      # In theory I could use the definition from another file. Until I understand how it is working I am keeping the full definition and comment the following line
-      #$ref: creators-1.0.0
+      $ref: '#/definitions/person'
 
   description:
     type: string
@@ -141,31 +129,23 @@ properties:
   contributors:
     type: array
     items:
-      type: object
-      properties:
-        name:
-          type: string
-        affiliation:
-          type: string
-        orcid:
-          type: string
-        gnd:
-          type: string
-        type:
-          type: string
-          enum:
-            - ContactPerson
-            - DataCollector
-            - DataCurator
-            - DataManager
-            - Editor
-            - Researcher
-            - RightsHolder
-            - Sponsor
-            - Other
-      required: [name, type]
-      # In theory I could use the definition from another file. Until I understand how it is working I am keeping the full definition and comment the following line
-      #$ref: creators-1.0.0
+      allOf:
+        - $ref: '#/definitions/person'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - ContactPerson
+                - DataCollector
+                - DataCurator
+                - DataManager
+                - Editor
+                - Researcher
+                - RightsHolder
+                - Sponsor
+                - Other
+          required: [type]
 
   references:
     type: array
@@ -239,17 +219,7 @@ properties:
   thesis_supervisors:
     type: array
     items:
-      type: object
-      properties:
-        name:
-          type: string
-        affiliation:
-          type: string
-        orcid:
-          type: string
-        gnd:
-          type: string
-      required: [name]
+      $ref: '#/definitions/person'
 
   thesis_university:
     type: string
@@ -272,6 +242,22 @@ properties:
 
   language:
     type: string
+
+
+definitions:
+  person:
+    type: object
+    properties:
+      name:
+        type: string
+      affiliation:
+        type: string
+      orcid:
+        type: string
+      gnd:
+        type: string
+    required: [name]
+    #additionalProperties: False
 
 required:
   - upload_type
