@@ -280,6 +280,13 @@ definitions:
           access_right:
             type: string
             enum:
+              - closed
+
+      - type: object
+        properties:
+          access_right:
+            type: string
+            enum:
               - open
             license:
               type: string
