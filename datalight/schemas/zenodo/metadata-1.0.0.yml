@@ -3,20 +3,36 @@
 
 # TODO: Need to change the next three line by something a little bit more correct
 $schema: "http://stsci.edu/schemas/yaml-schema/draft-01"
-id: "http://manchester.ac.uk/schemas/zenodo/metadata-1.0.0"
-tag: "tag:manchester.ac.uk:zenodo/metadata-1.0.0"
+id: "https://zenodo.org/schemas/zenodo/metadata-1.0.0"
+tag: "tag:zenodo.org:zenodo/metadata-1.0.0"
 
 title: |
   Metadata for Zenodo data repository
-description:
+description: |
   This stores the metadata needed and accepted for zenodo data repository
 
 examples:
   -
+    - The most simple zenodo metadata example:
+    - |
+      - !<tag:zenodo.org:zenodo/metadata-1.0.0>
+          title: Title of the dataset
+          description: |
+            A description of the dataset which can be written on multiple
+            lines
+          upload_type: dataset
+          creators:
+            - name: John Doe
+          access_right: open
+          license: |
+            A license
 
 allOf:
+
   - $ref: '#/definitions/upload'
+
   - $ref: '#/definitions/access'
+
   - properties:
       publication_date:
         type: string
@@ -300,6 +316,14 @@ required:
   - description
   - access_right
 
-# a huge limitation of jsonschema does not allowed the usage of the following line.
-# a huge limitation of jsonschema does not allowed the usage of the following line.
+# a limitation of jsonschema does not allowed the usage of:
+# additionalProperties: False
+# when associated to combining schema.
+# We are touching the problem describe as a "shortcoming":
+# https://spacetelescope.github.io/understanding-json-schema/reference/combining.html#combining
+# That implied that we need to deal outside the jsonschema for verify that only
+# Zenodo metadata are provided at the upload time.
+
 #additionalProperties: False
+
+...
