@@ -74,7 +74,8 @@ class Zenodo(object):
             logger.error(message)
             raise ZenodoException(message)
 
-    def _check_status_code(self, status_code):
+    @staticmethod
+    def _check_status_code(status_code):
         """Method to test that the request went as expected.
 
         Parameters

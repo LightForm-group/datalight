@@ -323,12 +323,12 @@ required:
   - description
   - access_right
 
-# a limitation of jsonschema does not allowed the usage of:
+# a limitation of json schema does not allowed the usage of:
 # additionalProperties: False
 # when associated to combining schema.
 # We are touching the problem describe as a "shortcoming":
 # https://spacetelescope.github.io/understanding-json-schema/reference/combining.html#combining
-# That implied that we need to deal outside the jsonschema for verify that only
+# That implied that we need to deal outside the json schema for verify that only
 # Zenodo metadata are provided at the upload time.
 
 #additionalProperties: False

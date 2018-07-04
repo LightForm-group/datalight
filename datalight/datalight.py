@@ -9,7 +9,7 @@ Main module for datalight
 
 import os
 import sys
-import configparser
+import configparser # read the ini file containing zenodo information (token)
 
 # To get the home directory
 from pathlib import Path
