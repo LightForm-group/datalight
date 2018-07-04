@@ -1,0 +1,272 @@
+# YAML file containing some of the configuration information
+# for zenodo metadata
+
+upload_type:
+  type: string
+  required: True
+  default: False
+  description:
+    - publication
+    - poster
+    - presentation
+    - dataset
+    - image
+    - video
+    - software
+    - lesson
+    - other
+
+publication_type:
+  type: string
+  required: False  # required only if upload_type is 'publication'
+  default: False
+  description:
+    - book
+    - section
+    - conferencepaper
+    - article
+    - patent
+    - preprint
+    - report
+    - softwaredocumentation
+    - thesis
+    - technicalnote
+    - workingpaper
+    - other
+
+image_type:
+  type: string
+  required: False  # required only if upload_type is 'image'
+  default: False
+  description:
+    - figure
+    - plot
+    - drawing
+    - diagram
+    - photo
+    - other
+
+# Publication date in iso format (YYYY-MM-DD). default to current date.
+publication_date:
+  type: string
+  required: False    # There are a default value so not required
+  default: True
+
+title:
+  type: string
+  required: True
+  default: False
+
+creators:
+  type: list of dictionaries
+  required: True
+  default: False
+  description:
+    name: string
+    affiliation: string    # optional
+    orcid: string          # optional
+    gnd:   string          # optional
+
+description:
+  type: string
+  required: True
+  default: False
+
+access_right:
+  type: string
+  required: True
+  default: False    # TODO
+  description:
+    - open
+    - embargoed
+    - restricted
+    - closed
+
+license:
+  type: string
+  required: False    # required only if access_right is "open" or "embargoed"
+  default: True      # cc-by for non-dataset, cc-zero ft
+  default: False
+
+preserve_doi:
+  type: bool
+  required: False
+  default: True      # True by default
+
+keywords:
+  type: list of strings
+  required: False
+  default: False
+
+notes:
+  type: string
+  required: False
+  default: False
+
+related_identifiers:
+  type: list of dictionaries
+  required: False
+  default: False
+  description:
+    - identifier
+    - relation
+
+relation:
+  - isCitedBy
+  - cites
+  - isSupplementTo
+  - isSupplementedBy
+  - isNewVersionOf
+  - isPreviousVersionOf
+  - isPartOf
+  - hasPart
+  - compiles
+  - isCompiledBy
+  - isIdenticalTo
+  - isAlternateIdentifier
+
+contributors:
+  type: list
+  required: False
+  default: False
+
+references:
+  type: list of strings
+  required: False
+  default: False
+
+communities:
+  type: list of dictionaries
+  required: False
+  default: False
+
+grants:
+  type: list of dictionaries
+  required: False
+  default: False
+
+journal_title:
+  type: string
+  required: False
+  default: False
+
+journal_volume:
+  type: string
+  required: False
+  default: False
+
+journal_issue:
+  type: string
+  required: False
+  default: False
+
+journal_pages:
+  type: string
+  required: False
+  default: False
+
+conference_title:
+  type: string
+  required: False
+  default: False
+
+conference_acronym:
+  type: string
+  required: False
+  default: False
+
+conference_dates:
+  type: string
+  required: False
+  default: False
+
+conference_place:
+  type: string
+  required: False
+  default: False
+
+conference_url:
+  type: string
+  required: False
+  default: False
+
+conference_session:
+  type: string
+  required: False
+  default: False
+
+conference_session_part:
+  type: string
+  required: False
+  default: False
+
+imprint_publisher:
+  type: string
+  required: False
+  default: False
+
+imprint_isbn:
+  type: string
+  required: False
+  default: False
+
+imprint_place:
+  type: string
+  required: False
+  default: False
+
+partof_title:
+  type: string
+  required: False
+  default: False
+
+partof_pages:
+  type: string
+  required: False
+  default: False
+
+thesis_supervisors:
+  type: list of dictionaries
+  default: False
+  description:
+    name: string
+    affiliation: string     # optional
+    orcid: string           # optional
+    gnd: string             # optional
+
+thesis_university:
+  type: string
+  required: False
+  default: False
+
+subjects:
+  type: list of dictionaries
+  required: False
+  default: False
+  description:
+    - term
+    - identifier
+    - scheme
+
+version:
+  type: string
+  required: False
+  default: False
+
+language:
+  type: string
+  required: False
+  default: False
+
+metadata_requirements:
+  upload_type:
+    publication: publication_type
+    image: image_type
+  access_right:
+    open: license
+    embargoed:
+      - license
+      - embargo_date
+    restricted:
+      - access_conditions
+
