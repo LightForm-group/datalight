@@ -14,6 +14,7 @@ requirements = [
     'requests',
     'docopt',
     'pyaml',
+    'jsonschema',
 ]
 
 test_requirements = [

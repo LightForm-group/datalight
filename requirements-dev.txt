@@ -1,6 +1,7 @@
 # Datalight
 docopt
 pyaml
+jsonschema
 
 # Zenodo
 requests

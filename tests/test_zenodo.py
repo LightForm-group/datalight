@@ -37,7 +37,7 @@ def zeno(request):
     #                   'affiliation': 'Zenodo'}]
     # }}
 
-    with open(_dir_data + '/lightform.yml', encoding="utf-8") as f:
+    with open(os.path.join(_dir_data, 'lightform.yml'), encoding="utf-8") as f:
         try:
             from ruamel.yaml import YAML
             zeno.metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
