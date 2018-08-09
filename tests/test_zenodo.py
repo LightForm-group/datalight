@@ -20,6 +20,9 @@ tokenfile = os.path.join(_dir, '..', '.zenodo')
 zenoconfig = configparser.ConfigParser()
 zenoconfig.read(tokenfile)
 
+metadata_file = 'minimum_valid.yml'
+metadata = os.path.join(_dir_metadata, metadata_file)
+
 SANDBOX = False
 if SANDBOX:
     token = zenoconfig['sandbox.zenodo.org']['lightForm']
@@ -29,7 +32,8 @@ else:
 
 @pytest.fixture(params=[token, None])
 def zeno(request):
-    zeno = Zenodo(token=request.param, sandbox=SANDBOX)
+    zeno = Zenodo(token=request.param, metadata=metadata,
+                  sandbox=SANDBOX)
 
     # zeno.metadata = {'metadata': {
     #     'title': 'My first upload',
@@ -39,15 +43,15 @@ def zeno(request):
     #                   'affiliation': 'Zenodo'}]
     # }}
 
-    metadata_file = 'minimum_valid.yml'
-    with open(os.path.join(_dir_metadata, metadata_file),
-              encoding="utf-8") as f:
-        try:
-            from ruamel.yaml import YAML
-            zeno.metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
-        except ImportError:
-            import yaml
-            zeno.metadata = {'metadata': yaml.load(f)}
+    # metadata_file = 'minimum_valid.yml'
+    # with open(os.path.join(_dir_metadata, metadata_file),
+    #           encoding="utf-8") as f:
+    #     try:
+    #         from ruamel.yaml import YAML
+    #         zeno.metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
+    #     except ImportError:
+    #         import yaml
+    #         zeno.metadata = {'metadata': yaml.load(f)}
 
     def fin():
         print('teardown zeno')
@@ -97,9 +101,11 @@ class TestZenodo(object):
         with pytest.raises(ZenodoException):
             zeno.get_deposition_id()
 
-    def test_get_deposition_id_and_delete(self, zeno):
+    def test_get_deposition_id_and_delete(self):
+        zeno = Zenodo(token=token, metadata=metadata,
+                      sandbox=SANDBOX)
         if zeno.token is not None:
-            z = zeno.get_deposition_id()
+            zeno.get_deposition_id()
             assert type(zeno.deposition_id) is int
 
             # Remove the record create for the test
@@ -165,7 +171,7 @@ class TestZenodo(object):
         filenames = 'test.csv'
         if zeno.token is not None:
             zeno.get_deposition_id()
-            zeno.upload_files(filenames, path=_dir_data, id=zeno.deposition_id)
+            zeno.upload_files(filenames, path=_dir_data, _id=zeno.deposition_id)
             if zeno.status_code >= 500:
                 print('Test was not able to work because of '
                       'error {} on the server'.format(zeno.status_code))
@@ -183,7 +189,7 @@ class TestZenodo(object):
         if zeno.token is not None:
             zeno.get_deposition_id()
             zeno.upload_files(filenames, path=_dir_data)
-            zeno.upload_metadata(metadata=zeno.metadata)
+            zeno.upload_metadata()
 
             if zeno.status_code >= 500:
                 print('Test was not able to work because of '
@@ -200,8 +206,7 @@ class TestZenodo(object):
         if zeno.token is not None:
             zeno.get_deposition_id()
             zeno.upload_files(filenames, path=_dir_data)
-            zeno.upload_metadata(metadata=zeno.metadata,
-                                 id=zeno.deposition_id)
+            zeno.upload_metadata(_id=zeno.deposition_id)
 
             if zeno.status_code >= 500:
                 print('Test was not able to work because of '
@@ -220,26 +225,7 @@ class TestZenodo(object):
             zeno.get_deposition_id()
             zeno.upload_files(filenames, path=_dir_data)
 
-            zeno.upload_metadata(metadata=zeno.metadata)
-
-            if zeno.status_code >= 500:
-                print('Test was not able to work because of '
-                      'error {} on the server'.format(zeno.status_code))
-            else:
-                assert type(zeno.status_code) is int
-            zeno.delete()
-        else:
-            with pytest.raises(ZenodoException):
-                zeno.upload_files(filenames)
-
-    def test_upload_metadata_nodict(self, zeno):
-        filenames = 'test.csv'
-        if zeno.token is not None:
-            zeno.get_deposition_id()
-            zeno.upload_files(filenames, path=_dir_data)
-
-            with pytest.raises(ZenodoException):
-                zeno.upload_metadata(metadata=[])
+            zeno.upload_metadata()
 
             if zeno.status_code >= 500:
                 print('Test was not able to work because of '
@@ -257,8 +243,11 @@ class TestZenodo(object):
             zeno.download_files()
          # raise "Not implemented"
 
+    def test_set_metadata(self, zeno):
+        assert 'metadata' in zeno.set_metadata()
 
     ## Commented to not publish too many files on the sandbox
+    ## if needed to be tested again remove comments
 
     # def test_publish(self, zeno):
     #     filenames = 'test.csv'
@@ -277,6 +266,7 @@ class TestZenodo(object):
     #     else:
     #         with pytest.raises(ZenodoException):
     #             zeno.publish()
+
 
 
 def test_Zenodo_zenodo_api():
