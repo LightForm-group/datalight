@@ -9,6 +9,8 @@ _dir = os.path.dirname(os.path.realpath(__file__))
 
 # Path where the data files are located
 _dir_data = os.path.join(_dir, 'data')
+_dir_metadata = os.path.join(_dir, 'metadata')
+
 
 # Tokenfile use to connect to zenodo, it is located in the main directory
 # of the project.
@@ -37,7 +39,9 @@ def zeno(request):
     #                   'affiliation': 'Zenodo'}]
     # }}
 
-    with open(os.path.join(_dir_data, 'lightform.yml'), encoding="utf-8") as f:
+    metadata_file = 'minimum_valid.yml'
+    with open(os.path.join(_dir_metadata, metadata_file),
+              encoding="utf-8") as f:
         try:
             from ruamel.yaml import YAML
             zeno.metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
@@ -56,7 +60,8 @@ def zeno(request):
 class TestZenodo(object):
 
     def test_status_code_500(self, zeno):
-        assert zeno._check_status_code(500) == 500
+        with pytest.raises(ZenodoException):
+            zeno._check_status_code(500)
 
     def test_status_code_400(self, zeno):
         with pytest.raises(ZenodoException):
@@ -156,13 +161,47 @@ class TestZenodo(object):
             with pytest.raises(ZenodoException):
                 zeno.upload_files(filenames)
 
+    def test_upload_files_id_int(self, zeno):
+        filenames = 'test.csv'
+        if zeno.token is not None:
+            zeno.get_deposition_id()
+            zeno.upload_files(filenames, path=_dir_data, id=zeno.deposition_id)
+            if zeno.status_code >= 500:
+                print('Test was not able to work because of '
+                      'error {} on the server'.format(zeno.status_code))
+            else:
+                assert type(zeno.status_code) is int
+
+            # Remove the record create for the test
+            zeno.delete()
+        else:
+            with pytest.raises(ZenodoException):
+                zeno.upload_files(filenames, path=_dir_data)
+
     def test_upload_metadata_one_file(self, zeno):
         filenames = 'test.csv'
         if zeno.token is not None:
             zeno.get_deposition_id()
             zeno.upload_files(filenames, path=_dir_data)
-
             zeno.upload_metadata(metadata=zeno.metadata)
+
+            if zeno.status_code >= 500:
+                print('Test was not able to work because of '
+                      'error {} on the server'.format(zeno.status_code))
+            else:
+                assert type(zeno.status_code) is int
+            zeno.delete()
+        else:
+            with pytest.raises(ZenodoException):
+                zeno.upload_files(filenames)
+
+    def test_upload_metadata_id_int(self, zeno):
+        filenames = 'test.csv'
+        if zeno.token is not None:
+            zeno.get_deposition_id()
+            zeno.upload_files(filenames, path=_dir_data)
+            zeno.upload_metadata(metadata=zeno.metadata,
+                                 id=zeno.deposition_id)
 
             if zeno.status_code >= 500:
                 print('Test was not able to work because of '
@@ -212,9 +251,34 @@ class TestZenodo(object):
             with pytest.raises(ZenodoException):
                 zeno.upload_files(filenames)
 
-    # def test_publish(self):
-    #     # Need to understand how to do a mock to be able to test it.
-    #     raise "Not implemented"
+    def test_download_file(self, zeno):
 
-    # def test_download_file():
-    #     raise "Not implemented"
+        with pytest.raises(ZenodoException):
+            zeno.download_files()
+         # raise "Not implemented"
+
+
+    ## Commented to not publish too many files on the sandbox
+
+    # def test_publish(self, zeno):
+    #     filenames = 'test.csv'
+    #     if zeno.token is not None:
+    #         zeno.get_deposition_id()
+    #         zeno.upload_files(filenames, path=_dir_data)
+    #         zeno.upload_metadata(metadata=zeno.metadata)
+    #         zeno.publish()
+    #         if zeno.status_code >= 500:
+    #             print('Test was not able to work because of '
+    #                   'error {} on the server'.format(zeno.status_code))
+    #
+    #         else:
+    #             assert type(zeno.status_code) is int
+    #
+    #     else:
+    #         with pytest.raises(ZenodoException):
+    #             zeno.publish()
+
+
+def test_Zenodo_zenodo_api():
+    zeno = Zenodo(token=token, sandbox=False)
+    assert zeno.api_baseurl == 'https://zenodo.org/api/'

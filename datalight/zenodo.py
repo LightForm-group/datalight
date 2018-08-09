@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """This module is implementing high level function to upload
-and download Lightform data.
+and download data on Zenodo.
 
 :Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
 
@@ -17,7 +17,6 @@ except ImportError:
     from conf import logger
 
 import requests
-# import configparser
 import json
 
 
@@ -56,9 +55,6 @@ class Zenodo(object):
         self.deposition_id = None
 
         self.status_code = None
-
-    def get_token(self, tokenfile=None):
-        pass
 
     def _verify_token(self):
         """ Function to test if token could be valid
@@ -102,8 +98,7 @@ class Zenodo(object):
             message = 'Server connection failed ' \
                       'with error: {}'.format(status_code)
             logger.error(message)
-            #raise ZenodoException(message) # Break the test....
-            return status_code
+            raise ZenodoException(message)
 
         if status_code >= 400:
             message = 'Request failed ' \
@@ -117,8 +112,8 @@ class Zenodo(object):
         Exception
         ---------
         ZenodoException
-            if token not define (token = None) or
-            if connection return status >= 400
+            raise if token not define (token = None) or if connection
+            return status >= 400
         """
         # Test if Token defined and access zenodo to test the token if exist
         self._verify_token()
@@ -141,8 +136,6 @@ class Zenodo(object):
 
         Attributes
         ----------
-        request:
-
         deposition_id: int
             Deposition id gave by Zenodo deposition api to be used to upload
             files and metadata.
@@ -150,8 +143,8 @@ class Zenodo(object):
         Exception
         ---------
         ZenodoException
-            if token not define (token = None) or
-            if connection return status >= 400
+            raise if token not define (token = None) or if connection
+            return status >= 400
         """
         headers = {'Content-Type': 'application/json'}
 
@@ -185,8 +178,8 @@ class Zenodo(object):
         Exception
         ---------
         ZenodoException
-            if token not define (token = None) or
-            if connection return status >= 400
+            raise if token not define (token = None) or if connection
+            return status >= 400
         """
         # Test if token was defined
         self._verify_token()
@@ -230,8 +223,8 @@ class Zenodo(object):
         Exception
         ---------
         ZenodoException
-            if token not define (token = None) or
-            if connection return status >= 400
+            raise if token not define (token = None) or if connection
+            return status >= 400
         """
 
         # Test if token was defined
@@ -283,7 +276,8 @@ class Zenodo(object):
     def upload_metadata(self, metadata, id=None):
         """Upload metadata to Zenodo repository.
 
-        After creating the
+        After creating the request and upload the file(s) we need to update
+        the metadata needed by Zenodo related to the record.
 
         Parameters
         ----------
@@ -327,8 +321,8 @@ class Zenodo(object):
         Exception
         ---------
         ZenodoException
-            if token not define (token = None) or
-            if connection return status >= 400
+            raise if token not define (token = None) or if connection
+            return status >= 400
         """
         # Test if token was defined
         self._verify_token()
@@ -346,28 +340,15 @@ class Zenodo(object):
             logger.debug('Status code: {}'.format(self.status_code))
             return
 
-        if self.status_code >= 500:
-            message = 'Server connection failed ' \
-                      'with error: {}'.format(self.request.status_code)
-            logger.error(message)
-            #raise ZenodoException(message) # Break the test....
-            return
+        self._check_status_code(self.status_code)
 
-        if self.status_code >= 400:
-            message = 'Publish file failed ' \
-                      'with error: {}'.format(self.request.status_code)
-            logger.error(message)
-            raise ZenodoException(message)
-
-    def download_file(self):
-        """
+    def download_files(self):
+        """Method to download file present in a specific record
 
         """
         raise "Not implemented"
 
     def metadata_verify(self):
-        """
-
-
+        """If implemented will be wrapper around the ZenodoMetadata class
         """
         raise "Not implemented"
