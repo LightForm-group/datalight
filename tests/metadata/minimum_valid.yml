@@ -1,0 +1,10 @@
+title: Title of the dataset
+
+description: |
+  A description of the dataset which can be written on multiple
+  lines
+
+upload_type: dataset
+
+creators:
+  - name: John Doe

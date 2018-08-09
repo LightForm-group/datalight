@@ -9,6 +9,7 @@ import sys
 # sys.path.insert(0, os.path.abspath('..'))
 file_path = os.path.realpath(__file__)
 
+# go up one level to access the schema definition
 path = os.path.dirname(file_path) + os.sep + '..'
 sys.path.append(path)
 

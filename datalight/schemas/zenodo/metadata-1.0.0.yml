@@ -23,9 +23,6 @@ examples:
           upload_type: dataset
           creators:
             - name: John Doe
-          access_right: open
-          license: |
-            A license
 
 allOf:
 
@@ -274,6 +271,7 @@ definitions:
         required: [image_type]
 
   access:
+    #default: { access_right: open, license: cc-by-4.0 } (TODO: find a way for default value implemented in python for now)
     oneOf:
       - type: object
         properties:
@@ -288,9 +286,8 @@ definitions:
             type: string
             enum:
               - open
-            license:
-              type: string
-        required: [license]
+          license:
+            type: string
 
       - type: object
         properties:
@@ -302,7 +299,7 @@ definitions:
             type: string
           embargo_date:
             type: string
-        required: [license, embargo_date]
+        required: [embargo_date]
 
       - type: object
         properties:
@@ -321,7 +318,6 @@ required:
   - title
   - creators
   - description
-  - access_right
 
 # a limitation of json schema does not allowed the usage of:
 # additionalProperties: False
@@ -332,5 +328,9 @@ required:
 # Zenodo metadata are provided at the upload time.
 
 #additionalProperties: False
+
+# Zenodo is accepting only certain license when access_right is open or embargoed
+# They are available here: https://licenses.opendefinition.org
+# The conformance will be tested in the python script.
 
 ...
