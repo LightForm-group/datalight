@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import os
+import sys
 from setuptools import setup
+import json
+
+import urllib.request
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -8,7 +12,21 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-package_data = os.path.join('template', '*')
+# Obtain the newest version of the licenses definition and replace the one
+# provided by the package.
+url = 'https://licenses.opendefinition.org/licenses/groups/all.json'
+try:
+    with urllib.request.urlopen(url) as f:
+        licenses = json.load(f)
+
+    _zenodo_path = os.path.join('datalight', 'schemas', 'zenodo')
+    with open(os.path.join(_zenodo_path, 'opendefinition-licenses.json'), 'w') as f:
+        json.dump(licenses, f)
+except urllib.error.URLError:
+    print('Licenses file last version not available. '
+          'Use the one provided by the package')
+
+package_data = os.path.join('schemas', '*')
 
 requirements = [
     'requests',
@@ -24,12 +42,12 @@ test_requirements = [
 
 setup(name='datalight',
       packages=['datalight'],
-      version='0.1.0',
-      description=('Data uploader to Zenodo repository for lightform project'),
+      version='0.5.0',
+      description=('Data uploader to Zenodo repository'),
       long_description=readme,
       author='Nicolas Gruel',
-      author_email='nicolas.gruel@manchester.ac.uk',
-      url='https://github.com/MechMicroMan/datalight',
+      author_email='nicolas.gruel@mgmail.com',
+      url='https://github.com/gruel/datalight',
       classifiers=[
           'Development Status :: 1 - RC',
           'Intended Audience :: Science/Research',
@@ -52,7 +70,7 @@ setup(name='datalight',
           'dev': ['pylint', 'pytest', 'pytest-cov', 'testfixtures', 'coverage'],
           'test': ['pytest', 'pytest-cov', 'testfixtures', 'coverage'],
           'doc': ['sphinx', 'numpydoc']},
-     entry_points={
+      entry_points={
          'console_scripts': [
              ' datalight = datalight.datalight:main']
                    },
