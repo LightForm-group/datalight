@@ -93,18 +93,18 @@ def main(args=None):
 
         try:
             if sandbox:
-                token = zenoconfig['sandbox.zenodo.org']['lightForm']
+                token = zenoconfig['sandbox.zenodo.org']['lightform']
             else:
-                token = zenoconfig['zenodo.org']['lightForm']
+                token = zenoconfig['zenodo.org']['lightform']
         except KeyError:
             token = input('Provide Zenodo token: ')
 
             # Save the token to the ~/.zenodo
             config = configparser.ConfigParser()
             if sandbox:
-                config['sanbox.zenodo.org'] = {'lightForm': token}
+                config['sandbox.zenodo.org'] = {'lightform': token}
             else:
-                config['zenodo.org'] = {'lightForm': token}
+                config['zenodo.org'] = {'lightform': token}
 
             with open(tokenfile, 'a', encoding="utf-8") as configfile:
                 config.write(configfile)
