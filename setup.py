@@ -26,8 +26,6 @@ except urllib.error.URLError:
     print('Licenses file last version not available. '
           'Use the one provided by the package')
 
-package_data = os.path.join('datalight', 'schemas', '*')
-
 requirements = [
     'requests',
     'docopt',
@@ -76,7 +74,8 @@ setup(name='datalight',
                    },
       package_data={
           '': ['LICENSE'],
-          'datalight': [package_data],
+          'datalight': ['schemas/zenodo/metadata-1.0.0.yml',
+                        'schemas/zenodo/opendefinition-licenses.json'],
       },
       include_package_data=True,
       license='MIT',
