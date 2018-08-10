@@ -26,7 +26,7 @@ except urllib.error.URLError:
     print('Licenses file last version not available. '
           'Use the one provided by the package')
 
-package_data = os.path.join('schemas', '*')
+package_data = os.path.join('datalight', 'schemas', '*')
 
 requirements = [
     'requests',
