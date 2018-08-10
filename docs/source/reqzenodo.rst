@@ -105,8 +105,8 @@ an alphanumerical lists of characters:
 
 
 .. warning::
-    This token will be given only **one time** so please copy it
-    somewhere you can keep it. If you already have installed
-    *datalight* you can provide the token at usage time. This token
-    will be saved in a read-only file in the user directory for future
-    usage.
+    This token will be given only **one time** so please copy
+    it somewhere you can keep it. If you already have installed
+    *datalight* you can provide the token the first time you are using
+    it.  This token will be saved in a read-only file in the user
+    directory for future usage.

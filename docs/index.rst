@@ -4,19 +4,19 @@ Documentation
 
 .. sidebar:: Summary
 
-    :Name: **Software documentation**
+    :Name: **Datalight documentation**
     :Release: |release|
     :version: |version|
     :Date: |today|
-    :Authors: **Author Name**
-    :Target: RSE
+    :Authors: **Nicolas Gruel**
+    :Target: Researchers
     :status: draft
 
 ########
 Overview
 ########
 
-A Template to create sphinx documentation for Manchester IT RSE group
+Documentation for datalight, a software to ease the upload of data on data repository like Zenodo.
 
 ##################
 Tables of Contents
@@ -31,13 +31,12 @@ Tables of Contents
    source/scope
    source/acronyms
    source/introduction
-   source/prerequirements
+   source/prerequisites
    source/installation
    source/howto
    source/develop
    source/modules
    source/uml
-..   source/markdown.md
 
 .. topic:: Keywords
 
