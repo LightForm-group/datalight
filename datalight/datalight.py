@@ -7,9 +7,18 @@ Main module for datalight
 :Copyright: IT Services, The University of Mancheste
 """
 
+# pylint: disable=locally-disabled, invalid-name
+
+try:
+    from .__init__ import __version__
+    from .conf import logger
+except ImportError:
+    from __init__ import __version__
+    from conf import logger
+
 import os
 import sys
-import configparser # read the ini file containing zenodo information (token)
+import configparser  # read the ini file containing zenodo information (token)
 
 # To get the home directory
 from pathlib import Path
@@ -21,32 +30,29 @@ except ImportError:
     print("Install docopt package: pip install docopt --user")
     sys.exit()
 
-try:
-    from .__init__ import __version__
-    from .conf import logger
-except ImportError:
-    from __init__ import __version__
-    from conf import logger
-
 
 def main(args=None):
     """Run datalight scripts to upload file on data repository
 
     Command line::
 
-        Usage: datalight [-h | --help] <files>... --metadata=<metadata> [options]
+        Usage: datalight [-h | --help] <files>... (-m <metadata> | --metadata=<metadata>) [options]
 
         Options:
 
+        -m metadata               File which contains the metadata information
         --metadata=<metadata>     File which contains the metadata information
-        --repository=<repository> Name of a data repository [default: zenodo].
-        --sandbox=<sandbox>]
+        -p                        If present publish the data
+        --publish                 If present publish the data
+        --repository=<repository> Name of a data repository [default: zenodo]
+        --sandbox                 If present, datalight will use the sandbox data repository
         -h, --help                Print this help
         --version                 Print version of the software
 
         Examples:
             datalight file1 file2
             datalight directory --metadata=metadata.yml --repository=zenodo
+            datalight file -m metadata.yml
 
     Raises
     ------
@@ -60,23 +66,17 @@ def main(args=None):
     # Convert docopt results in the proper variable (change type when needed)
 
     fname = arguments['<files>']
-    metadata = arguments['--metadata']
+    if arguments['-m'] is not None:
+        metadata = arguments['-m']
+    else:
+        metadata = arguments['--metadata']
+
     repository = arguments['--repository']
 
     if repository is None:
         repository = 'zenodo'
 
     sandbox = arguments['--sandbox']
-
-    # Read metadata from file
-    if metadata is not None:
-        with open(metadata, encoding="utf-8") as f:
-            try:
-                from ruamel.yaml import YAML
-                metadata = {'metadata': YAML(typ="safe", pure=True).load(f)}
-            except ImportError:
-                import yaml
-                metadata = {'metadata': yaml.load(f)}
 
     if repository == 'zenodo':
         try:
@@ -126,8 +126,10 @@ def main(args=None):
     datarepo = DataRepo(token=token, sandbox=sandbox)
     datarepo.get_deposition_id()
     datarepo.upload_files(files, path=directory)
-    if type(metadata) is dict:
-        datarepo.upload_metadata(metadata=metadata)
+    datarepo.set_metadata(metadata)
+    datarepo.upload_metadata()
+    if arguments['-p'] or arguments['--publish']:
+        datarepo.publish()
     logger.info("Finished " + logger.name)
 
 
