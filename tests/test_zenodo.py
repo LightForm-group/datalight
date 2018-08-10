@@ -23,7 +23,7 @@ zenoconfig.read(tokenfile)
 metadata_file = 'minimum_valid.yml'
 metadata = os.path.join(_dir_metadata, metadata_file)
 
-SANDBOX = False
+SANDBOX = True
 if SANDBOX:
     token = zenoconfig['sandbox.zenodo.org']['lightForm']
 else:

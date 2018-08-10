@@ -291,7 +291,7 @@ class Zenodo(object):
         self.status_code = max(status_code)
         self._check_status_code(self.status_code)
 
-    def set_metadata(self):
+    def set_metadata(self, metadata=None):
         """Method to read and validate metadata.
 
         Return
@@ -300,6 +300,8 @@ class Zenodo(object):
             dictionary with one key 'metadata' associated to Zenodo metadata,
             ready to be use for uploading.
         """
+        if metadata is not None:
+            self._metadata = metadata
         _metadata = ZenodoMetadata(self._metadata)
         return {'metadata': _metadata.get_metadata()}
 
