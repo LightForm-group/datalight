@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/MechMicroMan/datalight/issues
+Report bugs at https://github.com/gruel/datalight/issues
 
 If you are reporting a bug, please include:
 
@@ -47,7 +47,7 @@ Submit Feedback
 ~~~~~~~~~~~~~~~
 
 The best way to send feedback is to file an issue at
-https://github.com/MechMicroMan/datalight/issues
+https://github.com/gruel/datalight/issues
 
 
 If you are proposing a feature:
