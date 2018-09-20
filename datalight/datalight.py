@@ -18,6 +18,7 @@ except ImportError:
 
 import os
 import sys
+from zipfile import ZipFile
 import configparser  # read the ini file containing zenodo information (token)
 
 # To get the home directory
@@ -31,6 +32,68 @@ except ImportError:
     sys.exit()
 
 
+class DatalightException(Exception):
+    """Class for exception
+        """
+    pass
+
+
+def get_files_path(fname):
+    """Function to get the path(s) of the file(s)
+
+    Parameters
+    ----------
+    fname: str
+        Name of the file to get the path or the directory to list
+    """
+
+    # If fname is a file return a list with fname
+    if os.path.isfile(fname):
+        files_paths = [fname]
+    else:
+         # initializing empty file paths list
+        file_paths = []
+
+        # crawling through directory and subdirectories
+        for root, directories, files in os.walk(fname):
+            for filename in files:
+                # join the two strings in order to form the full filepath.
+                filepath = os.path.join(root, filename)
+                file_paths.append(filepath)
+
+    if not len(file_paths):
+        message = 'File or directory: {} to upload does not exist.'.format(fname)
+        logger.error(message)
+        raise DatalightException(message)
+
+    # returning all file paths
+    return file_paths
+
+
+def zipdata(files, zipname='data.zip'):
+    """Method to zip files which will be uploaded to the data repository.
+
+    Parameters
+    ----------
+    files: list
+        a list of string which contains the path of the files which will be
+        part of the zip archive. Path will be conserved.
+    zipname: str, optional
+        Name of the zip file to create. Default: data.zip
+    """
+    logger.info('Zip the files to create archive: {}'.format(zipname))
+
+    # writing files to a zipfile
+    with ZipFile(zipname, 'w') as zip:
+        # writing each file one by one
+        for file in files:
+            zip.write(file)
+
+
+def unzip(self):
+    pass
+
+
 def main(args=None):
     """Run datalight scripts to upload file on data repository
 
@@ -40,14 +103,15 @@ def main(args=None):
 
         Options:
 
-        -m metadata               File which contains the metadata information
-        --metadata=<metadata>     File which contains the metadata information
-        -p                        If present publish the data
-        --publish                 If present publish the data
-        --repository=<repository> Name of a data repository [default: zenodo]
-        --sandbox                 If present, datalight will use the sandbox data repository
-        -h, --help                Print this help
-        --version                 Print version of the software
+        -m FILE --metadata=FILE        File which contains the metadata information
+        -z zipname --zipname=FILE      Name of the zip file which will be uploaded [default: data.zip]
+        --nozip                        Do not create zip file containing the data to upload
+        -r NAME --repository=NAME      Name of a data repository [default: zenodo]
+        -p --publish                    If present publish the data
+        -s --sandbox                   If present, datalight will use the sandbox data repository
+        -k --keep                      Keep zip file created
+        -h --help                      Print this help
+        -v --version                   Print version of the software
 
         Examples:
             datalight file1 file2
@@ -58,25 +122,54 @@ def main(args=None):
     ------
     SystemExit
         if the file or the folder to treat is not available.
+    KeyError
+        if no key found for the data repository wanted
+    ImportError
+        if the not possible to import the data repository wanted
     """
 
+    # Read the arguments and option with docopt
     arguments = docopt(main.__doc__, argv=args,
                        version=__version__)
 
     # Convert docopt results in the proper variable (change type when needed)
 
-    fname = arguments['<files>']
-    if arguments['-m'] is not None:
-        metadata = arguments['-m']
-    else:
-        metadata = arguments['--metadata']
+    # Lists all the files and/or directories to upload
+    fnames = arguments['<files>']
 
+    # Get list of the files path to upload
+    files = []
+    try:
+        for fname in fnames:
+            files += get_files_path(fname)
+    except DatalightException:
+        logger.error('Problem with the files to upload.')
+        sys.exit()
+
+    # option which will give the name of the metadata file
+    metadata = arguments['--metadata']
+
+    if not os.path.exists(metadata):
+        logger.error('Metadata file: {} does not exist.'.format(metadata))
+        sys.exit(1)
+
+    # Choice of repository default Zenodo
     repository = arguments['--repository']
 
     if repository is None:
         repository = 'zenodo'
 
+    # If sandbox is present the version of the repository
+    # used will be the sandbox one
     sandbox = arguments['--sandbox']
+
+    # Zip data in an archive (to keep paths)
+    if not arguments['--nozip']:
+        zipname = arguments['--zipname']
+        zipdata(files, zipname)
+
+        # Change the name of the files to upload for the zip file created
+        files, directory = [zipname], '.'
 
     if repository == 'zenodo':
         try:
@@ -109,20 +202,6 @@ def main(args=None):
             with open(tokenfile, 'a', encoding="utf-8") as configfile:
                 config.write(configfile)
 
-    try:
-        if len(fname) == 1 and os.path.isdir(fname[0]):
-            directory = fname[0].strip(os.pathsep)
-            files = os.listdir(directory)
-        else:
-            files, directory = fname, ''
-    except TypeError:
-        files, directory = fname, ''
-    except FileNotFoundError:
-        error = 'Error: path {} for text files ' \
-                'not found'.format(directory)
-        logger.error(error)
-        sys.exit()
-
     datarepo = DataRepo(token=token, sandbox=sandbox)
     datarepo.get_deposition_id()
     datarepo.upload_files(files, path=directory)
@@ -130,6 +209,13 @@ def main(args=None):
     datarepo.upload_metadata()
     if arguments['-p'] or arguments['--publish']:
         datarepo.publish()
+
+    # Remove zip file create but if asked to keep it
+    if not arguments['--nozip'] \
+            and not arguments['--keep'] \
+            and len(files) == 1:
+        logger.info('Remove created zip file: {}'.format(files[0]))
+        os.remove(files[0])
     logger.info("Finished " + logger.name)
 
 
