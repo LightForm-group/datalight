@@ -34,7 +34,8 @@ can guide you through the process.
 From sources
 ------------
 
-The sources for datalight can be downloaded from the `Github repo`_.
+The sources for datalight can be downloaded from 
+the `Github repository <https://github.com/gruel/datalight>`_.
 
 the easiest way to install from the source is done by executing
 the following command::
