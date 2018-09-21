@@ -207,7 +207,7 @@ def main(args=None):
     datarepo.upload_files(files, path=directory)
     datarepo.set_metadata(metadata)
     datarepo.upload_metadata()
-    if arguments['-p'] or arguments['--publish']:
+    if arguments['--publish']:
         datarepo.publish()
 
     # Remove zip file create but if asked to keep it
