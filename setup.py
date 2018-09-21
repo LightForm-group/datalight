@@ -40,7 +40,7 @@ test_requirements = [
 
 setup(name='datalight',
       packages=['datalight'],
-      version='0.5.0',
+      version='0.6.0',
       description=('Data uploader to Zenodo repository'),
       long_description=readme,
       author='Nicolas Gruel',
