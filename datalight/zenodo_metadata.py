@@ -178,6 +178,12 @@ class ZenodoMetadata(object):
             message = 'Metadata file not founded.'.format(fmetadata)
             logger.error(message)
             raise ZenodoMetadataException(message)
+
+        # change communities identifier in lower case (only format accepted by zenodo)
+        if 'communities' in _metadata:
+            for _com in _metadata['communities']:
+                _com['identifier'] = _com['identifier'].lower()
+
         return _metadata
 
     def _check_minimal(self):
