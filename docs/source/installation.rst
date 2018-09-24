@@ -10,11 +10,11 @@ Installation
 Stable release
 --------------
 
-To install **datalight**, run this command in your terminal:
+To install **datalight** as user, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install datalight
+    $ pip install -U datalight --user
 
 This is the preferred method to install **datalight**, as it will
 always install the most recent stable release.
@@ -34,13 +34,13 @@ can guide you through the process.
 From sources
 ------------
 
-The sources for datalight can be downloaded from 
+The sources for datalight can be downloaded from
 the `Github repository <https://github.com/gruel/datalight>`_.
 
 the easiest way to install from the source is done by executing
 the following command::
 
-    pip3 install https://github.com/gruel/datalight/archive/master.zip
+    pip3 install -U https://github.com/gruel/datalight/archive/master.zip
 
 
 You can either clone the public repository:
@@ -53,7 +53,7 @@ Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OL https://github.com/gruel/datalight/tarball/master 
+    $ curl -OL https://github.com/gruel/datalight/tarball/master
     $ tar xvf master -C datalight --strip-components=1
 
 Once you have a copy of the source, you can install it with:
@@ -77,8 +77,8 @@ The installer should take care of the missing dependencies, if any.
     The option ``--user`` will install **datalight** in the user directory
     without the need to be administrator or root on the system.
 
-    Thhat prevent breaking any system-wide packages. It can happen that 
-    you'll need to manually add the user base's binary directory 
+    Thhat prevent breaking any system-wide packages. It can happen that
+    you'll need to manually add the user base's binary directory
     to your ``PATH``.
 
     On Linux and macOS you can find the user base binary directory by running
