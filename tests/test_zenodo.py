@@ -254,7 +254,7 @@ class TestZenodo(object):
     #     if zeno.token is not None:
     #         zeno.get_deposition_id()
     #         zeno.upload_files(filenames, path=_dir_data)
-    #         zeno.upload_metadata(metadata=zeno.metadata)
+    #         zeno.upload_metadata()
     #         zeno.publish()
     #         if zeno.status_code >= 500:
     #             print('Test was not able to work because of '
