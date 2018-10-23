@@ -14,7 +14,7 @@ path = os.path.dirname(file_path) + os.sep + '..'
 sys.path.append(path)
 
 schemafile = os.path.join(path, 'datalight',
-                          'schemas', 'zenodo', 'metadata-1.0.0.yml')
+                          'schemas', 'zenodo', 'record-1.0.0.yml')
 
 import datalight
 
@@ -22,4 +22,3 @@ import datalight
 from datalight.zenodo import Zenodo, ZenodoException
 
 from datalight.zenodo_metadata import ZenodoMetadata, ZenodoMetadataException
-

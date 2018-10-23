@@ -62,7 +62,7 @@ ZENODO_VALID_PROPERTIES = ['publication_date', 'title', 'creators',
 
 # Define the path where the schema file for zenodo is written
 # at installation time
-SCHEMAFILE=os.path.join(_dir, 'schemas', 'zenodo', 'metadata-1.0.0.yml')
+SCHEMAFILE=os.path.join(_dir, 'schemas', 'zenodo', 'record-1.0.0.yml')
 
 
 class ZenodoMetadata(object):
