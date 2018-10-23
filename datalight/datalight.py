@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Main module for datalight
+Main module for datalight. It is basically the main function to
+easy the usage for the regular user.
 
 :Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
 
-:Copyright: IT Services, The University of Mancheste
+:Copyright: IT Services, The University of Manchester
 """
 
 # pylint: disable=locally-disabled, invalid-name
@@ -12,13 +13,14 @@ Main module for datalight
 try:
     from .__init__ import __version__
     from .conf import logger
+    from .common import DatalightException, zipdata, get_files_path
 except ImportError:
     from __init__ import __version__
     from conf import logger
+    from common import DatalightException, zipdata, get_files_path
 
 import os
 import sys
-from zipfile import ZipFile
 import configparser  # read the ini file containing zenodo information (token)
 
 # To get the home directory
@@ -30,68 +32,6 @@ try:
 except ImportError:
     print("Install docopt package: pip install docopt --user")
     sys.exit()
-
-
-class DatalightException(Exception):
-    """Class for exception
-        """
-    pass
-
-
-def get_files_path(fname):
-    """Function to get the path(s) of the file(s)
-
-    Parameters
-    ----------
-    fname: str
-        Name of the file to get the path or the directory to list
-    """
-
-    # If fname is a file return a list with fname
-    if os.path.isfile(fname):
-        files_paths = [fname]
-    else:
-         # initializing empty file paths list
-        file_paths = []
-
-        # crawling through directory and subdirectories
-        for root, directories, files in os.walk(fname):
-            for filename in files:
-                # join the two strings in order to form the full filepath.
-                filepath = os.path.join(root, filename)
-                file_paths.append(filepath)
-
-    if not len(file_paths):
-        message = 'File or directory: {} to upload does not exist.'.format(fname)
-        logger.error(message)
-        raise DatalightException(message)
-
-    # returning all file paths
-    return file_paths
-
-
-def zipdata(files, zipname='data.zip'):
-    """Method to zip files which will be uploaded to the data repository.
-
-    Parameters
-    ----------
-    files: list
-        a list of string which contains the path of the files which will be
-        part of the zip archive. Path will be conserved.
-    zipname: str, optional
-        Name of the zip file to create. Default: data.zip
-    """
-    logger.info('Zip the files to create archive: {}'.format(zipname))
-
-    # writing files to a zipfile
-    with ZipFile(zipname, 'w') as zip:
-        # writing each file one by one
-        for file in files:
-            zip.write(file)
-
-
-def unzip(self):
-    pass
 
 
 def main(args=None):
@@ -179,6 +119,8 @@ def main(args=None):
             from zenodo import Zenodo as DataRepo
             from zenodo import ZenodoException as DataRepoException
 
+
+        # TODO change it to have .datalight file with multiple entry
         # Read zenodo token file from home repository
         tokenfile = os.path.join(home, '.zenodo')
         zenoconfig = configparser.ConfigParser()
