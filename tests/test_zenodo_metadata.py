@@ -1,7 +1,6 @@
 import os
-import sys
 import pytest
-import configparser
+
 import yaml
 
 from .conftest import ZenodoMetadata, ZenodoMetadataException, schemafile

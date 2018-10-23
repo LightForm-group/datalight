@@ -188,10 +188,8 @@ class Zenodo(object):
         Parameters
         ----------
         _id: int
-            deposition id of the record to delete
-
-        .. note::
-            it worked only if it is not publish.
+            deposition id of the record to delete.
+            Can be done only if the record was not publish.
 
         Exception
         ---------
@@ -217,7 +215,8 @@ class Zenodo(object):
             self.status_code = request.status_code
             logger.debug('Status code: {}'.format(self.status_code))
             if self.status_code >= 400:
-                raise ZenodoException
+                message = 'Problem to connect to zenodo'
+                raise ZenodoException(message)
         except ZenodoException:
             message = 'Request_url does not exist or bad token. ' \
                       'Error: {}'.format(self.status_code)
@@ -303,9 +302,10 @@ class Zenodo(object):
         if metadata is not None:
             self._metadata = metadata
         _metadata = ZenodoMetadata(self._metadata)
-        return {'metadata': _metadata.get_metadata()}
+        self._checked_metadata = {'metadata': _metadata.get_metadata()}
+        #return {'metadata': _metadata.get_metadata()}
 
-    def upload_metadata(self, _id=None):
+    def upload_metadata(self, metadata=None, _id=None):
         """Upload metadata to Zenodo repository.
 
         After creating the request and upload the file(s) we need to update
@@ -323,7 +323,11 @@ class Zenodo(object):
 
         """
         self._verify_token()
-        metadata_to_upload = self.set_metadata()
+
+        if metadata is not None:
+            self._metadata = metadata
+
+        self.set_metadata()
 
         if _id is not None:
             self.deposition_id = _id
@@ -335,7 +339,7 @@ class Zenodo(object):
         headers = {"Content-Type": "application/json"}
         request = requests.put(url,
                                params={'access_token': self.token},
-                               data=json.dumps(metadata_to_upload),
+                               data=json.dumps(self._checked_metadata),
                                headers=headers)
 
         self.status_code = request.status_code
@@ -373,7 +377,7 @@ class Zenodo(object):
 
         # self._check_status_code(self.status_code)
 
-    def download_files(self):
+    def download_files(self, id=None, doi=None):
         """Method to download file present in a specific record
 
         """

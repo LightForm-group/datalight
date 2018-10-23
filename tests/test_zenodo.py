@@ -241,10 +241,10 @@ class TestZenodo(object):
 
         with pytest.raises(ZenodoException):
             zeno.download_files()
-         # raise "Not implemented"
 
     def test_set_metadata(self, zeno):
-        assert 'metadata' in zeno.set_metadata()
+        zeno.set_metadata()
+        assert 'metadata' in zeno._checked_metadata
 
     ## Commented to not publish too many files on the sandbox
     ## if needed to be tested again remove comments
@@ -266,7 +266,6 @@ class TestZenodo(object):
     #     else:
     #         with pytest.raises(ZenodoException):
     #             zeno.publish()
-
 
 
 def test_Zenodo_zenodo_api():
