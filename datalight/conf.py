@@ -32,13 +32,13 @@ LOGGING = {
         },
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'formatter': 'default',
         }
     },
     'root': {
         'handlers': ['file', 'console'],
-        'level': 'DEBUG',
+        #'level': 'DEBUG',
     },
 }
 

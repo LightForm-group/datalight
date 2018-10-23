@@ -20,5 +20,3 @@ try:
 except ImportError:
     from __init__ import __version__
     from datalight import logger, Process, DatalightException
-
-
