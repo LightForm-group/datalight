@@ -40,7 +40,7 @@ the `Github repository <https://github.com/gruel/datalight>`_.
 the easiest way to install from the source is done by executing
 the following command::
 
-    pip3 install -U https://github.com/gruel/datalight/archive/master.zip
+    pip3 install -U https://github.com/gruel/datalight/archive/master.zip --user
 
 
 You can either clone the public repository:
@@ -70,7 +70,7 @@ The installer should take care of the missing dependencies, if any.
     on MacOS X, the downloaded the file could be uncompress automatically.
     In this case go to the directory were the code is and write::
 
-        pip3 install . --user
+        pip3 install -U . --user
 
 .. warning::
 
@@ -81,12 +81,16 @@ The installer should take care of the missing dependencies, if any.
     you'll need to manually add the user base's binary directory
     to your ``PATH``.
 
-    On Linux and macOS you can find the user base binary directory by running
-    ``python -m site --user-base`` and adding ``bin`` to the end. For example,
-    this will typically print ``~/.local`` (with ``~`` expanded to the
-    absolute path to your home directory) so you'll need to add
-    ``~/.local/bin`` to your ``PATH``. You can set your ``PATH`` permanently by
-    modifying ``~/.profile``.
+    On Linux and macOS you can find the user base binary directory by running::
+    
+        python -m site --user-base
+    
+    and adding ``bin`` to the end of the path returned. 
+    
+    For example, this will typically print ``~/.local`` 
+    (with ``~`` expanded to the absolute path to your home directory) 
+    so you'll need to add ``~/.local/bin`` to your 
+    ``PATH``. You can set your ``PATH`` permanently by modifying ``~/.profile``.
 
     .. code-block:: console
 
