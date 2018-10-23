@@ -124,7 +124,7 @@ class ZenodoMetadata(object):
             else:
                 self._metadata.update(metadata)
         elif metadata is None:
-            logger.warn('Metadata are empty')
+            logger.warning('Metadata are empty')
             self._metadata = metadata
         self._check_minimal()
 

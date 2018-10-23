@@ -56,7 +56,7 @@ class Zenodo(object):
         if metadata is not None:
             self._metadata = metadata
         else:
-            logger.warn('No metadata provided. Use the set_metadata method.')
+            logger.warning('No metadata provided. Use the set_metadata method.')
 
         if sandbox:
             self.api_baseurl = 'https://sandbox.zenodo.org/api/'
