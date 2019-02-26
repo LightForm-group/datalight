@@ -1,0 +1,153 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Account Creation &#8212; DataLight  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DataLight  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <p id="reqzenodo">The first step to upload or search data related to a specific
+communities on Zenodo is to create an account on the plateform. This
+step does not depend on the application use to realise these
+operations.</p>
+<p>It is free to create an account and that will allows researcher to
+link their <a class="reference external" href="https://orcid.org/">ORCID</a> accout with the Zenodo’s if
+needed.</p>
+<div class="section" id="account-creation">
+<h1>Account Creation<a class="headerlink" href="#account-creation" title="Permalink to this headline">¶</a></h1>
+<p>Open your browser and go to <a class="reference external" href="https://zenodo.org">zenodo webpage</a>:</p>
+<a class="reference internal image-reference" href="_images/zenodo-homepage.png"><img alt="_images/zenodo-homepage.png" class="align-center" src="_images/zenodo-homepage.png" style="width: 90%;" /></a>
+<p>If you do not already have a Zenodo account click on the <strong>sign up</strong>
+button:</p>
+<a class="reference internal image-reference" href="_images/zenodo-signup.png"><img alt="_images/zenodo-signup.png" class="align-center" src="_images/zenodo-signup.png" style="width: 125.0px; height: 46.0px;" /></a>
+<p>It is possible to create a Zenodo account or to use your credential
+from <a class="reference external" href="https://github.com">Github</a> or <a class="reference external" href="https://orcid.org/">ORCID</a>.</p>
+<a class="reference internal image-reference" href="_images/zenodo-signup2.png"><img alt="_images/zenodo-signup2.png" class="align-center" src="_images/zenodo-signup2.png" style="width: 90%;" /></a>
+<p>When it is done or if you already have a Zenodo account, you can login
+on it by clicking on the <strong>login</strong> button:</p>
+<a class="reference internal image-reference" href="_images/zenodo-login.png"><img alt="_images/zenodo-login.png" class="align-center" src="_images/zenodo-login.png" style="width: 126.0px; height: 53.0px;" /></a>
+<p>That will let you arrive to the following page where you will fill
+your credential to access the website:</p>
+<a class="reference internal image-reference" href="_images/zenodo-login2.png"><img alt="_images/zenodo-login2.png" class="align-center" src="_images/zenodo-login2.png" style="width: 60%;" /></a>
+<p>When it is done you have access to the full Zenodo capacity, that you
+can access next to your login name (red rectangle):</p>
+<a class="reference internal image-reference" href="_images/zenodo-logon.png"><img alt="_images/zenodo-logon.png" class="align-center" src="_images/zenodo-logon.png" style="width: 90%;" /></a>
+<p>To be able to use <em>datalight</em> we need to create a personal token to
+access to it.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The token will be personal and <strong>should</strong> not be shared with
+anybody. Data publish on Zenodo using that token are the
+responsability of the token owner.</p>
+</div>
+<p>The procedure to create the token is, click on the small arrow next to
+your login name (red square). A menu will open with different
+option. Click on the <strong>Applications</strong> (uderlied in red).</p>
+<a class="reference internal image-reference" href="_images/zenodo-logon2.png"><img alt="_images/zenodo-logon2.png" class="align-center" src="_images/zenodo-logon2.png" style="width: 90%;" /></a>
+<p>That will open a new page were you can create a new token by clicking
+on the <strong>New token</strong> button (red square):</p>
+<a class="reference internal image-reference" href="_images/zenodo-token1.png"><img alt="_images/zenodo-token1.png" class="align-center" src="_images/zenodo-token1.png" style="width: 90%;" /></a>
+<p>You have to give a name to the token (e.g. <em>ZenodoToken</em>), you can
+also choose which action can be done using that token:</p>
+<ul class="simple">
+<li><strong>deposit:action</strong> which allows the publication of the uploads</li>
+<li><strong>deposit:write</strong> which allows the uploads of metadata and files
+(but not the deposition)</li>
+<li><strong>user:email</strong> which allows in read-only mode the access to the
+uploaders email.</li>
+</ul>
+<p>To use <em>datalight</em> you need to have at least the option
+<strong>deposit:write* checked. The publication of the deposit could be done
+through the web interface or by using another token with the option
+**deposit:actions</strong> checked.</p>
+<a class="reference internal image-reference" href="_images/zenodo-token2.png"><img alt="_images/zenodo-token2.png" class="align-center" src="_images/zenodo-token2.png" style="width: 90%;" /></a>
+<p>By clicking the button <strong>Create</strong>, Zenodo will create a token which is
+an alphanumerical lists of characters:</p>
+<a class="reference internal image-reference" href="_images/zenodo-token3.png"><img alt="_images/zenodo-token3.png" class="align-center" src="_images/zenodo-token3.png" style="width: 90%;" /></a>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This token will be given only <strong>one time</strong> so please copy
+it somewhere you can keep it. If you already have installed
+<em>datalight</em> you can provide the token the first time you are using
+it.  This token will be saved in a read-only file in the user
+directory for future usage.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/reqzenodo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DataLight  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Peter Crowther.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>
