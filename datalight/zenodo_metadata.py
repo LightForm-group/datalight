@@ -62,7 +62,7 @@ ZENODO_VALID_PROPERTIES = ['publication_date', 'title', 'creators',
 
 # Define the path where the schema file for zenodo is written
 # at installation time
-SCHEMAFILE=os.path.join(_dir, 'schemas', 'zenodo', 'metadata-1.0.0.yml')
+SCHEMAFILE=os.path.join(_dir, 'schemas', 'zenodo', 'record-1.0.0.yml')
 
 
 class ZenodoMetadata(object):
@@ -124,7 +124,7 @@ class ZenodoMetadata(object):
             else:
                 self._metadata.update(metadata)
         elif metadata is None:
-            logger.warn('Metadata are empty')
+            logger.warning('Metadata are empty')
             self._metadata = metadata
         self._check_minimal()
 
@@ -178,6 +178,12 @@ class ZenodoMetadata(object):
             message = 'Metadata file not founded.'.format(fmetadata)
             logger.error(message)
             raise ZenodoMetadataException(message)
+
+        # change communities identifier in lower case (only format accepted by zenodo)
+        if 'communities' in _metadata:
+            for _com in _metadata['communities']:
+                _com['identifier'] = _com['identifier'].lower()
+
         return _metadata
 
     def _check_minimal(self):

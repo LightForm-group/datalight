@@ -6,6 +6,8 @@ import json
 
 import urllib.request
 
+from datalight.__init__ import __version__
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
@@ -40,7 +42,7 @@ test_requirements = [
 
 setup(name='datalight',
       packages=['datalight'],
-      version='0.5.0',
+      version=__version__,
       description=('Data uploader to Zenodo repository'),
       long_description=readme,
       author='Nicolas Gruel',
@@ -74,7 +76,7 @@ setup(name='datalight',
                    },
       package_data={
           '': ['LICENSE'],
-          'datalight': ['schemas/zenodo/metadata-1.0.0.yml',
+          'datalight': ['schemas/zenodo/record-1.0.0.yml',
                         'schemas/zenodo/opendefinition-licenses.json'],
       },
       include_package_data=True,

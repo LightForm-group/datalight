@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Main module for datalight
+Main module for datalight. It is basically the main function to
+easy the usage for the regular user.
 
 :Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
 
-:Copyright: IT Services, The University of Mancheste
+:Copyright: IT Services, The University of Manchester
 """
 
 # pylint: disable=locally-disabled, invalid-name
@@ -12,9 +13,11 @@ Main module for datalight
 try:
     from .__init__ import __version__
     from .conf import logger
+    from .common import DatalightException, zipdata, get_files_path
 except ImportError:
     from __init__ import __version__
     from conf import logger
+    from common import DatalightException, zipdata, get_files_path
 
 import os
 import sys
@@ -40,14 +43,15 @@ def main(args=None):
 
         Options:
 
-        -m metadata               File which contains the metadata information
-        --metadata=<metadata>     File which contains the metadata information
-        -p                        If present publish the data
-        --publish                 If present publish the data
-        --repository=<repository> Name of a data repository [default: zenodo]
-        --sandbox                 If present, datalight will use the sandbox data repository
-        -h, --help                Print this help
-        --version                 Print version of the software
+        -m FILE --metadata=FILE        File which contains the metadata information
+        -z zipname --zipname=FILE      Name of the zip file which will be uploaded [default: data.zip]
+        --nozip                        Do not create zip file containing the data to upload
+        -r NAME --repository=NAME      Name of a data repository [default: zenodo]
+        -p --publish                    If present publish the data
+        -s --sandbox                   If present, datalight will use the sandbox data repository
+        -k --keep                      Keep zip file created
+        -h --help                      Print this help
+        -v --version                   Print version of the software
 
         Examples:
             datalight file1 file2
@@ -58,25 +62,54 @@ def main(args=None):
     ------
     SystemExit
         if the file or the folder to treat is not available.
+    KeyError
+        if no key found for the data repository wanted
+    ImportError
+        if the not possible to import the data repository wanted
     """
 
+    # Read the arguments and option with docopt
     arguments = docopt(main.__doc__, argv=args,
                        version=__version__)
 
     # Convert docopt results in the proper variable (change type when needed)
 
-    fname = arguments['<files>']
-    if arguments['-m'] is not None:
-        metadata = arguments['-m']
-    else:
-        metadata = arguments['--metadata']
+    # Lists all the files and/or directories to upload
+    fnames = arguments['<files>']
 
+    # Get list of the files path to upload
+    files = []
+    try:
+        for fname in fnames:
+            files += get_files_path(fname)
+    except DatalightException:
+        logger.error('Problem with the files to upload.')
+        sys.exit()
+
+    # option which will give the name of the metadata file
+    metadata = arguments['--metadata']
+
+    if not os.path.exists(metadata):
+        logger.error('Metadata file: {} does not exist.'.format(metadata))
+        sys.exit(1)
+
+    # Choice of repository default Zenodo
     repository = arguments['--repository']
 
     if repository is None:
         repository = 'zenodo'
 
+    # If sandbox is present the version of the repository
+    # used will be the sandbox one
     sandbox = arguments['--sandbox']
+
+    # Zip data in an archive (to keep paths)
+    if not arguments['--nozip']:
+        zipname = arguments['--zipname']
+        zipdata(files, zipname)
+
+        # Change the name of the files to upload for the zip file created
+        files, directory = [zipname], '.'
 
     if repository == 'zenodo':
         try:
@@ -86,6 +119,8 @@ def main(args=None):
             from zenodo import Zenodo as DataRepo
             from zenodo import ZenodoException as DataRepoException
 
+
+        # TODO change it to have .datalight file with multiple entry
         # Read zenodo token file from home repository
         tokenfile = os.path.join(home, '.zenodo')
         zenoconfig = configparser.ConfigParser()
@@ -109,27 +144,20 @@ def main(args=None):
             with open(tokenfile, 'a', encoding="utf-8") as configfile:
                 config.write(configfile)
 
-    try:
-        if len(fname) == 1 and os.path.isdir(fname[0]):
-            directory = fname[0].strip(os.pathsep)
-            files = os.listdir(directory)
-        else:
-            files, directory = fname, ''
-    except TypeError:
-        files, directory = fname, ''
-    except FileNotFoundError:
-        error = 'Error: path {} for text files ' \
-                'not found'.format(directory)
-        logger.error(error)
-        sys.exit()
-
     datarepo = DataRepo(token=token, sandbox=sandbox)
     datarepo.get_deposition_id()
     datarepo.upload_files(files, path=directory)
     datarepo.set_metadata(metadata)
     datarepo.upload_metadata()
-    if arguments['-p'] or arguments['--publish']:
+    if arguments['--publish']:
         datarepo.publish()
+
+    # Remove zip file create but if asked to keep it
+    if not arguments['--nozip'] \
+            and not arguments['--keep'] \
+            and len(files) == 1:
+        logger.info('Remove created zip file: {}'.format(files[0]))
+        os.remove(files[0])
     logger.info("Finished " + logger.name)
 
 

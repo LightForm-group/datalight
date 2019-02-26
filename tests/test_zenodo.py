@@ -241,10 +241,10 @@ class TestZenodo(object):
 
         with pytest.raises(ZenodoException):
             zeno.download_files()
-         # raise "Not implemented"
 
     def test_set_metadata(self, zeno):
-        assert 'metadata' in zeno.set_metadata()
+        zeno.set_metadata()
+        assert 'metadata' in zeno._checked_metadata
 
     ## Commented to not publish too many files on the sandbox
     ## if needed to be tested again remove comments
@@ -254,7 +254,7 @@ class TestZenodo(object):
     #     if zeno.token is not None:
     #         zeno.get_deposition_id()
     #         zeno.upload_files(filenames, path=_dir_data)
-    #         zeno.upload_metadata(metadata=zeno.metadata)
+    #         zeno.upload_metadata()
     #         zeno.publish()
     #         if zeno.status_code >= 500:
     #             print('Test was not able to work because of '
@@ -266,7 +266,6 @@ class TestZenodo(object):
     #     else:
     #         with pytest.raises(ZenodoException):
     #             zeno.publish()
-
 
 
 def test_Zenodo_zenodo_api():
