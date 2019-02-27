@@ -1,23 +1,14 @@
 matrix:
   include:
     - os: linux
-      dist: trusty
-      sudo: required
       language: python
       python: 3.6
-      env: TOXENV=py36
-    - os: osx
-      langage: python
-      python: 3.6
-      env: TOXENV=py36
 
 install:
-  - pip install -r requirements.txt
-  - pip install requests --upgrade
+  - pip install .
 
 before_script:
   - printf "[sandbox.zenodo]\ntoken = $ZENODO_SANDBOX_TOKEN\n\n[zenodo.org]\ntoken = $ZENODO_TOKEN\n" > .zenodo
-  - python setup.py install
 
 script:
-  - pytest
+  - pytest tests
