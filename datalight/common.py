@@ -66,7 +66,7 @@ def get_files_path(fname):
         raise DatalightException(message)
 
     # returning all file paths
-    return files_paths
+    return sorted(files_paths)
 
 
 def zipdata(files, zipname='data.zip'):
