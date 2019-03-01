@@ -36,25 +36,32 @@ def get_files_path(file_name):
 
     # If file_name is a file return a list with file_name
     if os.path.isfile(file_name):
-        files_paths = [file_name]
+        file_paths = [file_name]
     else:
-        # initializing empty file paths list
-        files_paths = []
+        file_paths = get_file_paths_in_directory(file_name)
 
-        # crawling through directory and subdirectories
-        for root, directories, files in os.walk(file_name):
-            for filename in files:
-                # join the two strings in order to form the full filepath.
-                filepath = os.path.join(root, filename)
-                files_paths.append(filepath)
-
-    if len(files_paths) == 0:
+    if len(file_paths) == 0:
         message = 'File or directory: {} to upload does not exist.'.format(file_name)
         logger.error(message)
         raise DatalightException(message)
 
-    # returning all file paths
-    return sorted(files_paths)
+    return sorted(file_paths)
+
+
+def get_file_paths_in_directory(dir_name):
+    """
+    Gets all files from a directory and its subdirectories.
+    :param dir_name: (string) The full or relative path of a directory.
+    :return: (list of string) A list of full file paths.
+    """
+
+    file_paths = []
+
+    for root, directories, files in os.walk(dir_name):
+        for filename in files:
+            filepath = os.path.join(root, filename)
+            file_paths.append(filepath)
+    return file_paths
 
 
 def zip_data(files, zip_name='data.zip'):

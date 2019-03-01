@@ -1,24 +1,28 @@
 import os
 import pytest
 
-from .conftest import DatalightException, get_files_path, zip_data
+from conftest import DatalightException, get_files_path, zip_data
 
 # Path where the tests are
-_dir = os.path.dirname(os.path.realpath(__file__))
+test_directory = os.path.dirname(os.path.realpath(__file__))
 
-commondir = os.path.join(_dir, 'common')
-fname1 = 'test_common1.dat'
-fname2 = 'test_common2.dat'
-fpath1 =  os.path.join(commondir, fname1)
-fpath2 = os.path.join(commondir, fname2)
+common_dir = os.path.join(test_directory, 'common')
+test_file_1 = 'test_1.dat'
+test_file_2 = 'test_2.dat'
+test_file_3 = 'subdirectory/test_3.dat'
+file_path_1 = os.path.abspath(os.path.join(common_dir, test_file_1))
+file_path_2 = os.path.abspath(os.path.join(common_dir, test_file_2))
+file_path_3 = os.path.abspath(os.path.join(common_dir, test_file_3))
 
 
 def test_get_files_path_file():
-    assert [fpath1] == get_files_path(fpath1)
+    # Test getting the path of a single file.
+    assert [file_path_1] == get_files_path(file_path_1)
 
 
 def test_get_files_path_directory():
-    assert [fpath1, fpath2] == get_files_path(commondir)
+    # Test getting the paths of all files in a directory
+    assert sorted([file_path_1, file_path_2, file_path_3]) == get_files_path(common_dir)
 
 
 def test_get_files_path_exception():
@@ -32,7 +36,7 @@ def test_zipdata_nofile_or_file_does_not_exist():
 
 
 def test_zipdata_with_existing_file():
-    zip_data(fpath1)
+    zip_data(file_path_1)
     assert os.path.isfile('data.zip')
     os.remove('data.zip')
 
@@ -43,12 +47,12 @@ def test_zipdata_wrong_input():
 
 
 def test_zipdata_directory_as_input():
-    zip_data(commondir)
+    zip_data(common_dir)
     assert os.path.isfile('data.zip')
     os.remove('data.zip')
 
 
 def test_zipdata_save_zip_another_name():
-    zip_data(commondir, os.path.join(_dir, 'toto.zip'))
-    assert os.path.isfile(os.path.join(_dir, 'toto.zip'))
-    os.remove(os.path.join(_dir, 'toto.zip'))
+    zip_data(common_dir, os.path.join(test_directory, 'toto.zip'))
+    assert os.path.isfile(os.path.join(test_directory, 'toto.zip'))
+    os.remove(os.path.join(test_directory, 'toto.zip'))
