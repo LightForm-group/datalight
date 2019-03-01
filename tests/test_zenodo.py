@@ -196,4 +196,4 @@ class TestZenodo(object):
 
 def test_zenodo_api():
     zeno = Zenodo(token=token, sandbox=False)
-    assert zeno.api_baseurl == 'https://zenodo.org/api/'
+    assert zeno.api_base_url == 'https://zenodo.org/api/'

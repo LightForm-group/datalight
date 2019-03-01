@@ -4,12 +4,8 @@
 
 :Copyright: IT Services, The University of Manchester
 """
-# pylint: disable=locally-disabled, invalid-name
-import os
-import sys
-import logging
+
 import logging.config
-import pkg_resources
 
 # Pure python dictionary with the configuration for the logging
 

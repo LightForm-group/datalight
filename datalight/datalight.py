@@ -1,27 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Main module for datalight. It is basically the main function to
-easy the usage for the regular user.
+"""Main module for datalight."""
 
-:Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
-
-:Copyright: IT Services, The University of Manchester
-"""
-
-# pylint: disable=locally-disabled, invalid-name
-
-try:
-    from .__init__ import __version__
-    from .conf import logger
-    from .common import DatalightException, zipdata, get_files_path
-except ImportError:
-    from __init__ import __version__
-    from conf import logger
-    from common import DatalightException, zipdata, get_files_path
+from conf import logger
+from common import DatalightException, zip_data, get_files_path
 
 import os
 import sys
-import configparser  # read the ini file containing zenodo information (token)
+import configparser
 
 # To get the home directory
 from pathlib import Path
@@ -69,8 +53,7 @@ def main(args=None):
     """
 
     # Read the arguments and option with docopt
-    arguments = docopt(main.__doc__, argv=args,
-                       version=__version__)
+    arguments = docopt(main.__doc__, argv=args)
 
     # Convert docopt results in the proper variable (change type when needed)
 
@@ -106,7 +89,7 @@ def main(args=None):
     # Zip data in an archive (to keep paths)
     if not arguments['--nozip']:
         zipname = arguments['--zipname']
-        zipdata(files, zipname)
+        zip_data(files, zipname)
 
         # Change the name of the files to upload for the zip file created
         files, directory = [zipname], '.'

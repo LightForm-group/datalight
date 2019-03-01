@@ -1,29 +1,13 @@
-#!/usr/bin/env python
-
-"""This module is implementing high level function to upload
-and download data on Zenodo.
-
-:Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
-
-:Copyright: IT Services, The University of Manchester
-
-"""
-
-# pylint: disable=locally-disabled, invalid-name
+"""This module is implements high level functions to upload
+and download data to Zenodo."""
 
 import os
 import requests
 import json
 
-try:
-    from .conf import logger
-except ImportError:
-    from conf import logger
+from conf import logger
 
-try:
-    from .zenodo_metadata import ZenodoMetadata, ZenodoMetadataException
-except ImportError:
-    from zenodo_metadata import ZenodoMetadata, ZenodoMetadataException
+from zenodo_metadata import ZenodoMetadata
 
 
 class ZenodoException(Exception):
@@ -59,11 +43,11 @@ class Zenodo(object):
             logger.warning('No metadata provided. Use the set_metadata method.')
 
         if sandbox:
-            self.api_baseurl = 'https://sandbox.zenodo.org/api/'
+            self.api_base_url = 'https://sandbox.zenodo.org/api/'
         else:
-            self.api_baseurl = 'https://zenodo.org/api/'
+            self.api_base_url = 'https://zenodo.org/api/'
 
-        self.depositions_url = self.api_baseurl + 'deposit/depositions'
+        self.depositions_url = self.api_base_url + 'deposit/depositions'
         self.deposition_id = None
 
         self.status_code = None
@@ -84,21 +68,11 @@ class Zenodo(object):
 
     @staticmethod
     def _check_status_code(status_code):
-        """Method to test that the request went as expected.
+        """
 
-        Parameters
-        ----------
-        status_code: int
-            status code return by the request (requests.status_code)
-
-        Exception
-        ---------
-        ZenodoException:
-            Raise exception if the request ended with a problem
-
-        .. note:
-            If the error is a Server conncetion problem,
-            the exception is not raised (problem with the test in other hand)
+        :param status_code: Status code to check
+        :return: Status code if successful
+        :raises ZenodoException: If status code represents a failure.
         """
         # Test that everything went as expected
         if status_code < 400:
@@ -146,12 +120,6 @@ class Zenodo(object):
     def get_deposition_id(self):
         """Method to obtain the deposition id need to upload documents to Zenodo
 
-        Attributes
-        ----------
-        deposition_id: int
-            Deposition id gave by Zenodo deposition api to be used to upload
-            files and metadata.
-
         Exception
         ---------
         ZenodoException
@@ -189,7 +157,7 @@ class Zenodo(object):
         ----------
         _id: int
             deposition id of the record to delete.
-            Can be done only if the record was not publish.
+            Can be done only if the record was not published.
 
         Exception
         ---------
