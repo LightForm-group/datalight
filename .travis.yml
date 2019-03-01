@@ -1,87 +1,14 @@
-#Note: Numpydoc (needed for building documentation) is available only for 2.7 or >=3.4 and sip force the usage of python 3.5 (idem for documentation)
-
 matrix:
   include:
     - os: linux
-      dist: trusty
-      sudo: required
-      language: python
-      python: 3.5
-      env: TOXENV=py35
-    - os: linux
-      dist: trusty
-      sudo: required
       language: python
       python: 3.6
-      env: TOXENV=py36
-    - os: osx
-      langage: python
-      python: 3.5
-      env: TOXENV=py35
-    - os: osx
-      langage: python
-      python: 3.6
-      env: TOXENV=py36
 
 install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - case "${TOXENV}" in
-      py35)
-        export TRAVIS_PYTHON_VERSION=3.5
-        ;;
-      py36)
-        export TRAVIS_PYTHON_VERSION=3.6
-        ;;
-    esac
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
-  - source activate test-environment
-  - python setup.py install
   - pip install .
-  - pip install -r requirements-dev.txt
-  - pip install requests --upgrade
 
 before_script:
-  # Build the compiled extension
-  - python setup.py build
-
-after_test:
-  # If tests are successful, create binary packages for the project.
-  - python setup.py bdist_wheel
+  - printf "[sandbox.zenodo.org]\ntoken = $ZENODO_SANDBOX_TOKEN\n\n[zenodo.org]\ntoken = $ZENODO_TOKEN\n" > .zenodo
 
 script:
-
-  # Run the project tests
-  - pytest
-
-after_test:
-  # Build documentation on linux
-  - if [  "$TRAVIS_OS_NAME" != "osx" ]; then
-        sudo apt-get update -qy;
-        sudo apt-get install graphviz inkscape;
-        sudo apt-get install texlive-latex-base;
-        sudo apt-get install texlive-fonts-recommended;
-        sudo apt-get install texlibe-fonts-extra;
-        sudo apt-get install texlive-latex-extra;
-        wget http://sourceforge.net/projects/plantuml/files/plantuml.jar/download;
-        mkdir docs/utils;
-        mv download docs/utils/plantuml.jar;
-        make uml;
-        cd docs;
-        make html;
-        make latexpdf;
-    fi
-
-before_deploy:
-  # If tests are successful, create binary packages for the project.
-  - python setup.py bdist_wheel
+  - pytest tests

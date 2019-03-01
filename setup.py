@@ -11,9 +11,6 @@ from datalight.__init__ import __version__
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
 # Obtain the newest version of the licenses definition and replace the one
 # provided by the package.
 url = 'https://licenses.opendefinition.org/licenses/groups/all.json'
@@ -31,13 +28,12 @@ except urllib.error.URLError:
 requirements = [
     'requests',
     'docopt',
-    'pyaml',
+    'PyYaml',
     'jsonschema',
 ]
 
 test_requirements = [
     'pytest',
-    'testfixtures',
 ]
 
 setup(name='datalight',
@@ -67,8 +63,8 @@ setup(name='datalight',
       test_suite='test',
       tests_require=test_requirements,
       extra_requires={
-          'dev': ['pylint', 'pytest', 'pytest-cov', 'testfixtures', 'coverage'],
-          'test': ['pytest', 'pytest-cov', 'testfixtures', 'coverage'],
+          'dev': ['pylint', 'pytest', 'pytest-cov', 'coverage'],
+          'test': ['pytest', 'pytest-cov', 'coverage'],
           'doc': ['sphinx', 'numpydoc']},
       entry_points={
          'console_scripts': [

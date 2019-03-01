@@ -230,7 +230,7 @@ class Zenodo(object):
 
         Parameters
         ----------
-        filenames: str
+        filenames: str or list
             Name of the file(s) to upload
         path: str, optional
             Path of where the file(s) is.

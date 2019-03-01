@@ -1,0 +1,7 @@
+pytest
+docopt
+PyYaml
+jsonschema
+requests
+
+
