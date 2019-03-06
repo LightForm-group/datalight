@@ -1,8 +1,8 @@
 import os
 import pytest
-import configparser
 
-from .conftest import Zenodo, ZenodoException
+from datalight.datalight import get_authentication_token
+from conftest import Zenodo, ZenodoException
 
 # Path where the tests are
 _dir = os.path.dirname(os.path.realpath(__file__))
@@ -12,9 +12,7 @@ _dir_data = os.path.join(_dir, 'data')
 _dir_metadata = os.path.join(_dir, 'metadata')
 
 # Read Zenodo API token from file
-ini_parser = configparser.ConfigParser()
-ini_parser.read(os.path.join(_dir, '..', '.zenodo'))
-token = ini_parser['sandbox.zenodo.org']['token']
+token = get_authentication_token(sandbox=True)
 
 # Set up metadata example
 metadata_file = 'minimum_valid.yml'

@@ -1,24 +1,14 @@
-.ipynb_checkpoints
-.idea
-.cache
-.eggs
-*.egg-info
-dist
-__pycache__
-build
-_build
-*.pyc
-.pydev*
-*~
-.project
-*.tmp
-*.log
-.mypy_cache
-.pytest_cache
-htmlcov
-.coverage
-.tox
-.benchmarks
-.zenodo
+#Intellij IDE Settings
+.idea/
 
+#Compiled bytecode
+__pycache__/
+
+#Datalight config file
+datalight.config
+
+#Python virtual environment
 venv/
+
+#Log files
+*.log
