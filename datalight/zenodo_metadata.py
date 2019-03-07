@@ -17,19 +17,15 @@ and download Lightform data.
 
 """
 
-# pylint: disable=locally-disabled, invalid-name
-
-try:
-    from .conf import logger
-except ImportError:
-    from conf import logger
 
 import os
 import json
 import urllib
 import yaml
 import jsonschema
+import pathlib
 
+from datalight.conf import logger
 
 _dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -84,7 +80,7 @@ class ZenodoMetadata(object):
 
     def set_schema(self, schema):
 
-        if type(schema) is str:
+        if type(schema) is str or issubclass(type(schema), pathlib.Path):
             logger.info('Schema file use: {}'.format(schema))
             self._schema = self._read_schema(schema)
         elif type(schema) is dict:
@@ -161,7 +157,7 @@ class ZenodoMetadata(object):
             with open(fschema) as f:
                 _schema = yaml.load(f)
         except FileNotFoundError as err:
-            message = 'Schema file not founded.'.format(fschema)
+            message = 'Schema file not found.'.format(fschema)
             logger.error(message)
             raise ZenodoMetadataException(message)
         return _schema

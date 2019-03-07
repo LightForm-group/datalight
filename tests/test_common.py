@@ -2,7 +2,7 @@ import os
 import pytest
 import pathlib
 
-from conftest import get_files_path, zip_data
+from datalight.common import get_files_path, zip_data
 
 # Path where the tests are
 test_directory = pathlib.Path(__file__).parent

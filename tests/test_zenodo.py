@@ -2,7 +2,7 @@ import os
 import pytest
 
 from datalight.common import get_authentication_token
-from conftest import Zenodo, ZenodoException
+from datalight.zenodo import Zenodo, ZenodoException
 
 # Path where the tests are
 _dir = os.path.dirname(os.path.realpath(__file__))

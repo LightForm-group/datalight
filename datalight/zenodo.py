@@ -5,9 +5,8 @@ import os
 import requests
 import json
 
-from conf import logger
-
-from zenodo_metadata import ZenodoMetadata
+from datalight.conf import logger
+from datalight.zenodo_metadata import ZenodoMetadata
 
 
 class ZenodoException(Exception):
