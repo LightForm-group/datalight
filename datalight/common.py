@@ -29,7 +29,9 @@ def get_files_path(directory_name):
     absolute_paths = []
 
     for path in file_paths:
-        absolute_paths.append(path.resolve())
+        # Glob finds directories as well as files so remove these.
+        if not path.is_dir():
+            absolute_paths.append(path.resolve())
 
     if len(absolute_paths) == 0:
         raise FileNotFoundError('Directory: {} does not exist.'.format(directory_name))
@@ -47,7 +49,7 @@ def zip_data(files, zip_name):
     zip_name = os.path.abspath(zip_name)
 
     try:
-        with zipfile.ZipFile(zip_name, 'x') as output_zip:
+        with zipfile.ZipFile(zip_name, 'w') as output_zip:
             for file in files:
                 output_zip.write(file)
     except FileExistsError:

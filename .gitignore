@@ -12,3 +12,4 @@ venv/
 
 #Log files
 *.log
+*.zip

@@ -1,18 +1,19 @@
 import os
 import pytest
+import pathlib
 
-from conftest import DatalightException, get_files_path, zip_data
+from conftest import get_files_path, zip_data
 
 # Path where the tests are
-test_directory = os.path.dirname(os.path.realpath(__file__))
+test_directory = pathlib.Path(__file__).parent
 
-common_dir = os.path.join(test_directory, 'common')
-test_file_1 = 'test_1.dat'
-test_file_2 = 'test_2.dat'
-test_file_3 = 'subdirectory/test_3.dat'
-file_path_1 = os.path.abspath(os.path.join(common_dir, test_file_1))
-file_path_2 = os.path.abspath(os.path.join(common_dir, test_file_2))
-file_path_3 = os.path.abspath(os.path.join(common_dir, test_file_3))
+common_dir = test_directory / pathlib.Path('common')
+test_file_1 = pathlib.Path('test_1.dat')
+test_file_2 = pathlib.Path('test_2.dat')
+test_file_3 = pathlib.Path('subdirectory/test_3.dat')
+file_path_1 = (common_dir / test_file_1).resolve()
+file_path_2 = (common_dir / test_file_2).resolve()
+file_path_3 = (common_dir / test_file_3).resolve()
 
 
 def test_get_files_path_file():
@@ -26,33 +27,34 @@ def test_get_files_path_directory():
 
 
 def test_get_files_path_exception():
-    with pytest.raises(DatalightException):
+    with pytest.raises(FileNotFoundError):
         get_files_path('doesnotexist')
 
 
-def test_zipdata_nofile_or_file_does_not_exist():
-    with pytest.raises(DatalightException):
-        zip_data('')
+def test_zip_data_nofile_or_file_does_not_exist():
+    with pytest.raises(FileNotFoundError):
+        zip_data([''], "test.zip")
 
 
-def test_zipdata_with_existing_file():
-    zip_data(file_path_1)
+def test_zip_data_with_existing_file():
+    zip_data([file_path_1], 'data.zip')
     assert os.path.isfile('data.zip')
     os.remove('data.zip')
 
 
-def test_zipdata_wrong_input():
-    with pytest.raises(DatalightException):
-        zip_data(1233)
+def test_zip_data_wrong_input():
+    with pytest.raises(TypeError):
+        zip_data(1233, 'data.zip')
 
 
-def test_zipdata_directory_as_input():
-    zip_data(common_dir)
+def test_zip_data_directory_as_input():
+    zip_data([common_dir], 'data.zip')
     assert os.path.isfile('data.zip')
     os.remove('data.zip')
 
 
-def test_zipdata_save_zip_another_name():
-    zip_data(common_dir, os.path.join(test_directory, 'toto.zip'))
-    assert os.path.isfile(os.path.join(test_directory, 'toto.zip'))
-    os.remove(os.path.join(test_directory, 'toto.zip'))
+def test_zip_data_save_zip_another_name():
+    zip_name = pathlib.Path('toto.zip')
+    zip_data([common_dir], test_directory / zip_name)
+    assert (test_directory / zip_name).is_file()
+    os.remove(test_directory / zip_name)
