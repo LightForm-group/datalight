@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from datalight.datalight import get_authentication_token
+from datalight.common import get_authentication_token
 from conftest import Zenodo, ZenodoException
 
 # Path where the tests are

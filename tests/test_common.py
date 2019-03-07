@@ -14,6 +14,7 @@ test_file_3 = pathlib.Path('subdirectory/test_3.dat')
 file_path_1 = (common_dir / test_file_1).resolve()
 file_path_2 = (common_dir / test_file_2).resolve()
 file_path_3 = (common_dir / test_file_3).resolve()
+zip_name = pathlib.Path("data.zip")
 
 
 def test_get_files_path_file():
@@ -33,24 +34,24 @@ def test_get_files_path_exception():
 
 def test_zip_data_nofile_or_file_does_not_exist():
     with pytest.raises(FileNotFoundError):
-        zip_data([''], "test.zip")
+        zip_data([''], zip_name)
 
 
 def test_zip_data_with_existing_file():
-    zip_data([file_path_1], 'data.zip')
-    assert os.path.isfile('data.zip')
-    os.remove('data.zip')
+    zip_data([file_path_1], zip_name)
+    assert zip_name.is_file()
+    os.remove(zip_name)
 
 
 def test_zip_data_wrong_input():
     with pytest.raises(TypeError):
-        zip_data(1233, 'data.zip')
+        zip_data(1233, zip_name)
 
 
 def test_zip_data_directory_as_input():
-    zip_data([common_dir], 'data.zip')
-    assert os.path.isfile('data.zip')
-    os.remove('data.zip')
+    zip_data([common_dir], zip_name)
+    assert zip_name.is_file()
+    os.remove(zip_name)
 
 
 def test_zip_data_save_zip_another_name():
