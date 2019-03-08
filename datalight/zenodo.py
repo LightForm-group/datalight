@@ -1,12 +1,11 @@
-"""This module is implements high level functions to upload
-and download data to Zenodo."""
+"""This module is implements high level functions to upload and download data to Zenodo."""
 
 import os
 import requests
 import json
 
-from datalight.conf import logger
 from datalight.zenodo_metadata import ZenodoMetadata
+from datalight.common import logger
 
 
 class ZenodoException(Exception):

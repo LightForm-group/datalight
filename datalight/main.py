@@ -3,8 +3,7 @@
 import os
 import sys
 
-from datalight.conf import logger
-from datalight.common import get_files_path, DatalightException, zip_data, get_authentication_token
+from datalight.common import get_files_path, DatalightException, zip_data, get_authentication_token, logger
 from datalight.zenodo import Zenodo as DataRepo
 
 

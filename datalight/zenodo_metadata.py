@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-
-"""This module is implementing high level function to upload
-and download Lightform data.
-
+"""This module does something with metadata.
 
 .. note::
     There are no verification of the validity of the schema used to validate
@@ -10,13 +6,7 @@ and download Lightform data.
     This part should be done somewhere else. In a perfect world, the schema
     should be provided by Zenodo but it is not (yet) the case.
 
-
-:Authors: Nicolas Gruel <nicolas.gruel@manchester.ac.uk>
-
-:Copyright: IT Services, The University of Manchester
-
 """
-
 
 import os
 import json
@@ -25,14 +15,13 @@ import yaml
 import jsonschema
 import pathlib
 
-from datalight.conf import logger
+from datalight.common import logger
 
 _dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class ZenodoMetadataException(Exception):
-    """Class for exception
-    """
+    """Class for exception"""
     pass
 
 
@@ -58,7 +47,7 @@ ZENODO_VALID_PROPERTIES = ['publication_date', 'title', 'creators',
 
 # Define the path where the schema file for zenodo is written
 # at installation time
-SCHEMAFILE=os.path.join(_dir, 'schemas', 'zenodo', 'record-1.0.0.yml')
+SCHEMA_FILE = os.path.join(_dir, 'schemas', 'zenodo', 'record-1.0.0.yml')
 
 
 class ZenodoMetadata(object):
@@ -69,7 +58,7 @@ class ZenodoMetadata(object):
 
     """
 
-    def __init__(self, metadata, schema=SCHEMAFILE):
+    def __init__(self, metadata, schema=SCHEMA_FILE):
         # Read the metadata zenodo file to verify
         self._metadata = None
         self.set_metadata(metadata)
@@ -171,7 +160,7 @@ class ZenodoMetadata(object):
             with open(fmetadata) as f:
                 _metadata = yaml.load(f)
         except FileNotFoundError as err:
-            message = 'Metadata file not founded.'.format(fmetadata)
+            message = 'Metadata file {} not found.'.format(fmetadata)
             logger.error(message)
             raise ZenodoMetadataException(message)
 
@@ -202,16 +191,11 @@ class ZenodoMetadata(object):
 
         if 'access_right' not in self._metadata:
             self._metadata['access_right'] = 'open'
-            logger.warning('Add metadata: "access_right" set to default value '
-                           '"open"')
+            logger.warning('Add metadata: "access_right" set to default value "open"')
 
         if 'license' not in self._metadata:
             self._metadata['license'] = 'cc-by-4.0'
-            logger.warning('Add metadata: "license" set to default value '
-                           '"cc-by-4.0"')
-
-        # Default value.(Should be done in schema)
-        #TODO
+            logger.warning('Add metadata: "license" set to default value "cc-by-4.0"')
 
         return True
 
@@ -288,19 +272,14 @@ class ZenodoMetadata(object):
             logger.info('No need to check license for Zenodo upload.')
             return True
 
-        # Get on the opendefinition website the file with the licenses
-        # informations
+        # Get on the opendefinition website the file with the license information
         if opendefinition:
             licenses = self._get_opendefinition_file()
 
-        # Get the licenses information from an input file or
-        # from the default file
+        # Get the licenses information from an input file or from the default file
         else:
-
             if flicenses is None:
-                flicenses = os.path.join(_dir, 'schemas', 'zenodo',
-                                    'opendefinition-licenses.json')
-
+                flicenses = os.path.join(_dir, 'schemas', 'zenodo', 'opendefinition-licenses.json')
             try:
                 with open(flicenses) as f:
                     licenses = json.load(f)
@@ -331,24 +310,17 @@ class ZenodoMetadata(object):
 
     @staticmethod
     def _get_opendefinition_file():
-        """Method which download the definition file for open source licenses
-        accepted by Zenodo.
+        """Download the definition file for open source licenses accepted by Zenodo.
 
-        Return
-        ------
-        licenses: dict
-            a dictionnary which contains the informations the differents
-            licenses.
+        :returns licenses: (dict) Information about the different license types.
         """
         url = 'https://licenses.opendefinition.org/licenses/groups/all.json'
         try:
             with urllib.request.urlopen(url) as f:
                 licenses = json.load(f)
-                logger.info(
-                    'open licenses file use for validation: {}'.format(url))
+                logger.info('open licenses file use for validation: {}'.format(url))
         except urllib.error.URLError:
-            message = 'Not possible to access to the list ' \
-                      '(internet connection problem?): {}'.format(url)
+            message = 'Not possible to access license list: {}'.format(url)
             logger.error(message)
             raise ZenodoMetadataException(message)
         return licenses

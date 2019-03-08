@@ -5,6 +5,35 @@ import zipfile
 import pathlib
 import configparser
 
+import logging.config
+
+
+def set_up_logger():
+    # Dictionary with the configuration for the logging
+    log_config = {
+        'version': 1,
+        'formatters': {
+            'default': {
+                'format': '%(levelname)s - %(asctime)s - %(name)s - %(funcName)s - %(message)s'
+            },
+        },
+        # Handlers send log records to particular destinations.
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'level': 'INFO',
+                'formatter': 'default',
+            }
+        },
+    }
+
+    # Read logging configuration and create logger
+    logging.config.dictConfig(log_config)
+
+
+set_up_logger()
+logger = logging.getLogger('datalight')
+
 
 class DatalightException(Exception):
     """Class for exception"""
