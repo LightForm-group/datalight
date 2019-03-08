@@ -13,3 +13,7 @@ venv/
 #Log files
 *.log
 *.zip
+
+#Pip install
+datalight.egg-info/
+.eggs/
