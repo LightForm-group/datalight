@@ -10,6 +10,7 @@ Welcome to DataLight's documentation!
    prerequisites
    howto
    develop
+   schemas
    datalight
 
 

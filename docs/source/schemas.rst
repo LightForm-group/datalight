@@ -20,52 +20,41 @@ API documentation. Since the schema is based on the API it may need to be update
 the API is updated. However, it seems that the API is relatively stable so this
 shouldn't be much of a problem.
 
-Choice of json/YAML schema
-----------------------------
-
-Since JSON is not easily human readable, it was decided to write the Zenodo upload
-metadata schema in YAML. YAML is similar to JSON but is more easily readable and flexible,
-allowing things like comments. Python allows seamless conversion between JSON and YAML.
-
-This means that technically we are using a YAML schema which is converted to JSON
-at run time.
 
 Construction of the schema
 ----------------------------
 
-The file starts with::
+Schemas are written in JSON.
 
-    %YAML 1.1
+At the beginning of the schema, some keywords provide information about the schema.
 
-which states the version of YAML used.
+The **$schema** keyword indicates that this is a JSON schema and not just a random bit
+of JSON. The provided URL gives the schema which defines the schema (how delightfully
+meta!).
 
-YAML files can *optionally* begin with `---` and end with `...` 
-That indicates the start and end of a document.
+The **$id** keyword declares a unique identifier for this schema. It is good to put the
+url as something related to the project. Perhaps a homepage::
 
-After that, three lines should be present, they are not *required* but 
-it is considered good practice to include them::
-
-
-    $schema: "http://stsci.edu/schemas/yaml-schema/draft-01"
-    id: "https://zenodo.org/schemas/zenodo/metadata-1.0.0"
-    tag: "tag:zenodo.org:zenodo/metadata-1.0.0"
+    {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$id": "https://github.com/LightForm-group/datalight/tree/master/datalight/schemas/zenodo",
+        "title": "Zenodo API upload metadata schema"
+        "description": "When uploading to Zenodo via the API there is no schema to validate the supplied metadata.
+         This is an attempt to create such a schema",
 
 
 Since the schema itself is written in JSON, it can be validated against a schema which
-describes schemas. In this case we use the `YAML definition schema
-<https://asdf-standard.readthedocs.io/en/latest/schemas/stsci.edu/yaml-schema/draft-01.html)>`_
+describes schemas. In this case we use the
+`JSON Schema V7 <http://json-schema.org/draft-07/schema#)>`_
 
-The YAML definition schema requires the fields:
+The JSON Schema schema requires **title** and **description** annotation keywords. These are
+purely descriptive and do not add constraints to the data.
 
-- title - The title of the schema
-- description - A description of the purpose of the schema.
-- example - An example of the usage of the schema
-
-The main data of the schema is then provided by the **properties** keyword. This has sub
-keywords describing each valid field.
+The main data of the schema is then provided by the **properties** field. This has
+sub-keywords describing each valid field.
 
 Each keyword is defined with a type and this type is used to validate the
-keyword. The valid types and their equivalents in python are::
+keyword. The valid types and their equivalents in Python are::
 
 | JSON          | Python    |
 | ------------- | --------- |
@@ -78,41 +67,14 @@ keyword. The valid types and their equivalents in python are::
 | false         | False     |
 | null          | None      |
 
-here some example::
-
-
-    properties:
-        a_string:
-            type: string
-     
-    an_array:
-        type: array
-            items:
-                type: string
-      
-    a_dictionary:
-        type: object
-            properties:
-                key1:
-                    type: string
-                key2:
-                    type: number
-
-
-It is possible to create complex schemas using the keywords:
-
-- anyOf
-- allOf
-- oneOf
-
-It is also possible to force the presence of some metadata keywords by using 
+It is possible to force the presence of some metadata keywords by using
 the keyword *required* which will take a list (an array) containing the name 
 of the keyword that **must** be present.
 
 Zenodo minimal set of metadata
 ----------------------------------
 
-Zenodo metadata which should **always** be include in any metadata are:
+Zenodo metadata which should always be include in any metadata are:
 
 - title
 - description
@@ -120,6 +82,10 @@ Zenodo metadata which should **always** be include in any metadata are:
 - creators
 - access_right (default: open)
 - license: (default: cc-by-0])
+
+Although **access_right** and **license** are strictly not required due to them taking
+default values. They have been made mandatory in the schema to simplify the code. Since
+these are important values, it is good practice to set them manually anyway.
 
 Some additional values may be needed depending on the values of
 the *upload_type* and *access_right*.
@@ -136,16 +102,19 @@ The `Zenodo API <http://developers.zenodo.org/#representation>`_ documentation
 presents all of the accepted metadata keywords.
 
 
-Important limitation of the JSON schema
+Limitations of the JSON schema
 -----------------------------------------
 
-There is a major limitation in the JSON schema which does not allow
-the use of the *additionalProperties: false* keyword with an expected
-behaviour, i.e. that only the properties (keywords) listed in the schema
-are the one allowed by the schema.
-See: https://spacetelescope.github.io/understanding-json-schema/reference/combining.html#combining
-for more information.
+There is a major limitation in the JSON schema draft 7 which does not allow
+the use of the *additionalProperties: false* keyword with the allOf command since
+introspection into the allOf groups is not valid. This is explained at:
+https://json-schema.org/understanding-json-schema/reference/combining.html#allof
 
-This limitation implied that we need to verify the presence of extra keyword 
-outside the JSON schema. This verification is crucial since Zenodo upload will
-failed if the metadata are not correct.
+This wil be fixed in the JSON schema draft 8 when this is released some time in 2019.
+In the interim, the Python script will be required to check that there are no additional
+values other than those allowed by the Zenodo API.
+
+In addition, the **license_type** keyword has somewhat complex restrictions. If the
+**access_right** keyword is "open" or "embargoed" then **license_type** must be an open
+license as specified at: https://licenses.opendefinition.org/
+This is also checked in the Python code and not in the schema.

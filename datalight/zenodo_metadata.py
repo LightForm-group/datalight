@@ -1,12 +1,4 @@
-"""This module does something with metadata.
-
-.. note::
-    There are no verification of the validity of the schema used to validate
-    the metadata which will be uploaded to Zenodo.
-    This part should be done somewhere else. In a perfect world, the schema
-    should be provided by Zenodo but it is not (yet) the case.
-
-"""
+"""This module does something with metadata."""
 
 import os
 import json
@@ -45,9 +37,8 @@ ZENODO_VALID_PROPERTIES = ['publication_date', 'title', 'creators',
                            ]
 
 
-# Define the path where the schema file for zenodo is written
-# at installation time
-SCHEMA_FILE = os.path.join(_dir, 'schemas', 'zenodo', 'record-1.0.0.yml')
+# Define the path to the Zenodo upload metadata schema
+SCHEMA_FILE = os.path.join(_dir, 'schemas', 'zenodo', 'zenodo_upload_metadata_schema.json5')
 
 
 class ZenodoMetadata(object):
@@ -144,7 +135,7 @@ class ZenodoMetadata(object):
         logger.info('Read schema from: {}'.format(fschema))
         try:
             with open(fschema) as f:
-                _schema = yaml.load(f)
+                _schema = json.load(f)
         except FileNotFoundError as err:
             message = 'Schema file not found.'.format(fschema)
             logger.error(message)
@@ -152,24 +143,24 @@ class ZenodoMetadata(object):
         return _schema
 
     @staticmethod
-    def _read_metadata(fmetadata):
+    def _read_metadata(metadata_file_name):
         """Method to read Zenodo metadata file
         """
-        logger.info('Read metadata from: {}'.format(fmetadata))
+        logger.info('Read metadata from: {}'.format(metadata_file_name))
         try:
-            with open(fmetadata) as f:
-                _metadata = yaml.load(f)
+            with open(metadata_file_name) as f:
+                metadata = yaml.load(f)
         except FileNotFoundError as err:
-            message = 'Metadata file {} not found.'.format(fmetadata)
+            message = 'Metadata file {} not found.'.format(metadata_file_name)
             logger.error(message)
             raise ZenodoMetadataException(message)
 
-        # change communities identifier in lower case (only format accepted by zenodo)
-        if 'communities' in _metadata:
-            for _com in _metadata['communities']:
-                _com['identifier'] = _com['identifier'].lower()
+        # change communities identifier to lower case (only format accepted by zenodo)
+        if 'communities' in metadata:
+            for community in metadata['communities']:
+                community['identifier'] = community['identifier'].lower()
 
-        return _metadata
+        return metadata
 
     def _check_minimal(self):
         """Method to check that the minimal set of Metadata needed for Zenodo
@@ -181,21 +172,14 @@ class ZenodoMetadata(object):
             logger.error(message)
             raise ZenodoMetadataException(message)
 
-        minimal_keys = ('title', 'upload_type', 'description', 'creators')
+        minimal_keys = ('title', 'upload_type', 'description',
+                        'creators', 'access_right', 'license')
 
         for key in minimal_keys:
             if key not in self._metadata.keys():
                 error = 'Missing metadata information: {}'.format(key)
                 logger.error(error)
                 raise ZenodoMetadataException(error)
-
-        if 'access_right' not in self._metadata:
-            self._metadata['access_right'] = 'open'
-            logger.warning('Add metadata: "access_right" set to default value "open"')
-
-        if 'license' not in self._metadata:
-            self._metadata['license'] = 'cc-by-4.0'
-            logger.warning('Add metadata: "license" set to default value "cc-by-4.0"')
 
         return True
 
@@ -328,9 +312,7 @@ class ZenodoMetadata(object):
     def _remove_extra_properties(self):
         """Method to remove properties which are not allowed by zenodo
 
-        Jsonschema has a major limitation (it which does not allowed to use
-        is in discussion to modify it in future iteration of the format).
-        It does not allowed the usage of::
+        Jsonschema has a major limitation, it does not allow the usage of::
 
             additionalProperties: False
 
@@ -352,63 +334,3 @@ class ZenodoMetadata(object):
         for key in keytoremove:
             logger.warning('Invalid key: {} removed.'.format(key))
             del self._metadata[key]
-
-
-    # def modify_metadata(self, metadata):
-    #     """Method to modify the metadata after having upload a file.
-    #
-    #     Metadata dictionary should contains at least the following keys:
-    #     title: str
-    #     upload_type: str ['publication', 'poster', 'presentation', 'dataset',
-    #                       'image', video', 'software', 'lesson', 'other']
-    #     'description': str
-    #     'creators': list of dictionaries which contains name and affiliation
-    #     e.g.:
-    #     metadata = { 'metadata': { 'title': 'My first upload',
-    #                                'upload_type': 'poster',
-    #                                'description': 'This is my first upload',
-    #                                'creators': [{'name': 'Doe, John',
-    #                                              'affiliation': 'Zenodo'}]
-    #                }
-    #
-    #     Parameters
-    #     ----------
-    #     metadata: dict,
-    #         dictionary which will contains the zenodo metadata associated
-    #         to the file(s) uploaded using the deposition id.
-    #
-    #     Return
-    #     ------
-    #     boolean
-    #         return True if everything went well, false in other hand.
-    #     """
-    #
-    #     if metadata is not dict:
-    #         logger.error('Metadata should be given in a dictionary form')
-    #     pass
-
-
-
-# license available for access_right: open from
-# https://licenses.opendefinition.org
-#
-# A machine readable format is available at:
-#
-# https://licenses.opendefinition.org/licenses/groups/all.json
-# format :
-# {
-#   "id": "ODC-BY-1.0",
-#   "domain_content": false,
-#   "domain_data": true,
-#   "domain_software": false,
-#   "od_conformance": "approved",
-#   "osd_conformance": "not reviewed",
-#   "status": "active",
-#   "title": "Open Data Commons Attribution License 1.0",
-#   "url": "https://opendatacommons.org/licenses/by"
-# }
-# How to read it:
-# licenses = urllib.request.urlopen('https://licenses.opendefinition.org/licenses/groups/all.json')
-# import json
-# licenses = json.load(licenses)
-#

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-with open('README.rst') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
 requirements = [
@@ -44,7 +44,7 @@ setup(name='datalight',
                    },
       package_data={
           '': ['LICENSE'],
-          'datalight': ['schemas/zenodo/record-1.0.0.yml',
+          'datalight': ['schemas/zenodo/zenodo_upload_metadata_schema.json5',
                         'schemas/zenodo/opendefinition-licenses.json'],
       },
       include_package_data=True,

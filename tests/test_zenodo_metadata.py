@@ -11,7 +11,8 @@ from datalight.zenodo_metadata import ZenodoMetadataException
 test_directory = pathlib.Path(__file__).parent
 
 # Path where schema and sample metadata files are located
-schema_path = test_directory.parent / pathlib.Path("datalight/schemas/zenodo/record-1.0.0.yml")
+schema_path = test_directory.parent / pathlib.Path(
+    "datalight/schemas/zenodo/zenodo_upload_metadata_schema.json5")
 metadata_path = test_directory / pathlib.Path('metadata/minimum_valid.yml')
 
 with open(schema_path) as f:
@@ -21,23 +22,26 @@ with open(metadata_path) as f:
     metadata_dictionary = yaml.load(f)
 
 
+# Test setting up a Metadata object with both a path to a schema file or the schema
+# directly as a dictionary.
 @pytest.fixture(params=[schema_path, schema_dictionary])
 def zeno_meta(request):
+    """Set up a Metadata instance to pass to later tests"""
     return ZenodoMetadata(metadata=metadata_dictionary, schema=request.param)
 
 
 def test_init_schema_yaml():
-    """test to verify that method can accept yaml file as schema"""
+    """Verify that schema can be read from a dictionary"""
     ZenodoMetadata(metadata=metadata_dictionary, schema=schema_dictionary)
 
 
 def test_init_schema_file():
-    """test to verify that method can read schema from file"""
+    """Verify that schema can be read from a file"""
     ZenodoMetadata(metadata=metadata_dictionary, schema=schema_path)
 
 
 def test_init_schema_not_present():
-    """test to verify that method raise an error if schema file not present"""
+    """Verify that method raises an error if schema file not present"""
     with pytest.raises(ZenodoMetadataException):
         ZenodoMetadata(metadata=metadata_dictionary, schema='not_present')
 
@@ -162,7 +166,8 @@ def test__check_license_availability_access_right_not_in_open_embargoed():
 
 def test__check_license_availability_licenses_files_provided(zeno_access):
     zeno_access.set_metadata({'license': 'cc-by-4.0'})
-    assert zeno_access._check_license_availability(flicenses=metadata_path.parent / pathlib.Path('opendefinition-licenses.json'))
+    open_licence_path = metadata_path.parent / pathlib.Path('opendefinition-licenses.json')
+    assert zeno_access._check_license_availability(open_licence_path)
 
 
 # use it with internet connection or find a way to mimic it...

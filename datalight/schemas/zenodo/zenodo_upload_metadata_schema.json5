@@ -1,0 +1,386 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/LightForm-group/datalight/tree/master/datalight/schemas/zenodo",
+  "title": "Zenodo API upload metadata schema",
+  "description": "When uploading to Zenodo via the API there is no schema to validate the supplied metadata. This is an attempt to create such a schema",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/definitions/upload"
+    },
+    {
+      "$ref": "#/definitions/access"
+    },
+    {
+      "license": {
+        "type": "string",
+        "default": "cc-by-4.0"
+      },
+      "properties": {
+        "publication_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "title": {
+          "type": "string"
+        },
+        "creators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/person"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "doi": {
+          "type": "string"
+        },
+        "preserve_doi": {
+          "type": "boolean"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "related_identifiers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "string"
+              },
+              "relation": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "relation": {
+          "type": "string",
+          "enum": [
+            "isCitedBy",
+            "cites",
+            "isSupplementTo",
+            "isSupplementedBy",
+            "isNewVersionOf",
+            "isPreviousVersionOf",
+            "isPartOf",
+            "hasPart",
+            "compiles",
+            "isCompiledBy",
+            "isIdenticalTo",
+            "isAlternateIdentifier"
+          ]
+        },
+        "contributors": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/person"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "ContactPerson",
+                      "DataCollector",
+                      "DataCurator",
+                      "DataManager",
+                      "Editor",
+                      "Researcher",
+                      "RightsHolder",
+                      "Sponsor",
+                      "Other"
+                    ]
+                  }
+                },
+                "required": [
+                  "type"
+                ]
+              }
+            ]
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "communities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identifier": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "grants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "journal_title": {
+          "type": "string"
+        },
+        "journal_volume": {
+          "type": "string"
+        },
+        "journal_issue": {
+          "type": "string"
+        },
+        "journal_pages": {
+          "type": "string"
+        },
+        "conference_title": {
+          "type": "string"
+        },
+        "conference_acronym": {
+          "type": "string"
+        },
+        "conference_dates": {
+          "type": "string"
+        },
+        "conference_place": {
+          "type": "string"
+        },
+        "conference_url": {
+          "type": "string"
+        },
+        "conference_session": {
+          "type": "string"
+        },
+        "conference_session_part": {
+          "type": "string"
+        },
+        "imprint_publisher": {
+          "type": "string"
+        },
+        "imprint_isbn": {
+          "type": "string"
+        },
+        "partof_title": {
+          "type": "string"
+        },
+        "partof_pages": {
+          "type": "string"
+        },
+        "thesis_supervisors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/person"
+          }
+        },
+        "thesis_university": {
+          "type": "string"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "term": {
+                "type": "string"
+              },
+              "identifier": {
+                "type": "string"
+              },
+              "scheme": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "term",
+              "identifier",
+              "scheme"
+            ]
+          }
+        },
+        "version": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "person": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name in the format: Family Name, Given Name",
+          "type": "string"
+        },
+        "affiliation": {
+          "type": "string"
+        },
+        "orcid": {
+          "type": "string"
+        },
+        "gnd": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "upload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "upload_type": {
+              "type": "string",
+              "enum": [
+                "poster",
+                "presentation",
+                "dataset",
+                "video",
+                "software",
+                "lesson",
+                "other"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "upload_type": {
+              "type": "string",
+              "enum": [
+                "publication"
+              ]
+            },
+            "publication_type": {
+              "type": "string",
+              "enum": [
+                "book",
+                "section",
+                "conferencepaper",
+                "article",
+                "patent",
+                "preprint",
+                "report",
+                "softwaredocumentation",
+                "thesis",
+                "technicalnote",
+                "workingpaper",
+                "other"
+              ]
+            }
+          },
+          "required": [
+            "publication_type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "upload_type": {
+              "type": "string",
+              "enum": [
+                "image"
+              ]
+            },
+            "image_type": {
+              "type": "string",
+              "enum": [
+                "figure",
+                "plot",
+                "drawing",
+                "diagram",
+                "photo",
+                "other"
+              ]
+            }
+          },
+          "required": [
+            "image_type"
+          ]
+        }
+      ]
+    },
+    "access": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "access_right": {
+              "type": "string",
+              "enum": [
+                "closed",
+                "open"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "access_right": {
+              "type": "string",
+              "enum": [
+                "embargoed"
+              ]
+            },
+            "embargo_date": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "embargo_date"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "access_right": {
+              "type": "string",
+              "enum": [
+                "restricted"
+              ]
+            },
+            "access_conditions": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "access_conditions"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "upload_type",
+    "title",
+    "creators",
+    "description",
+    "access_right",
+    "license"
+
+  ]
+}
