@@ -17,3 +17,4 @@ venv/
 #Pip install
 datalight.egg-info/
 .eggs/
+docs/html
