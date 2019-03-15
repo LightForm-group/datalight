@@ -9,31 +9,27 @@ from datalight.common import logger
 
 
 class ZenodoException(Exception):
-    """Class for exception
-        """
-    pass
+    """General exception raised when there is some failiure to interface with Zenodo."""
 
 
 class Zenodo(object):
     """Class to upload and download files on Zenodo
+    The general schema of this module is to call these functions in order:
+    - get_deposition_id()
+    - upload_files()
+    - set_metadata()
+    - upload_metadata()
+    - publish()
 
-    Attributes
-    ----------
-    token: str, optional
-        Token that need to be provided to Zenodo to be able to upload.
-        The attribute is optional.
-    sandbox: bool
-        Default False, if True, the record is created on the Zenodo sandbox
-        version which is provided for test purpose.
-
+    :var token: (str) API token for connection to Zenodo.
+    :var sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo.
     """
-
-    # TODO verify that there are no json file where this information
-    # can be downloaded.
 
     def __init__(self, token, metadata=None, sandbox=False):
 
         self.token = token
+
+        self._verify_token()
 
         if metadata is not None:
             self._metadata = metadata
@@ -51,14 +47,7 @@ class Zenodo(object):
         self.status_code = None
 
     def _verify_token(self):
-        """ Function to test if token could be valid
-
-        Exception
-        ---------
-        ZenodoException
-            if token not define (token = None).
-
-        """
+        """ Function to test if API token is valid."""
         if self.token is None:
             message = 'No Zenodo token provided'
             logger.error(message)
@@ -66,7 +55,7 @@ class Zenodo(object):
 
     @staticmethod
     def _check_status_code(status_code):
-        """
+        """Check the status code returned from an interaction with the Zenodo API.
 
         :param status_code: Status code to check
         :return: Status code if successful
@@ -99,9 +88,6 @@ class Zenodo(object):
             raise if token not define (token = None) or if connection
             return status >= 400
         """
-        # Test if Token defined and access zenodo to test the token if exist
-        self._verify_token()
-
         request = requests.get(self.depositions_url,
                                params={'access_token': self.token})
         self.status_code = request.status_code
@@ -116,18 +102,11 @@ class Zenodo(object):
             raise ZenodoException(message)
 
     def get_deposition_id(self):
-        """Method to obtain the deposition id need to upload documents to Zenodo
+        """Get the deposition id needed to upload a new record to Zenodo
 
-        Exception
-        ---------
-        ZenodoException
-            raise if token not define (token = None) or if connection
-            return status >= 400
+        :raises ZenodoException: If token is not defined or if connection return status >= 400
         """
         headers = {'Content-Type': 'application/json'}
-
-        # Test if Token defined and access zenodo to test the token if exist
-        self._verify_token()
 
         request = requests.post(self.depositions_url,
                                 params={'access_token': self.token},
@@ -149,25 +128,15 @@ class Zenodo(object):
             logger.info('Deposition url: {}'.format(self.deposition_id))
 
     def delete(self, _id=None):
-        """Method to delete deposition.
+        """Method to delete unpublished deposition.
 
-        Parameters
-        ----------
-        _id: int
-            deposition id of the record to delete.
-            Can be done only if the record was not published.
+        :param _id: (int) Deposition id of the record to delete.
+        Can be done only if the record was not published.
 
-        Exception
-        ---------
-        ZenodoException
-            raise if token not define (token = None) or if connection
-            return status >= 400
+        :exception ZenodoException: If connection return status >= 400
         """
-        # Test if token was defined
-        self._verify_token()
 
-        # Use provided if if not None. If not provided use self.deposition_id
-
+        # Use provided id if not None. If not provided use self.deposition_id
         if _id is not None:
             self.deposition_id = _id
 
@@ -189,8 +158,6 @@ class Zenodo(object):
             logger.error(message)
             raise ZenodoException(message)
 
-#        self._check_status_code(self.status_code)
-
     def upload_files(self, filenames, path=None, _id=None):
         """Method to upload a file to Zenodo
 
@@ -203,16 +170,8 @@ class Zenodo(object):
         _id: int
             deposition id of the record where the file(s) will be updated
 
-        Exception
-        ---------
-        ZenodoException
-            raise if token not define (token = None) or if connection
-            return status >= 400
+        :exception ZenodoException: Raise if connection return status >= 400
         """
-
-        # Test if token was defined
-        self._verify_token()
-
         # If the deposition_id was not run before to obtain the id to uploads
         # TODO: Perhaps is it better to raise an exception
         # if type(self.deposition_id) is not int:
@@ -259,11 +218,7 @@ class Zenodo(object):
     def set_metadata(self, metadata=None):
         """Method to read and validate metadata.
 
-        Return
-        ------
-        metadata: dict
-            dictionary with one key 'metadata' associated to Zenodo metadata,
-            ready to be use for uploading.
+        :returns metadata: (dict) one key 'metadata' associated to Zenodo metadata, ready to be use for uploading.
         """
         if metadata is not None:
             self._metadata = metadata
@@ -288,8 +243,6 @@ class Zenodo(object):
             deposition id of the record where the metadata will be updated
 
         """
-        self._verify_token()
-
         if metadata is not None:
             self._metadata = metadata
 
@@ -314,18 +267,10 @@ class Zenodo(object):
     def publish(self):
         """Method which will publish the deposition linked with the id.
 
-        .. warning:
+        .. warning: After publishing a record it is not possible to delete it.
 
-            After publishing it is not possible to delete anything.
-
-        Exception
-        ---------
-        ZenodoException
-            raise if token not define (token = None) or
-            if connection return status >= 400
+        :exception ZenodoException: Raise if connection return status >= 400
         """
-        # Test if token was defined
-        self._verify_token()
 
         publish_url = (self.depositions_url +
                        '/{}/actions/publish'.format(self.deposition_id))
@@ -340,11 +285,3 @@ class Zenodo(object):
             logger.info('Deposition id: {}'.format(self.deposition_id))
             logger.debug('Status code: {}'.format(self.status_code))
             return
-
-        # self._check_status_code(self.status_code)
-
-    def download_files(self, id=None, doi=None):
-        """Method to download file present in a specific record
-
-        """
-        raise ZenodoException("Not implemented")
