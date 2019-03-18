@@ -27,12 +27,7 @@ def main(directory_name, metadata, zip_name="data.zip", publish=False, sandbox=T
     token = get_authentication_token(sandbox)
 
     data_repo = DataRepo(token=token, sandbox=sandbox)
-    data_repo.get_deposition_id()
-    data_repo.upload_files(files, path=directory)
-    data_repo.set_metadata(metadata)
-    data_repo.upload_metadata()
-    if publish:
-        data_repo.publish()
+    data_repo.deposit_record(files, directory, metadata, publish)
 
 
 if __name__ == '__main__':
