@@ -1,0 +1,17 @@
+title: Sample metadata
+
+description: |
+  This metadata does not have a valid open license but the access_right is closed
+  so this file should pass validation.
+
+upload_type: dataset
+
+creators:
+  - name: John Doe
+
+communities: 
+  - identifier: test_sharing
+
+license: Angry Badgers
+
+access_right: closed

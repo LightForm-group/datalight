@@ -20,12 +20,9 @@ class Zenodo(object):
     :var sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo.
     """
 
-    def __init__(self, token, metadata=None, sandbox=False):
+    def __init__(self, token, metadata_path, sandbox=False):
 
-        if metadata is not None:
-            self.metadata = metadata
-        else:
-            logger.warning('No metadata provided. Use the set_metadata method.')
+        self.metadata_path = metadata_path
 
         if sandbox:
             self.api_base_url = 'https://sandbox.zenodo.org/api/'
@@ -40,12 +37,12 @@ class Zenodo(object):
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files, directory, metadata, publish):
+    def deposit_record(self, files, directory, publish):
         """The main method which calls the many parts of the upload process."""
 
         self._get_deposition_id()
         self._upload_files(files, path=directory)
-        self.set_metadata(metadata)
+        self.set_metadata()
         self.upload_metadata()
         if publish:
             self.publish()
@@ -98,14 +95,13 @@ class Zenodo(object):
             request = requests.post(url, params={'access_token': self.token}, data=data, files=files)
             self._check_status_code(request.status_code)
 
-    def set_metadata(self, metadata):
-        """Method to validate metadata.
-
-        :param metadata: (dict) The metadata input by the user.
-        """
-        self.metadata = metadata
-        datalight_metadata = ZenodoMetadata(self.metadata)
-        self.checked_metadata = {'metadata': datalight_metadata.get_metadata()}
+    def set_metadata(self):
+        """Method to validate metadata."""
+        datalight_metadata = ZenodoMetadata()
+        datalight_metadata.set_schema()
+        datalight_metadata.set_metadata(self.metadata_path)
+        datalight_metadata.validate_metadata()
+        self.checked_metadata = {'metadata': datalight_metadata.metadata()}
 
     def upload_metadata(self):
         """Upload metadata to Zenodo repository.

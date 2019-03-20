@@ -21,7 +21,7 @@ metadata = os.path.join(_dir_metadata, metadata_file)
 
 @pytest.fixture()
 def zeno():
-    return Zenodo(token=token, metadata=metadata, sandbox=True)
+    return Zenodo(token=token, metadata_path=metadata, sandbox=True)
 
 
 class TestZenodo(object):
