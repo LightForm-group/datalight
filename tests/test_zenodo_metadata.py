@@ -27,35 +27,35 @@ with open(metadata_path) as f:
 @pytest.fixture(params=[schema_path, schema_dictionary])
 def zeno_meta(request):
     """Set up a Metadata instance to pass to later tests"""
-    return ZenodoMetadata(metadata=metadata_dictionary, schema=request.param)
+    return ZenodoMetadata(metadata_path=metadata_dictionary, schema=request.param)
 
 
 def test_init_schema_yaml():
     """Verify that schema can be read from a dictionary"""
-    ZenodoMetadata(metadata=metadata_dictionary, schema=schema_dictionary)
+    ZenodoMetadata(metadata_path=metadata_dictionary, schema=schema_dictionary)
 
 
 def test_init_schema_file():
     """Verify that schema can be read from a file"""
-    ZenodoMetadata(metadata=metadata_dictionary, schema=schema_path)
+    ZenodoMetadata(metadata_path=metadata_dictionary, schema=schema_path)
 
 
 def test_init_schema_not_present():
     """Verify that method raises an error if schema file not present"""
     with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata_dictionary, schema='not_present')
+        ZenodoMetadata(metadata_path=metadata_dictionary, schema='not_present')
 
 
 def test_init_schema_not_correct_type():
     """test to verify that method raise an error if schema file not present"""
     with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata_dictionary, schema=1)
+        ZenodoMetadata(metadata_path=metadata_dictionary, schema=1)
 
 
 def test_init_schema_is_none():
     """test to verify that method raise an error if schema file not present"""
     with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata_dictionary, schema=None)
+        ZenodoMetadata(metadata_path=metadata_dictionary, schema=None)
 
 
 def test_set_schema_wrong_schema(zeno_meta):
@@ -77,7 +77,7 @@ def test_set_schema_modifying_schema_failed(zeno_meta):
 
 
 def test_set_metadata_modifying_metadata_none(zeno_meta):
-    zeno_meta.set_metadata(metadata=metadata_dictionary)
+    zeno_meta.set_metadata(metadata_path=metadata_dictionary)
 
 
 def test_set_metadata_modifying_from_dictionary(zeno_meta):
@@ -130,7 +130,7 @@ def test_verify_metadata_ok(zeno_meta):
 def zeno_access(request):
     _metadata = metadata_dictionary.copy()
     _metadata.update({'access_right': request.param})
-    zeno_access = ZenodoMetadata(metadata=_metadata, schema=schema_path)
+    zeno_access = ZenodoMetadata(metadata_path=_metadata, schema=schema_path)
     return zeno_access
 
 
@@ -148,7 +148,7 @@ def test__check_license_availability_failed(zeno_access):
 def test__check_license_availability_no_access_right():
     tmp = metadata_dictionary.copy()
     tmp.update({'license': 'cc-by-4.0'})
-    zeno = ZenodoMetadata(metadata=tmp, schema=schema_path)
+    zeno = ZenodoMetadata(metadata_path=tmp, schema=schema_path)
     assert zeno._check_license_availability()
 
 
@@ -160,7 +160,7 @@ def test__check_license_availability_default(zeno_access):
 def test__check_license_availability_access_right_not_in_open_embargoed():
     _metadata = metadata_dictionary.copy()
     _metadata.update({'access_right': 'closed'})
-    zeno = ZenodoMetadata(metadata=_metadata, schema=schema_path)
+    zeno = ZenodoMetadata(metadata_path=_metadata, schema=schema_path)
     assert zeno._check_license_availability()
 
 

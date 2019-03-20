@@ -9,7 +9,7 @@ import logging.config
 
 
 def set_up_logger():
-    # Dictionary with the configuration for the logging
+    """ Dictionary with the configuration for the logging."""
     log_config = {
         'version': 1,
         'formatters': {
@@ -88,6 +88,8 @@ def zip_data(files, zip_name):
 
 
 def get_authentication_token(sandbox):
+    """A method to read the Zenodo authentication token from a local file. This file is not
+    committed to git and so will not appear online."""
     current_directory = pathlib.Path(__file__).parent
 
     token_file = current_directory.parent / pathlib.Path("datalight.config")

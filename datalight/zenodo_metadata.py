@@ -42,105 +42,33 @@ SCHEMA_FILE = os.path.join(_dir, 'schemas', 'zenodo', 'zenodo_upload_metadata_sc
 
 
 class ZenodoMetadata(object):
-    """Class to manage the Metadata needed for Zenodo.
+    """Class to manage the Metadata needed for a Zenodo upload."""
 
-    Attributes
-    ----------
+    def __init__(self, metadata_path, schema_path=SCHEMA_FILE):
+        """Read the metadata and then the metadata schema.
+        :param metadata_path: (path) the path to the file containing metadata.
+        :param schema_path: (path) the path to the file containing the metadata schema.
 
-    """
+        :attribute _metadata: (dict) the metadata
+        :attribute _schema: (dict) the metadata schema
+        """
 
-    def __init__(self, metadata, schema=SCHEMA_FILE):
-        # Read the metadata zenodo file to verify
         self._metadata = None
-        self.set_metadata(metadata)
+        self.set_metadata(metadata_path)
 
-        # Read the Zenodo yaml schema
-        self._schema = None
-        self.set_schema(schema)
+        self._schema = _MetadataSchema(schema_path)
 
-    def set_schema(self, schema):
+    def set_metadata(self, metadata_path):
+        """Method to set metadata from a file.
 
-        if type(schema) is str or issubclass(type(schema), pathlib.Path):
-            logger.info('Schema file use: {}'.format(schema))
-            self._schema = self._read_schema(schema)
-        elif type(schema) is dict:
-            logger.info('Schema provided through dictionary object')
-            if self._schema is None:
-                self._schema = schema
-            else:
-                self._schema.update(schema)
+        :param metadata_path: (path) A path to a file which contains zenodo metadata (yaml format).
+        """
+        if isinstance(metadata_path, str) or issubclass(type(metadata_path), pathlib.Path):
+            logger.info('Metadata provided by file: {}'.format(metadata_path))
+            self._metadata = self._read_metadata(metadata_path)
+            self._check_minimal()
         else:
-            message = 'Something is wrong with the schema: {}.'.format(schema)
-            logger.error(message)
-            raise ZenodoMetadataException(message)
-
-    def set_metadata(self, metadata):
-        """Method to set metadata from a file or a dictionary.
-
-        Parameter
-        ---------
-        metadata: str, dict
-            - if it is a string it is the name of file which contains
-              zenodo metadata (yaml format). It will read the metadata
-              and set the attribute _metadata to it
-            - if dictionary, it set the attribute _metadata to it
-
-        Attribute
-        ---------
-        _metadata: dict
-            dictionary which contains Zenodo metadata
-        """
-        if type(metadata) is str:
-            logger.info('Metadata provided by file: {}'.format(metadata))
-            self._metadata = self._read_metadata(metadata)
-        elif type(metadata) is dict:
-            logger.info('Metadata provided by dictionary.')
-            if self._metadata is None:
-                self._metadata = metadata
-            else:
-                self._metadata.update(metadata)
-        elif metadata is None:
-            logger.warning('Metadata are empty')
-            self._metadata = metadata
-        self._check_minimal()
-
-    def get_metadata(self):
-        """Method which will return Zenodo metadata
-
-        This method will return a dictionary which contains Zenodo metadata.
-
-        Return
-        ------
-        metadata: dict
-            Dictionary which contains Zenodo metadata.
-        """
-        self.validate()
-        return self._metadata
-
-    @staticmethod
-    def _read_schema(fschema):
-        """Method to read the schema.
-
-        Parameter
-        ---------
-        schema: str
-            Name of the file which contain the definition of the schema
-
-        Return
-        ------
-        _schema: dict
-            dictionary which contains the schema used to validate the metadata.
-        """
-
-        logger.info('Read schema from: {}'.format(fschema))
-        try:
-            with open(fschema) as f:
-                _schema = json.load(f)
-        except FileNotFoundError as err:
-            message = 'Schema file not found.'.format(fschema)
-            logger.error(message)
-            raise ZenodoMetadataException(message)
-        return _schema
+            raise TypeError("Metadata of wrong type. Needs to be a path.")
 
     @staticmethod
     def _read_metadata(metadata_file_name):
@@ -161,6 +89,19 @@ class ZenodoMetadata(object):
                 community['identifier'] = community['identifier'].lower()
 
         return metadata
+
+    def get_metadata(self):
+        """Method which will return Zenodo metadata
+
+        This method will return a dictionary which contains Zenodo metadata.
+
+        Return
+        ------
+        metadata: dict
+            Dictionary which contains Zenodo metadata.
+        """
+        self.validate()
+        return self._metadata
 
     def _check_minimal(self):
         """Method to check that the minimal set of Metadata needed for Zenodo
@@ -334,3 +275,38 @@ class ZenodoMetadata(object):
         for key in keytoremove:
             logger.warning('Invalid key: {} removed.'.format(key))
             del self._metadata[key]
+
+
+class _MetadataSchema:
+    """An object representing the metadata schema for an upload"""
+    def __init__(self, schema_path):
+        self._schema = None
+        self.set_schema(schema_path)
+
+    def set_schema(self, schema):
+        """Validate the path of the schema."""
+        if isinstance(schema, str) or issubclass(type(schema), pathlib.Path):
+            logger.info('Schema file use: {}'.format(schema))
+            self._schema = self._read_schema(schema)
+        else:
+            message = 'Something is wrong with the schema: {}.'.format(schema)
+            logger.error(message)
+            raise ZenodoMetadataException(message)
+
+    @staticmethod
+    def _read_schema(schema_path):
+        """Method to read the schema.
+
+        :param schema_path: (path) Name of the file which contains the definition of the schema
+        :returns _schema: (dict) The schema used to validate the metadata.
+        """
+
+        logger.info('Read schema from: {}'.format(schema_path))
+        try:
+            with open(schema_path) as f:
+                _schema = json.load(f)
+        except FileNotFoundError as err:
+            message = 'Schema file not found.'.format(schema_path)
+            logger.error(message)
+            raise ZenodoMetadataException(message)
+        return _schema

@@ -65,7 +65,7 @@ class TestZenodo(object):
         zeno._get_deposition_id()
         assert type(zeno.deposition_id) is int
 
-        # Remove the record create for the test
+        # Remove the record created for the test
         zeno.delete()
 
     def test_upload_no_deposition_id(self, zeno):
@@ -80,7 +80,7 @@ class TestZenodo(object):
         else:
             assert type(zeno.status_code) is int
 
-        # Remove the record create for the test
+        # Remove the record created for the test
         zeno.delete()
 
     def test_upload_files_one_file(self, zeno):
@@ -92,7 +92,7 @@ class TestZenodo(object):
         else:
             assert type(zeno.status_code) is int
 
-        # Remove the record create for the test
+        # Remove the record created for the test
         zeno.delete()
 
     def test_upload_files_multiple_files(self, zeno):
@@ -105,7 +105,7 @@ class TestZenodo(object):
         else:
             assert type(zeno.status_code) is int
 
-        # Remove the record create for the test
+        # Remove the record created for the test
         zeno.delete()
 
     def test_upload_files_id_int(self, zeno):
@@ -156,23 +156,6 @@ class TestZenodo(object):
     def test_set_metadata(self, zeno):
         zeno.set_metadata(metadata)
         assert 'metadata' in zeno.checked_metadata
-
-    # Commented to not publish too many files on the sandbox
-    # if needed to be tested again remove comments
-
-    # def test_publish(self, zeno):
-    #     filenames = 'test.csv'
-    #
-    #     zeno.get_deposition_id()
-    #     zeno.upload_files(filenames, path=_dir_data)
-    #     zeno.upload_metadata()
-    #     zeno.publish()
-    #     if zeno.status_code >= 500:
-    #         print('Test was not able to work because of '
-    #               'error {} on the server'.format(zeno.status_code))
-    #
-    #     else:
-    #         assert type(zeno.status_code) is int
 
 
 def test_zenodo_api():
