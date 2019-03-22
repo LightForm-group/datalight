@@ -61,7 +61,7 @@ class TestZenodo(object):
             zeno._get_deposition_id()
 
     def test_get_deposition_id_and_delete(self):
-        zeno = Zenodo(token=token, metadata=metadata, sandbox=True)
+        zeno = Zenodo(token=token, metadata_path=metadata, sandbox=True)
         zeno._get_deposition_id()
         assert type(zeno.deposition_id) is int
 
@@ -126,7 +126,7 @@ class TestZenodo(object):
 
         zeno._get_deposition_id()
         zeno._upload_files(filenames, path=_dir_data)
-        zeno.set_metadata(metadata)
+        zeno.set_metadata()
         zeno.upload_metadata()
 
         if zeno.status_code >= 500:
@@ -140,7 +140,7 @@ class TestZenodo(object):
 
         zeno._get_deposition_id()
         zeno._upload_files(filenames, path=_dir_data)
-        zeno.set_metadata(metadata)
+        zeno.set_metadata()
         zeno.upload_metadata()
 
         if zeno.status_code >= 500:
@@ -154,12 +154,12 @@ class TestZenodo(object):
         print('Test failed due to server error {}.'.format(zeno.status_code))
 
     def test_set_metadata(self, zeno):
-        zeno.set_metadata(metadata)
+        zeno.set_metadata()
         assert 'metadata' in zeno.checked_metadata
 
 
 def test_zenodo_api():
     """All of the above tests access the Zenodo sandbox while this test accesses the real Zenodo API."""
     token = get_authentication_token(sandbox=False)
-    zeno = Zenodo(token=token, sandbox=False)
+    zeno = Zenodo(token=token, metadata_path=metadata, sandbox=False)
     assert zeno.api_base_url == 'https://zenodo.org/api/'

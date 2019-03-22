@@ -60,7 +60,7 @@ class ZenodoMetadata:
 
     def set_schema(self):
         """Method to read the schema. Reads schema from self.schema_path
-        Stores schema dictionary in self._schema"""
+        Stores schema dictionary in self.schema"""
         logger.info('Reading schema from: {}'.format(self.schema_path))
         try:
             with open(self.schema_path) as input_file:

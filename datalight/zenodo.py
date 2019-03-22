@@ -101,7 +101,7 @@ class Zenodo(object):
         datalight_metadata.set_schema()
         datalight_metadata.set_metadata(self.metadata_path)
         datalight_metadata.validate_metadata()
-        self.checked_metadata = {'metadata': datalight_metadata.metadata()}
+        self.checked_metadata = {'metadata': datalight_metadata.metadata}
 
     def upload_metadata(self):
         """Upload metadata to Zenodo repository.
