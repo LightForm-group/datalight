@@ -1,6 +1,7 @@
+"""Tests for the functions in common.py"""
 import os
-import pytest
 import pathlib
+import pytest
 
 from datalight.common import get_files_path, zip_data
 
@@ -18,43 +19,49 @@ zip_name = pathlib.Path("data.zip")
 
 
 def test_get_files_path_file():
-    # Test getting the path of a single file.
+    """Get the path of a single file."""
     assert [file_path_1] == get_files_path(file_path_1)
 
 
 def test_get_files_path_directory():
-    # Test getting the paths of all files in a directory
+    """ Get the paths of all files in a directory"""
     assert sorted([file_path_1, file_path_2, file_path_3]) == get_files_path(common_dir)
 
 
 def test_get_files_path_exception():
+    """Getting a non-existant file should raise an exception."""
     with pytest.raises(FileNotFoundError):
         get_files_path('doesnotexist')
 
 
 def test_zip_data_nofile_or_file_does_not_exist():
+    """Zipping a non existent file should raies an exception."""
     with pytest.raises(FileNotFoundError):
         zip_data([''], zip_name)
 
 
 def test_zip_data_with_existing_file():
+    """Zipping a valid file"""
     zip_data([file_path_1], zip_name)
     assert zip_name.is_file()
     os.remove(zip_name)
 
 
 def test_zip_data_wrong_input():
+    """Zip should take a list of strings as input."""
     with pytest.raises(TypeError):
         zip_data(1233, zip_name)
 
 
 def test_zip_data_directory_as_input():
+    """Zip can also accept a directory name."""
     zip_data([common_dir], zip_name)
     assert zip_name.is_file()
     os.remove(zip_name)
 
 
 def test_zip_data_save_zip_another_name():
+    """We can change the name of the zip file which is output."""
     zip_name = pathlib.Path('toto.zip')
     zip_data([common_dir], test_directory / zip_name)
     assert (test_directory / zip_name).is_file()

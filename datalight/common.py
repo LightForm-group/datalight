@@ -37,7 +37,6 @@ logger = logging.getLogger('datalight')
 
 class DatalightException(Exception):
     """Class for exception"""
-    pass
 
 
 def get_files_path(directory_name):

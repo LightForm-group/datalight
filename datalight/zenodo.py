@@ -1,8 +1,8 @@
 """This module is implements high level functions to upload and download data to Zenodo."""
 
 import os
-import requests
 import json
+import requests
 
 from datalight.zenodo_metadata import ZenodoMetadata
 from datalight.common import logger
@@ -12,9 +12,10 @@ class ZenodoException(Exception):
     """General exception raised when there is some failiure to interface with Zenodo."""
 
 
-class Zenodo(object):
+class Zenodo():
     """Class to upload and download files on Zenodo
-    The deposit record method should be called and this does all of the steps required to uplad a file.
+    The deposit record method should be called and this does all
+    of the steps required to uplad a file.
 
     :var token: (str) API token for connection to Zenodo.
     :var sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo.
@@ -77,7 +78,7 @@ class Zenodo(object):
         logger.info('url: {}'.format(url))
 
         # if filenames is only a file convert it to list
-        if type(filenames) is str:
+        if isinstance(filenames, str):
             filenames = [filenames]
 
         for filename in filenames:
@@ -92,7 +93,8 @@ class Zenodo(object):
             files = {'file': open(filename, 'rb')}
 
             # upload the file
-            request = requests.post(url, params={'access_token': self.token}, data=data, files=files)
+            request = requests.post(url, params={'access_token': self.token}, data=data,
+                                    files=files)
             self._check_status_code(request.status_code)
 
     def set_metadata(self):
@@ -167,22 +169,26 @@ class Zenodo(object):
             return status_code
 
         if status_code == 400:
-            message = 'Request failed with error: {}. This is likely due to a malformed request.'.format(status_code)
+            message = 'Request failed with error: {}. This is ' \
+                      'likely due to a malformed request.'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
         if status_code == 401:
-            message = 'Request failed with error: {}. This is due to a bad access token.'.format(status_code)
+            message = 'Request failed with error: {}. This is ' \
+                      'due to a bad access token.'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
         if status_code == 403:
-            message = 'Request failed with error: {}. This is due to insufficent privilege.'.format(status_code)
+            message = 'Request failed with error: {}. This is' \
+                      ' due to insufficent privilege.'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
         if status_code == 500:
-            message = 'Zenodo server error {}. It is likely to be their problem not ours.'.format(status_code)
+            message = 'Zenodo server error {}. It is likely to be ' \
+                      'their problem not ours.'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
