@@ -8,10 +8,10 @@ script_path = pathlib.Path(__file__).parent.parent.parent.parent
 metadata_path = script_path / pathlib.Path("tests/metadata/minimum_valid.yml")
 
 with open('zenodo_upload_metadata_schema.json5') as f:
-    schema = yaml.load(f)
+    schema = yaml.load(f, Loader=yaml.FullLoader)
 
 with open(metadata_path) as f:
-    metadata = yaml.load(f)
+    metadata = yaml.load(f, Loader=yaml.FullLoader)
 
 try:
     jsonschema.Draft4Validator(schema)

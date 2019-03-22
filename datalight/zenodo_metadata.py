@@ -90,7 +90,7 @@ class ZenodoMetadata:
         logger.info('Read metadata from: {}'.format(metadata_path))
         try:
             with open(metadata_path) as input_file:
-                metadata = yaml.load(input_file)
+                metadata = yaml.load(input_file, Loader=yaml.FullLoader)
         except FileNotFoundError:
             message = 'Metadata file {} not found.'.format(metadata_path)
             logger.error(message)

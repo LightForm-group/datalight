@@ -1,5 +1,5 @@
 pytest
-PyYaml
+PyYaml>=5.1
 jsonschema
 requests
 

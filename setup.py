@@ -6,7 +6,7 @@ with open('README.md') as readme_file:
 
 requirements = [
     'requests',
-    'PyYaml',
+    'PyYaml>=5.1',
     'jsonschema',
 ]
 
