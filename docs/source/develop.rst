@@ -4,27 +4,18 @@ Information for developers
 ----------------------------
 
 The software was developed in `Python 3 <https://www.python.org/>`_
-(v3.5 and above).
+(requires v3.6 or above).
 
 Requirements
 ============
 
-To install the required packages for the development::
+To install in linked .egg mode for development development::
 
-    pip install -r requirements-dev.txt
+    python -m pip install develop
 
-That will install the following packages:
-
-- `docopt <http://docopt.org/>`_
-- `sphinx <http://www.sphinx-doc.org/en/stable/#>`_
-- sphinx-bootstrap-theme
-- numpydoc
-- pyqt5
-
-To run the unit tests the following packages are required:
+To run the unit tests the pytest package is required:
 
 - `pytest <https://docs.pytest.org/en/latest/>`_
-- `testfixture <http://testfixtures.readthedocs.io/en/latest/>`_
 
 To run all the tests use the command::
 
