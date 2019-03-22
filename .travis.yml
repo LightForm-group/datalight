@@ -8,7 +8,7 @@ install:
   - pip install .
 
 before_script:
-  - printf "[sandbox.zenodo.org]\ntoken = $ZENODO_SANDBOX_TOKEN\n\n[zenodo.org]\ntoken = $ZENODO_TOKEN\n" > .datalight.config
+  - printf "[sandbox.zenodo.org]\ntoken = $ZENODO_SANDBOX_TOKEN\n[zenodo.org]\ntoken = $ZENODO_TOKEN\n" > datalight.config
 
 script:
   - pytest tests
