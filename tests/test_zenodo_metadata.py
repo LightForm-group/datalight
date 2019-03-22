@@ -1,221 +1,144 @@
-import os
+"""Tests for zenodo_metadata.py"""
+
+import pathlib
 import pytest
 
-import yaml
-
-from .conftest import ZenodoMetadata, ZenodoMetadataException, schemafile
-
-# Path where the tests are
-_dir = os.path.dirname(os.path.realpath(__file__))
-
-# Path where the schema files are located
-_dir_data = os.path.join(_dir, 'metadata')
-
-# Path where the metadata tests files are located
-_dir_test_files = os.path.join(_dir, 'schemas', 'zenodo', 'test')
-
-
-with open(schemafile) as f:
-    yamlschema = yaml.load(f)
-
-
-metadatafile = 'minimum_valid.yml'
-with open(os.path.join(_dir_data, metadatafile)) as f:
-        metadata = yaml.load(f)
-
-
-@pytest.fixture(params=[schemafile, yamlschema])
-def zenometa(request):
-    zenometa = ZenodoMetadata(metadata=metadata,
-                              schema=request.param)
-    return zenometa
-
-
-def test_init_schema_yaml():
-    """test to verify that method can accept yaml file as schema
-    """
-    ZenodoMetadata(metadata=metadata,
-                   schema=yamlschema)
-
-
-def test_init_schema_file():
-    """test to verify that method can read schema from file
-    """
-    ZenodoMetadata(metadata=metadata,
-                   schema=schemafile)
-
-
-def test_init_schema_not_present():
-    """test to verify that method raise an error if schema file not present
-    """
-    with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata, schema='notpresent')
-
-
-def test_init_schema_not_correct_type():
-    """test to verify that method raise an error if schema file not present
-    """
-    with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata,
-                       schema=1)
-
-
-def test_init_schema_is_None():
-    """test to verify that method raise an error if schema file not present
-    """
-    with pytest.raises(ZenodoMetadataException):
-        ZenodoMetadata(metadata=metadata,
-                       schema=None)
-
-
-def test_set_schema_wrong_schema(zenometa):
-    with pytest.raises(ZenodoMetadataException):
-        zenometa.set_schema(schema=None)
-
-
-def test_set_schema_modifying_schema_from_file(zenometa):
-    zenometa.set_schema(schema=schemafile)
-
-
-def test_set_schema_modifying_schema_from_dictionary(zenometa):
-    zenometa.set_schema(schema=yamlschema)
-
-
-def test_set_schema_modifying_schema_failed(zenometa):
-    with pytest.raises(ZenodoMetadataException):
-        zenometa.set_schema(schema=1)
-
-
-def test_set_metadata_modifying_metatdata_None(zenometa):
-    zenometa.set_metadata(metadata=metadata)
-
-
-def test_set_metadata_modifying_from_dictionary(zenometa):
-    zenometa.set_metadata({})
-
-
-def test_set_metadata_modifying_from_file(zenometa):
-    zenometa.set_metadata(os.path.join(_dir_data, metadatafile))
-
-
-def test_set_metadata_is_None(zenometa):
-    with pytest.raises(ZenodoMetadataException):
-        zenometa.set_metadata(None)
-
-
-def test__read_metadata_from_file(zenometa):
-    assert metadata == zenometa._read_metadata(os.path.join(_dir_data,
-                                                            metadatafile))
-
-
-def test__read_metadata_from_file(zenometa):
-    with pytest.raises(ZenodoMetadataException):
-        zenometa._read_metadata('no file')
-
-
-def test__check_minimal_ok(zenometa):
-    assert zenometa._check_minimal()
-
-
-def test__check_minimal_missing_title(zenometa):
-    tmp = metadata.copy()
-    del tmp['title']
-    zenometa._metadata = tmp
-    with pytest.raises(ZenodoMetadataException):
-        zenometa._check_minimal()
-
-
-def test__remove_extra_properties(zenometa):
-    tmp = metadata.copy()
-    tmp['addkey'] = '122'
-    zenometa._metadata = tmp
-    zenometa._remove_extra_properties()
-    assert 'addkey' not in zenometa._metadata
-
-
-def test_verify_metadata_ok(zenometa):
-    zenometa.validate()
-
-
-@pytest.fixture(params=['open', 'embargoed'])
-def zenoaccess(request):
-    _metadata = metadata.copy()
-    _metadata.update({'access_right': request.param})
-    zenoaccess = ZenodoMetadata(metadata=_metadata,
-                                schema=schemafile)
-    return zenoaccess
-
-
-def test__check_license_availability_ccby4(zenoaccess):
-    zenoaccess.set_metadata({'license': 'cc-by-4.0'})
-    assert zenoaccess._check_license_availability()
-
-
-def test__check_license_availability_failed(zenoaccess):
-    zenoaccess.set_metadata({'license': 'not a valid license'})
-    with pytest.raises(ZenodoMetadataException):
-        zenoaccess._check_license_availability()
-
-
-def test__check_license_availability_no_access_right():
-    tmp = metadata.copy()
-    tmp.update({'license': 'cc-by-4.0'})
-    zeno = ZenodoMetadata(metadata=tmp,
-                          schema=schemafile)
-    assert zeno._check_license_availability()
-
-
-def test__check_license_availability_default(zenoaccess):
-    zenoaccess._check_minimal()
-    assert zenoaccess._check_license_availability()
-
-
-def test__check_license_availability_access_right_not_in_open_embargoed():
-    _metadata = metadata.copy()
-    _metadata.update({'access_right': 'closed'})
-    zeno = ZenodoMetadata(metadata=_metadata,
-                          schema=schemafile)
-    assert zeno._check_license_availability()
-
-
-def test__check_license_availability_licenses_files_provided(zenoaccess):
-    zenoaccess.set_metadata({'license': 'cc-by-4.0'})
-    assert zenoaccess._check_license_availability(flicenses=
-                                                  os.path.join(_dir_data,
-                                            'opendefinition-licenses.json'))
-
-
-# use it with internet connection or find a way to mimic it...
-def test__check_license_availability_from_opendefinition(zenoaccess):
-    zenoaccess.set_metadata({'license': 'cc-by-4.0'})
-    assert zenoaccess._check_license_availability(opendefinition=True)
-
-
-# use it with no internet connection or find a way to mimic it...
-def test__check_license_availability_from_opendefinition_no_internet(zenoaccess):
-    zenoaccess.set_metadata({'license': 'cc-by-4.0'})
-    with pytest.raises(ZenodoMetadataException):
-        assert zenoaccess._check_license_availability(opendefinition=True)
-
-
-# test which work doesn't matter if internet or not (not the best
-# but at least all test can be green :) )
-def test__check_license_availability_from_opendefinition_no_internet(zenoaccess):
-    zenoaccess.set_metadata({'license': 'cc-by-4.0'})
-    try:
-        assert zenoaccess._check_license_availability(opendefinition=True)
-    except ZenodoMetadataException:
-        with pytest.raises(ZenodoMetadataException):
-            assert zenoaccess._check_license_availability(opendefinition=True)
-
-
-# def test__verify_metadata_with_extra_argument(self):
-#     raise NotImplemented
-#
-#
-# def test__verify_metadata_with_wrong_key_type(self):
-#     raise NotImplemented
-#
-#
-# def test__verify_metadata_with_missing_key_combination(self):
-#     raise NotImplemented
+import datalight.zenodo_metadata as zenodo_metadata
+
+# Path where the tests are located
+test_directory = pathlib.Path(__file__).parent
+
+# Path where sample metadata files are located
+metadata_path = test_directory / pathlib.Path('metadata/minimum_valid.yml')
+invalid_metadata_path = test_directory / pathlib.Path('metadata/invalid_metadata.yml')
+non_open_license_path = test_directory / pathlib.Path('metadata/non_open_license.yml')
+closed_record_path = test_directory / pathlib.Path('metadata/closed_record.yml')
+extra_properties_path = test_directory / pathlib.Path('metadata/extra_properties.yml')
+
+
+class TestZenodoMetadata:
+    """Tests for the ZenodoMetadata class."""
+
+    @staticmethod
+    def test_read_schema():
+        """A valid schema can be read from a file."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_schema()
+
+        assert isinstance(metadata_reader.schema, dict)
+        assert metadata_reader.schema["title"] == 'Zenodo API upload metadata schema'
+
+    @staticmethod
+    def test_schema_not_found():
+        """Schema_path must be a valid path type."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.schema_path = "AAA"
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            metadata_reader.set_schema()
+
+    @staticmethod
+    def test_read_metadata():
+        """Metadata can be read from a valid file."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata = metadata_reader._read_metadata(metadata_path)
+        assert isinstance(metadata, dict)
+        assert metadata["title"] == "Title of the dataset"
+
+    @staticmethod
+    def test_read_bad_metadata():
+        """Metadata_path must be a path type."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            _ = metadata_reader._read_metadata("AAA")
+
+    @staticmethod
+    def test_set_metadata():
+        """Metadata can be read from a valid file."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(metadata_path)
+        assert isinstance(metadata_reader.metadata, dict)
+        assert metadata_reader.metadata["title"] == "Title of the dataset"
+
+    @staticmethod
+    def test_set_bad_metadata():
+        """Metadata_path must be a path type."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        with pytest.raises(TypeError):
+            metadata_reader.set_metadata({"Title": "hi"})
+
+    @staticmethod
+    def test_validate_valid_metadata():
+        """Valid metadata should not raise an exception."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(metadata_path)
+        metadata_reader.set_schema()
+        metadata_reader.validate_metadata()
+        assert metadata_reader.metadata_validated is True
+
+    @staticmethod
+    def test_validate_no_metadata():
+        """Metadata must be provided."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_schema()
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            metadata_reader.validate_metadata()
+
+    @staticmethod
+    def test_validate_no_schema():
+        """A schema must be provided for validation."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(metadata_path)
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            metadata_reader.validate_metadata()
+
+    @staticmethod
+    def test_validate_metadata_missing_key():
+        """All required metadata must be present or an exeption should be raised."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(invalid_metadata_path)
+        metadata_reader.set_schema()
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            metadata_reader.validate_metadata()
+
+    @staticmethod
+    def test_validate_invalid_license():
+        """An open or embargoed recode must have an open license."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(non_open_license_path)
+        metadata_reader.set_schema()
+        with pytest.raises(zenodo_metadata.ZenodoMetadataException):
+            metadata_reader.validate_metadata()
+
+    @staticmethod
+    def test_validate_closed_access():
+        """A closed record is allowed to have a non open license."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(closed_record_path)
+        metadata_reader.set_schema()
+        metadata_reader.validate_metadata()
+        assert metadata_reader.metadata_validated is True
+        assert metadata_reader.metadata["title"] == "Sample metadata"
+
+    @staticmethod
+    def test_remove_extra_properties():
+        """Test removing non-valid properties from a metadata record."""
+        metadata_reader = zenodo_metadata.ZenodoMetadata()
+        metadata_reader.set_metadata(extra_properties_path)
+        metadata_reader.set_schema()
+        metadata_reader.validate_metadata()
+        assert metadata_reader.metadata_validated is True
+        assert metadata_reader.metadata["title"] == "Sample metadata"
+        assert "extra_data" not in metadata_reader.metadata.keys()
+        assert "number_of_cats_confused" not in metadata_reader.metadata.keys()
+
+
+class TestLicenceValidation:
+    """Most of this class has already been tested by the validation tests
+    of the ZenodoMetadata class."""
+    @staticmethod
+    def test_read_local_licenses():
+        """Check that the local license file can be read in the event
+        of not being able to connect to the internet."""
+        license_checker = zenodo_metadata._LicenseStatus("cc-by-4.0", "open")
+        open_licenses = license_checker._get_local_open_licenses()
+        assert isinstance(open_licenses, dict)

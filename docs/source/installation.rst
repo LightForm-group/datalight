@@ -35,25 +35,25 @@ From sources
 ------------
 
 The sources for datalight can be downloaded from
-the `Github repository <https://github.com/gruel/datalight>`_.
+the `Github repository <https://github.com/LightForm-group/datalight>`_.
 
 the easiest way to install from the source is done by executing
 the following command::
 
-    pip3 install -U https://github.com/gruel/datalight/archive/master.zip --user
+    pip3 install -U https://github.com/LightForm-group/datalight/archive/master.zip --user
 
 
 You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone https://github.com/gruel/datalight
+    $ git clone https://github.com/LightForm-group/datalight
 
-Or download the `tarball`_:
+Or download the tarball:
 
 .. code-block:: console
 
-    $ curl -OL https://github.com/gruel/datalight/tarball/master
+    $ curl -OL https://github.com/LightForm-group/datalight/tarball/master
     $ tar xvf master -C datalight --strip-components=1
 
 Once you have a copy of the source, you can install it with:
@@ -67,7 +67,7 @@ The installer should take care of the missing dependencies, if any.
 
 .. note::
 
-    on MacOS X, the downloaded the file could be uncompress automatically.
+    on MacOS X, the downloaded file may be uncompressed automatically.
     In this case go to the directory were the code is and write::
 
         pip3 install -U . --user
@@ -77,8 +77,8 @@ The installer should take care of the missing dependencies, if any.
     The option ``--user`` will install **datalight** in the user directory
     without the need to be administrator or root on the system.
 
-    Thhat prevent breaking any system-wide packages. It can happen that
-    you'll need to manually add the user base's binary directory
+    Installing in the user directoy prevents breaking any system-wide packages. 
+    To do this you may need to manually add the your user binary directory
     to your ``PATH``.
 
     On Linux and macOS you can find the user base binary directory by running::
@@ -105,22 +105,3 @@ The installer should take care of the missing dependencies, if any.
     ``C:\Users\Username\AppData\Roaming\Python37\Scripts``. You can set your
     user ``PATH`` permanently in the **Control Panel**. You may need to log
     out for the ``PATH`` changes to take effect.
-
-Data files
-----------
-
-At the installation, there are data file which are copied in the
-directory of the software. For now, it concern the validation of the
-metadata needed to upload on the data repository. There are two files:
-*schemas/zenodo/metadata-1.0.0.yml* which contains the *YAML* schema
-used to validated the metadata for Zenodo and
-*schemas/zenodo/opendefinition-licenses.json* which contains the list
-of acceptable open source licenses for Zenodo.
-
-
-
-.. If there are missing dependencies mention at the installation:
-
-.. .. code-block:: console
-
-       $ python XXX

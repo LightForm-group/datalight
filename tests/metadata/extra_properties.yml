@@ -1,0 +1,20 @@
+title: Sample metadata
+
+description: |
+  This metadata is valid but has extra keys at the end which should be deleted.
+
+upload_type: dataset
+
+creators:
+  - name: John Doe
+
+communities: 
+  - identifier: test_sharing
+
+license: cc-by-4.0
+
+access_right: open
+
+extra_data: Fish slapping dance
+
+number_of_cats_confused: 143

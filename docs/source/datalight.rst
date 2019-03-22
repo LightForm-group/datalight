@@ -12,22 +12,6 @@ datalight.common module
     :undoc-members:
     :show-inheritance:
 
-datalight.conf module
----------------------
-
-.. automodule:: datalight.conf
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-datalight.datalight module
---------------------------
-
-.. automodule:: datalight.datalight
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 datalight.main module
 ---------------------
 
