@@ -8,8 +8,10 @@ Datalight
         <img src="https://travis-ci.com/LightForm-group/datalight.svg?branch=devel" /></a>
 </p>
 
-A small python 3 software to upload data on data repository using commandline or
-python command.
+A Python 3 program to upload research data to a data repository.
 
-This software development has been started for the project LightForm
-to respect requirement on the data management from the funding agency EPSRC.
+This software was developed by Research Software Engineers at the 
+University of Manchester, UK. The construction of Datalight was funded
+by the LightForm group - a cross-univeristy EPSRC funded research project (https://lightform.org.uk/).
+
+The latest documentation can be found at https://datalight.readthedocs.io
