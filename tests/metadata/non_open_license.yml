@@ -1,0 +1,17 @@
+title: Sample metadata
+
+description: |
+  This metadata is has access_right: open but the license type is not a
+   valid open license so this file should fail validation.
+
+upload_type: dataset
+
+creators:
+  - name: John Doe
+
+communities: 
+  - identifier: test_sharing
+
+license: Angry Badgers
+
+access_right: open

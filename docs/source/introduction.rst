@@ -7,23 +7,25 @@ Introduction
 Description
 ===========
 
-*Datalight* is a python software developed to help researcher in their
- data management and data curation by providing a simple tool to
- upload their important data on a data repository. For now, there are
- only one data repository available: `Zenodo <https://zenodo.org>`_.
+*Datalight* is a a program developed to help researchers with their
+data management and data curation by providing a simple tool to
+upload their data to a data repository. At the moment Datalught only 
+uploads to one data repository: `Zenodo <https://zenodo.org>`_.
 
-This repository, before publishing the data, need some information
-related to them which has to be provided by the uploader. This
-informations are called metadata and will be provided through the
-usage of a `**YAML** <https://yaml.org>`_ file. These informations are
-very specific and one of the role of the software is to validate the
-file structures to be sure that the upload will not failed because of
-an error inside it.
+Along with the data to upload the user must add some metadata to provide
+information about the data being uploaded. The metadata must be provided in 
+`YAML <https://yaml.org>`_ files. The metadata has a specific format and
+required fields and one of the roles of datalight is to validate the
+metadata before upload to make sure the upload will succeed.
 
 The software is written in `Python 3 <https://python.org>`_. It is
-multiplateform and should run without any problems (but bugs) on the
-main plateforms: Linux, MS Windows and MacOS X.
+multiplatform and should run on Linux, MS Windows and MacOS X.
 
 
 Funding
 =======
+
+This software was written by Research Software Engineers at the `University
+of Manchester <http://www.itservices.manchester.ac.uk/research/>`_. The project 
+was funded by the `Lightform project <https://lightform.org.uk/>`_, a multi-univeristy
+materials research project funded by the EPSRC.
