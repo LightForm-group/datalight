@@ -11,57 +11,66 @@ _dir = os.path.dirname(os.path.realpath(__file__))
 _dir_data = os.path.join(_dir, 'data')
 _dir_metadata = os.path.join(_dir, 'metadata')
 
-# Read Zenodo API token from file
-token = get_authentication_token(sandbox=True)
-
-# Set up metadata example
+# Path to metadata example
 metadata_file = 'minimum_valid.yml'
 metadata = os.path.join(_dir_metadata, metadata_file)
 
 
 @pytest.fixture()
 def zeno():
+    # Read Zenodo API token from file
+    token = get_authentication_token(sandbox=True)
+    if token is None:
+        pytest.skip("Unable to read API token from file. Skipping API tests.")
+
     return Zenodo(token=token, metadata_path=metadata, sandbox=True)
 
 
 class TestZenodo(object):
-
-    def test_status_code_500(self, zeno):
+    @staticmethod
+    def test_status_code_500(zeno):
         with pytest.raises(ZenodoException):
             zeno._check_status_code(500)
 
-    def test_status_code_400(self, zeno):
+    @staticmethod
+    def test_status_code_400(zeno):
         with pytest.raises(ZenodoException):
             zeno._check_status_code(400)
 
-    def test_status_code_200(self, zeno):
+    @staticmethod
+    def test_status_code_200(zeno):
         assert zeno._check_status_code(200) == 200
 
-    def test_connection_token(self, zeno):
+    @staticmethod
+    def test_connection_token(zeno):
         zeno._try_connection()
         assert zeno.status_code == 200
 
-    def test_connection_wrong_url(self, zeno):
+    @staticmethod
+    def test_connection_wrong_url(zeno):
         zeno.token = 1234
         with pytest.raises(ZenodoException):
             zeno._try_connection()
 
-    def test_delete_bad_token(self, zeno):
+    @staticmethod
+    def test_delete_bad_token(zeno):
         with pytest.raises(ZenodoException):
             zeno.delete(1234)
 
-    def test_delete_wrong_url_or_bad_token(self, zeno):
+    @staticmethod
+    def test_delete_wrong_url_or_bad_token(zeno):
         zeno.depositions_url = 'https://zenodo.org/'
         with pytest.raises(ZenodoException):
             zeno.delete(1234)
 
-    def test_get_deposition_error_400(self, zeno):
+    @staticmethod
+    def test_get_deposition_error_400(zeno):
         zeno.depositions_url = 'https://zenodo.org/'
         with pytest.raises(ZenodoException):
             zeno._get_deposition_id()
 
-    def test_get_deposition_id_and_delete(self):
-        zeno = Zenodo(token=token, metadata_path=metadata, sandbox=True)
+    @staticmethod
+    def test_get_deposition_id_and_delete(zeno):
         zeno._get_deposition_id()
         assert type(zeno.deposition_id) is int
 
@@ -153,7 +162,8 @@ class TestZenodo(object):
     def print_server_error(zeno):
         print('Test failed due to server error {}.'.format(zeno.status_code))
 
-    def test_set_metadata(self, zeno):
+    @staticmethod
+    def test_set_metadata(zeno):
         zeno.set_metadata()
         assert 'metadata' in zeno.checked_metadata
 
@@ -161,5 +171,7 @@ class TestZenodo(object):
 def test_zenodo_api():
     """All of the above tests access the Zenodo sandbox while this test accesses the real Zenodo API."""
     token = get_authentication_token(sandbox=False)
+    if token is None:
+        pytest.skip("Unable to read API token from file. Skipping API tests.")
     zeno = Zenodo(token=token, metadata_path=metadata, sandbox=False)
     assert zeno.api_base_url == 'https://zenodo.org/api/'

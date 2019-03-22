@@ -1,33 +1,35 @@
 """Main module for datalight."""
 
 import os
-import sys
 
-from datalight.common import get_files_path, DatalightException, zip_data, get_authentication_token, logger
+import datalight.common as common
 from datalight.zenodo import Zenodo as DataRepo
 
 
-def main(directory_name, metadata, zip_name="data.zip", publish=False, sandbox=True):
+def main(directory_name, metadata_path, zip_name="data.zip", publish=False, sandbox=True):
     """Run datalight scripts to upload file to data repository"""
 
+    token = common.get_authentication_token(sandbox)
+    if token is None:
+        common.logger.error("Unable to load API token from datalight.config.")
+        raise FileNotFoundError("Unable to load API token from datalight.config.")
+
     try:
-        files = get_files_path(directory_name)
-    except DatalightException:
-        logger.error('Problem with the files to upload.')
-        sys.exit()
+        files = common.get_files_path(directory_name)
+    except common.DatalightException:
+        common.logger.error('Problem with the files to upload.')
+        raise common.DatalightException
 
-    if not os.path.exists(metadata):
-        logger.error('Metadata file: {} does not exist.'.format(metadata))
-        sys.exit(1)
+    if not os.path.exists(metadata_path):
+        common.logger.error('Metadata file: {} does not exist.'.format(metadata_path))
+        raise FileNotFoundError
 
-    zip_data(files, zip_name)
+    common.zip_data(files, zip_name)
     # Change the name of the files to upload for the zip file created
     files, directory = [zip_name], '.'
 
-    token = get_authentication_token(sandbox)
-
-    data_repo = DataRepo(token=token, sandbox=sandbox)
-    data_repo.deposit_record(files, directory, metadata, publish)
+    data_repo = DataRepo(token=token, metadata_path=metadata_path, sandbox=sandbox)
+    data_repo.deposit_record(files, directory, publish)
 
 
 if __name__ == '__main__':

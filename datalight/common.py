@@ -100,16 +100,6 @@ def get_authentication_token(sandbox):
             token = zeno_config['sandbox.zenodo.org']['token']
         else:
             token = zeno_config['zenodo.org']['token']
+        return token
     except KeyError:
-        token = input('Provide Zenodo token: ')
-
-        # Save the token to the ~/.zenodo
-        config = configparser.ConfigParser()
-        if sandbox:
-            config['sandbox.zenodo.org'] = {'lightform': token}
-        else:
-            config['zenodo.org'] = {'lightform': token}
-
-        with open(token_file, 'a', encoding="utf-8") as configfile:
-            config.write(configfile)
-    return token
+        return None
