@@ -1,0 +1,47 @@
+# This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
+
+title:
+    - Optional: False
+    - Type: String
+    - Tooltip: The title of the record
+    
+description:
+    - Optional: False
+    - Type: String
+    - Tooltip: A description of the dataset being uploaded
+
+upload_type:
+    - Optional: False
+    - Type: List
+    - Values:
+        - Publication
+        - Dataset
+    - Tooltip: The data type of the upload.
+
+creators:
+    - name:
+        - Optional: False
+        - Type: String
+        - Tooltip: The name(s) of the people who created the dataset.
+    - affiliation:
+        - Optional: True
+        - Type: String
+        - Default: Univeristy of Manchester
+    - orcid:
+        - Optional: True
+        - Type: String
+        
+access-right:
+    - Optional: False
+    - Type: List
+    - Values:
+        - Open
+        - Closed
+    - Default: Open
+        
+license:
+    - Optional: False
+    - Type: Free List
+    - Values:
+        - cc-by-4.0
+    - Default: cc-by-4.0
