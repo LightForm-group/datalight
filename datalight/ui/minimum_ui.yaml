@@ -1,47 +1,50 @@
 # This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
 
 title:
-    - Optional: False
-    - Type: String
-    - Tooltip: The title of the record
+    fancy_name: Title of Record
+    optional: False
+    tooltip: The title of the record
+    widget: QPlainTextEdit
     
 description:
-    - Optional: False
-    - Type: String
-    - Tooltip: A description of the dataset being uploaded
+    fancy_name: Record Description
+    optional: False
+    tooltip: A description of the dataset being uploaded
+    widget: QPlainTextEdit
 
 upload_type:
-    - Optional: False
-    - Type: List
-    - Values:
+    fancy_name: Upload Type
+    optional: False
+    values:
         - Publication
         - Dataset
-    - Tooltip: The data type of the upload.
+    tooltip: The data type of the upload.
+    widget: QComboBox
 
 creators:
-    - name:
-        - Optional: False
-        - Type: String
-        - Tooltip: The name(s) of the people who created the dataset.
-    - affiliation:
-        - Optional: True
-        - Type: String
-        - Default: Univeristy of Manchester
-    - orcid:
-        - Optional: True
-        - Type: String
+    name:
+        optional: False
+        tooltip: The name(s) of the people who created the dataset.
+        widget: QComboBox
+    affiliation:
+        optional: True
+        default: Univeristy of Manchester
+        widget: QPlainTextEdit
+    orcid:
+        optional: True
+        widget: QPlainTextEdit
         
 access-right:
-    - Optional: False
-    - Type: List
-    - Values:
+    optional: False
+    values:
         - Open
         - Closed
-    - Default: Open
+    default: Open
+    widget: QComboBox
         
 license:
-    - Optional: False
-    - Type: Free List
-    - Values:
+    optional: False
+    values:
         - cc-by-4.0
-    - Default: cc-by-4.0
+    default: cc-by-4.0
+    widget: QComboBox
