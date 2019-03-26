@@ -12,13 +12,63 @@ description:
     tooltip: A description of the dataset being uploaded
     widget: QPlainTextEdit
 
+publication_date:
+    fancy_name: Publication Date
+    optional: False
+    tooltip: The date of the publication of the record (you likely want todays date).
+    widget: QDateEdit
+
 upload_type:
     fancy_name: Upload Type
     optional: False
     values:
-        - Publication
-        - Dataset
+        publication: Publication
+        poster: Poster
+        presentation: Presentation
+        dataset: Dataset
+        image: Image
+        video: Video/Audio
+        software: Software
+        lesson: Lesson
+        other: Other
     tooltip: The data type of the upload.
+    widget: QComboBox
+
+publication_type:
+    fancy_name: Publication Type
+    active_when:
+        upload_type: publication
+    optional: False
+    values:
+        book: Book
+        section: Book section
+        conferencepaper: Conference paper
+        article: Journal article
+        patent: Patent
+        preprint: Preprint
+        report: Report
+        deliverable: Project deliverable
+        milestone: Project milestone
+        proposal: Proposal
+        softwaredocumentation: Software documentation
+        thesis: Thesis
+        technicalnote: Technical note
+        workingpaper: Working paper
+        other: Other
+    widget: QComboBox
+
+image_type:
+    fancy_name: Image Type
+    active_when:
+        upload_type: image
+    optional: False
+    values:
+        figure: Figure
+        plot: Plot
+        drawing: Drawing
+        diagram: Diagram
+        photo: Photo
+        other: Other
     widget: QComboBox
 
 creators:
@@ -37,14 +87,14 @@ creators:
 access-right:
     optional: False
     values:
-        - Open
-        - Closed
-    default: Open
+        open: Open Access
+        embargoed: Embargoed Access
+        restricted: Restricted Access
+        closed: Closed Access
     widget: QComboBox
         
 license:
     optional: False
     values:
         - cc-by-4.0
-    default: cc-by-4.0
     widget: QComboBox

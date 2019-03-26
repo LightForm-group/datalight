@@ -1,3 +1,6 @@
+import datetime
+import time
+
 import yaml
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -73,6 +76,8 @@ class Ui_MainWindow(object):
             self.add_combo_box(element_description)
         elif widget_type == "QPlainTextEdit":
             self.add_plain_text_edit(element_description)
+        elif widget_type == "QDateEdit":
+            self.add_date_edit(element_description)
         else:
             raise TypeError("No method to add element {}.".format(widget_type))
 
@@ -80,9 +85,11 @@ class Ui_MainWindow(object):
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
                                   self.widgets[-1])
 
-        # Set widget properties commmon to all widgets
+        # Set widget properties common to all widgets
         if "tooltip" in element_description:
             self.widgets[-1].setToolTip = element_description["tooltip"]
+        if "active_when" in element_description:
+            self.widgets[-1].setEnabled(False)
         self.add_role_label(element_description["fancy_name"])
         self.num_widgets += 1
 
@@ -110,6 +117,13 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
                                   self.widgets[-1])
+
+    def add_date_edit(self, element_description):
+        self.widgets.append(QtWidgets.QDateEdit(self.centralwidget))
+        name = element_description["_name"]
+        self.widgets[-1].setObjectName("date_edit{}".format(name))
+        self.widgets[-1].setCalendarPopup(True)
+        self.widgets[-1].setDate(datetime.date.today())
 
 
 if __name__ == "__main__":
