@@ -59,6 +59,8 @@ class UIWindow:
                     output[name] = widget.toPlainText()
                 elif isinstance(widget, QtWidgets.QDateEdit):
                     output[name] = widget.date()
+                elif isinstance(widget, QtWidgets.QGroupBox):
+                    pass
                 else:
                     raise GuiError("Unknown widget type when summarising data.")
         print(output)
@@ -96,14 +98,15 @@ class UIWindow:
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
                                   self.widgets[-1])
 
-        # Add a label for the new widget and position it next to the new widget
-        self.widgets.append(add_widget.add_role_label(element_description, self.central_widget))
-        self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
-                                  self.widgets[-1])
-
         # Process widget dependencies
         if "activates_on" in element_description:
-            self.widgets[-2].currentTextChanged.connect(lambda: self.enable_dependent_widget(element_description["activates_on"]))
+            self.widgets[-1].currentTextChanged.connect(lambda: self.enable_dependent_widget(element_description["activates_on"]))
+
+        # Add a label for the new widget and position it next to the new widget
+        if not isinstance(self.widgets[-1], QtWidgets.QGroupBox):
+            self.widgets.append(add_widget.add_role_label(element_description, self.central_widget))
+            self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
+                                      self.widgets[-1])
 
         self.num_widgets += 1
 

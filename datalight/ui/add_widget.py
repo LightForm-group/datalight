@@ -11,6 +11,8 @@ def add_new_widget(element_description, parent_widget):
         new_widget = _add_plain_text_edit(element_description, parent_widget)
     elif widget_type == "QDateEdit":
         new_widget = _add_date_edit(element_description, parent_widget)
+    elif widget_type == "QGroupBox":
+        new_widget = _add_group_box(element_description, parent_widget)
     else:
         raise TypeError("No method to add element {}.".format(widget_type))
 
@@ -60,5 +62,13 @@ def add_role_label(element_description, parent_widget):
     new_label.setObjectName("label_{}".format(name))
     return new_label
 
+
+def _add_group_box(element_description, parent_widget):
+    new_group_box = QtWidgets.QGroupBox(parent_widget)
+    name = element_description["_name"]
+    fancy_name = element_description["fancy_name"]
+    new_group_box.setObjectName(name)
+    new_group_box.setTitle(fancy_name)
+    return new_group_box
 
 

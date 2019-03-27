@@ -34,7 +34,6 @@ upload_type:
     activates_on:
         publication_type: publication
         image_type: image
-
     tooltip: The data type of the upload.
     widget: QComboBox
 
@@ -85,6 +84,7 @@ creators:
     orcid:
         optional: True
         widget: QPlainTextEdit
+    widget: QGroupBox
         
 access-right:
     fancy_name: Access Right
