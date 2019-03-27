@@ -17,8 +17,6 @@ def add_new_widget(element_description, parent_widget):
     # Set widget properties common to all widgets
     if "tooltip" in element_description:
         new_widget.setToolTip = element_description["tooltip"]
-    if "active_when" in element_description:
-        new_widget.setEnabled(False)
 
     return new_widget
 

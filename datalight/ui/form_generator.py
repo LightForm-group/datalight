@@ -86,6 +86,17 @@ class UIWindow:
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
                                   self.widgets[-1])
 
+        # Process widget dependencies
+        if "active_when" in element_description:
+            for parent in element_description["active_when"]:
+                trigger_value = element_description["active_when"][parent]
+                for widget in self.widgets:
+                    if widget.objectName().endswith(parent):
+                        widget.currentTextChanged.connect()
+                        # TODO: add a method to the above line enable and disable current
+                        #       widget when parent value is trigger_value.
+            self.widgets[-1].setEnabled(False)
+
         self.num_widgets += 1
 
 
