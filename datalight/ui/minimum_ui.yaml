@@ -87,6 +87,7 @@ creators:
         widget: QPlainTextEdit
         
 access-right:
+    fancy_name: Access Right
     optional: False
     values:
         open: Open Access
@@ -96,6 +97,7 @@ access-right:
     widget: QComboBox
         
 license:
+    fancy_name: License
     optional: False
     values:
         - cc-by-4.0

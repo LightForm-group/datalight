@@ -4,6 +4,10 @@ from PyQt5 import QtCore, QtWidgets
 from datalight.ui import add_widget
 
 
+class GuiError(Exception):
+    """An error raised by the GUI."""
+
+
 class UIWindow:
     def __init__(self):
         self.ui_design = None
@@ -44,9 +48,21 @@ class UIWindow:
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole, self.OK_button)
         self.num_widgets += 1
 
-    @staticmethod
     def do_ok_button(self):
-        print("Ahoy!")
+        output = {}
+        for widget in self.widgets:
+            if not isinstance(widget, QtWidgets.QLabel):
+                name = widget.objectName()
+                if isinstance(widget, QtWidgets.QComboBox):
+                    output[name] = widget.currentText()
+                elif isinstance(widget, QtWidgets.QPlainTextEdit):
+                    output[name] = widget.toPlainText()
+                elif isinstance(widget, QtWidgets.QDateEdit):
+                    output[name] = widget.date()
+                else:
+                    raise GuiError("Unknown widget type when summarising data.")
+        print(output)
+
 
     def set_up_main_window(self, main_window):
         main_window.setObjectName("MainWindow")
@@ -81,8 +97,7 @@ class UIWindow:
                                   self.widgets[-1])
 
         # Add a label for the new widget and position it next to the new widget
-        name = element_description["_name"]
-        self.widgets.append(add_widget.add_role_label(name, self.central_widget))
+        self.widgets.append(add_widget.add_role_label(element_description, self.central_widget))
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
                                   self.widgets[-1])
 
@@ -109,7 +124,7 @@ class UIWindow:
     def get_widget_by_name(self, name):
         """Return the widget in self.widgets whose objectName ends with name."""
         for widget in self.widgets:
-            if widget.objectName().endswith(name):
+            if widget.objectName() == name:
                 return widget
 
 
