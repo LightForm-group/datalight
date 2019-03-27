@@ -55,7 +55,7 @@ def _add_date_edit(element_description, parent_widget):
 def add_role_label(name, parent_widget):
     new_label = QtWidgets.QLabel(parent_widget)
     new_label.setText(name)
-    new_label.setObjectName("label_{}".format(name))
+    new_label.setObjectName("{}_label".format(name))
     return new_label
 
 

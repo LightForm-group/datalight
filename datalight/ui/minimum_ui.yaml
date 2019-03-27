@@ -31,6 +31,10 @@ upload_type:
         software: Software
         lesson: Lesson
         other: Other
+    activates_on:
+        publication_type: publication
+        image_type: image
+
     tooltip: The data type of the upload.
     widget: QComboBox
 
@@ -59,8 +63,6 @@ publication_type:
 
 image_type:
     fancy_name: Image Type
-    active_when:
-        upload_type: image
     optional: False
     values:
         figure: Figure

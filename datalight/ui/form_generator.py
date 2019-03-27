@@ -9,7 +9,7 @@ class UIWindow:
         self.ui_design = None
         self.num_widgets = 0
         self.widgets = []
-        self.centralwidget = None
+        self.central_widget = None
         self.formLayout = None
         self.menubar = None
         self.statusbar = None
@@ -37,7 +37,7 @@ class UIWindow:
 
     def add_ok_button(self):
         # Put in an OK button
-        self.OK_button = QtWidgets.QPushButton(self.centralwidget)
+        self.OK_button = QtWidgets.QPushButton(self.central_widget)
         self.OK_button.setObjectName("pushButton_2")
         self.OK_button.setText("OK")
         self.OK_button.clicked.connect(self.do_ok_button)
@@ -52,11 +52,11 @@ class UIWindow:
         main_window.setObjectName("MainWindow")
         main_window.setWindowTitle("MainWindow")
         main_window.resize(506, 335)
-        self.centralwidget = QtWidgets.QWidget(main_window)
-        self.centralwidget.setObjectName("centralwidget")
-        self.formLayout = QtWidgets.QFormLayout(self.centralwidget)
+        self.central_widget = QtWidgets.QWidget(main_window)
+        self.central_widget.setObjectName("central_widget")
+        self.formLayout = QtWidgets.QFormLayout(self.central_widget)
         self.formLayout.setObjectName("formLayout")
-        main_window.setCentralWidget(self.centralwidget)
+        main_window.setCentralWidget(self.central_widget)
         self.menubar = QtWidgets.QMenuBar(main_window)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 506, 21))
         self.menubar.setObjectName("menubar")
@@ -76,28 +76,41 @@ class UIWindow:
         """
 
         # Add a new widget and then add it to the layout form
-        self.widgets.append(add_widget.add_new_widget(element_description, self.centralwidget))
+        self.widgets.append(add_widget.add_new_widget(element_description, self.central_widget))
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
                                   self.widgets[-1])
 
         # Add a label for the new widget and position it next to the new widget
-        name = element_description["fancy_name"]
-        self.widgets.append(add_widget.add_role_label(name, self.centralwidget))
+        name = element_description["_name"]
+        self.widgets.append(add_widget.add_role_label(name, self.central_widget))
         self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
                                   self.widgets[-1])
 
         # Process widget dependencies
-        if "active_when" in element_description:
-            for parent in element_description["active_when"]:
-                trigger_value = element_description["active_when"][parent]
-                for widget in self.widgets:
-                    if widget.objectName().endswith(parent):
-                        widget.currentTextChanged.connect()
-                        # TODO: add a method to the above line enable and disable current
-                        #       widget when parent value is trigger_value.
-            self.widgets[-1].setEnabled(False)
+        if "activates_on" in element_description:
+            self.widgets[-2].currentTextChanged.connect(lambda: self.enable_dependent_widget(element_description["activates_on"]))
 
         self.num_widgets += 1
+
+    def enable_dependent_widget(self, dependencies):
+        """Process the 'activates_on' dependency. This turns a widget on or off depending
+        on the value of a parent widget.
+        :param dependencies: (dictionary) Keys are the widgets to turn on or off. Values are the
+        values that activate the child element.
+        """
+        chosen_value = self.central_widget.sender().currentText()
+        for child in dependencies:
+            trigger_value = dependencies[child]
+            if chosen_value == trigger_value:
+                self.get_widget_by_name(child).setEnabled(True)
+            else:
+                self.get_widget_by_name(child).setEnabled(False)
+
+    def get_widget_by_name(self, name):
+        """Return the widget in self.widgets whose objectName ends with name."""
+        for widget in self.widgets:
+            if widget.objectName().endswith(name):
+                return widget
 
 
 if __name__ == "__main__":
