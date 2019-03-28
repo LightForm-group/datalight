@@ -1,3 +1,5 @@
+"""Generates the UI which is used to input data into Datalight"""
+import sys
 import yaml
 from PyQt5 import QtCore, QtWidgets
 
@@ -8,23 +10,32 @@ class GuiError(Exception):
     """An error raised by the GUI."""
 
 
+# noinspection PyArgumentList
 class UIWindow:
+    """The main class for the UI Window. Stores a list of widgets which are associated
+    with the UI."""
     def __init__(self):
         self.ui_design = None
         self.num_widgets = 0
         self.widgets = []
         self.central_widget = None
-        self.formLayout = None
-        self.menubar = None
-        self.statusbar = None
-        self.OK_button = None
+        self.form_layout = None
+        self.menu_bar = None
+        self.status_bar = None
+        self.ok_button = None
 
     def ui_setup(self, main_window):
-        # Set up main window
+        """ Initialise widgets on main window before display.
+
+        :param main_window: (QtWidgets.QMainWindow) The main window.
+        """
         self.set_up_main_window(main_window)
 
-        # Read ui description from YAML
+        # Read ui description from YAML file
         self.read_ui()
+
+        # Set up file upload widgets
+        #self.set_up_file_upload(main_window)
 
         # Iteratively insert each element onto the page
         for element_name in self.ui_design:
@@ -40,15 +51,20 @@ class UIWindow:
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
     def add_ok_button(self):
-        # Put in an OK button
-        self.OK_button = QtWidgets.QPushButton(self.central_widget)
-        self.OK_button.setObjectName("pushButton_2")
-        self.OK_button.setText("OK")
-        self.OK_button.clicked.connect(self.do_ok_button)
-        self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole, self.OK_button)
+        """ Put in an OK button and attach its click method."""
+        self.ok_button = QtWidgets.QPushButton(self.central_widget)
+        self.ok_button.setObjectName("pushButton_2")
+        self.ok_button.setText("OK")
+        self.ok_button.clicked.connect(self.do_ok_button)
+        self.form_layout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
+                                   self.ok_button)
         self.num_widgets += 1
 
     def do_ok_button(self):
+        """
+        The on click method for the OK button. Take all data from the form and package
+        it up into a dictionary.
+        """
         output = {}
         for widget in self.widgets:
             if not isinstance(widget, QtWidgets.QLabel):
@@ -65,23 +81,26 @@ class UIWindow:
                     raise GuiError("Unknown widget type when summarising data.")
         print(output)
 
-
     def set_up_main_window(self, main_window):
+        """ Set up the widgets on the main window.
+        :param main_window: (QtWidgets.QMainWindow) The main window.
+        :return:
+        """
         main_window.setObjectName("MainWindow")
         main_window.setWindowTitle("MainWindow")
         main_window.resize(506, 335)
         self.central_widget = QtWidgets.QWidget(main_window)
         self.central_widget.setObjectName("central_widget")
-        self.formLayout = QtWidgets.QFormLayout(self.central_widget)
-        self.formLayout.setObjectName("formLayout")
+        self.form_layout = QtWidgets.QFormLayout(self.central_widget)
+        self.form_layout.setObjectName("formLayout")
         main_window.setCentralWidget(self.central_widget)
-        self.menubar = QtWidgets.QMenuBar(main_window)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 506, 21))
-        self.menubar.setObjectName("menubar")
-        main_window.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(main_window)
-        self.statusbar.setObjectName("statusbar")
-        main_window.setStatusBar(self.statusbar)
+        self.menu_bar = QtWidgets.QMenuBar(main_window)
+        self.menu_bar.setGeometry(QtCore.QRect(0, 0, 506, 21))
+        self.menu_bar.setObjectName("menubar")
+        main_window.setMenuBar(self.menu_bar)
+        self.status_bar = QtWidgets.QStatusBar(main_window)
+        self.status_bar.setObjectName("statusbar")
+        main_window.setStatusBar(self.status_bar)
 
     def read_ui(self):
         with open("minimum_ui.yaml", 'r') as input_file:
@@ -95,18 +114,19 @@ class UIWindow:
 
         # Add a new widget and then add it to the layout form
         self.widgets.append(add_widget.add_new_widget(element_description, self.central_widget))
-        self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
-                                  self.widgets[-1])
+        self.form_layout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
+                                   self.widgets[-1])
 
         # Process widget dependencies
         if "activates_on" in element_description:
-            self.widgets[-1].currentTextChanged.connect(lambda: self.enable_dependent_widget(element_description["activates_on"]))
+            self.widgets[-1].currentTextChanged.connect(
+                lambda: self.enable_dependent_widget(element_description["activates_on"]))
 
         # Add a label for the new widget and position it next to the new widget
         if not isinstance(self.widgets[-1], QtWidgets.QGroupBox):
             self.widgets.append(add_widget.add_role_label(element_description, self.central_widget))
-            self.formLayout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
-                                      self.widgets[-1])
+            self.form_layout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
+                                       self.widgets[-1])
 
         self.num_widgets += 1
 
@@ -125,18 +145,51 @@ class UIWindow:
                 self.get_widget_by_name(child).setEnabled(False)
 
     def get_widget_by_name(self, name):
-        """Return the widget in self.widgets whose objectName ends with name."""
+        """Return the widget in self.widgets whose objectName ends with name.
+        :param name: (string) the name of the widget to find.
+        :returns widget if widget with `name` is found else returns none."""
         for widget in self.widgets:
             if widget.objectName() == name:
                 return widget
+        return None
+
+    def set_up_file_upload(self, main_window):
+        self.upload_files_group_box = QtWidgets.QGroupBox(main_window)
+        self.upload_files_group_box.setObjectName("upload_files_group_box")
+
+        self.file_upload_list_view = QtWidgets.QListView(self.upload_files_group_box)
+        self.file_upload_list_view.setObjectName("file_upload_list_view")
+
+        self.select_file_button = QtWidgets.QPushButton(self.upload_files_group_box)
+        self.select_file_button.setObjectName("select_file_button")
+
+        self.select_folder_button = QtWidgets.QPushButton(self.upload_files_group_box)
+        self.select_folder_button.setObjectName("select_folder_button")
+
+        self.clear_files_button = QtWidgets.QPushButton(self.upload_files_group_box)
+        self.clear_files_button.setObjectName("clear_files_button")
+
+        self.gridLayout = QtWidgets.QGridLayout(self.upload_files_group_box)
+        self.gridLayout.setObjectName("group_box_grid")
+        self.gridLayout.addWidget(self.file_upload_list_view, 0, 0, 1, 3)
+        self.gridLayout.addWidget(self.select_file_button, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.select_folder_button, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.clear_files_button, 1, 2, 1, 1)
+
+        self.verticalLayout = QtWidgets.QVBoxLayout(main_window)
+        self.verticalLayout.setObjectName("main_form_vertical_layout")
+        self.verticalLayout.addWidget(self.upload_files_group_box)
+
+
+# noinspection PyArgumentList
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    main_window = QtWidgets.QMainWindow()
+    ui = UIWindow()
+    ui.ui_setup(main_window)
+    main_window.show()
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":
-    import sys
-
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = UIWindow()
-    ui.ui_setup(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+    main()

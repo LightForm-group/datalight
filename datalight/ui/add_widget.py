@@ -1,3 +1,5 @@
+"""Methods to prepare widgets for addition to a UI form"""
+
 import datetime
 from PyQt5 import QtWidgets
 
@@ -70,5 +72,3 @@ def _add_group_box(element_description, parent_widget):
     new_group_box.setObjectName(name)
     new_group_box.setTitle(fancy_name)
     return new_group_box
-
-
