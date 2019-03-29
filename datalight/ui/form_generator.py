@@ -19,7 +19,7 @@ class UIWindow:
         self.num_widgets = 0
         self.widgets = []
         self.central_widget = None
-        self.form_layout = None
+        self.vertical_layout = None
         self.menu_bar = None
         self.status_bar = None
         self.ok_button = None
@@ -31,22 +31,15 @@ class UIWindow:
         """
         self.set_up_main_window(main_window)
 
-        # Read ui description from YAML file
-        self.read_ui()
-
         # Set up file upload widgets
-        #self.set_up_file_upload(main_window)
+        self.set_up_file_upload()
 
-        # Iteratively insert each element onto the page
-        for element_name in self.ui_design:
-            element_description = self.ui_design[element_name]
-            element_description["_name"] = element_name
-            if "fancy_name" not in element_description:
-                element_description["fancy_name"] = element_name
-            if "widget" in element_description:
-                self.add_ui_element(element_description)
+        # Read ui description from YAML file
+        self.read_basic_ui()
 
-        self.add_ok_button()
+        self.set_up_basic_widgets()
+
+        # self.add_ok_button()
 
         QtCore.QMetaObject.connectSlotsByName(main_window)
 
@@ -86,34 +79,33 @@ class UIWindow:
         :param main_window: (QtWidgets.QMainWindow) The main window.
         :return:
         """
+        # Get main window
         main_window.setObjectName("MainWindow")
         main_window.setWindowTitle("MainWindow")
         main_window.resize(506, 335)
+
+        # Set up central widget
         self.central_widget = QtWidgets.QWidget(main_window)
         self.central_widget.setObjectName("central_widget")
-        self.form_layout = QtWidgets.QFormLayout(self.central_widget)
-        self.form_layout.setObjectName("formLayout")
-        main_window.setCentralWidget(self.central_widget)
-        self.menu_bar = QtWidgets.QMenuBar(main_window)
-        self.menu_bar.setGeometry(QtCore.QRect(0, 0, 506, 21))
-        self.menu_bar.setObjectName("menubar")
-        main_window.setMenuBar(self.menu_bar)
-        self.status_bar = QtWidgets.QStatusBar(main_window)
-        self.status_bar.setObjectName("statusbar")
-        main_window.setStatusBar(self.status_bar)
 
-    def read_ui(self):
+        # Layout of central widget
+        self.vertical_layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.vertical_layout.setObjectName("verticalLayout")
+        main_window.setCentralWidget(self.central_widget)
+
+    def read_basic_ui(self):
         with open("minimum_ui.yaml", 'r') as input_file:
             ui_design = yaml.load(input_file, Loader=yaml.FullLoader)
         self.ui_design = ui_design
 
-    def add_ui_element(self, element_description):
+    def add_ui_element(self, element_description, location):
         """ Add a widget to the form.
         :param element_description: (dict) A description of the element to add.
+        :param location: (QWidget) The parent widget of the new widget.
         """
 
         # Add a new widget and then add it to the layout form
-        self.widgets.append(add_widget.add_new_widget(element_description, self.central_widget))
+        self.widgets.append(add_widget.add_new_widget(element_description, location))
         self.form_layout.setWidget(self.num_widgets, QtWidgets.QFormLayout.FieldRole,
                                    self.widgets[-1])
 
@@ -124,7 +116,7 @@ class UIWindow:
 
         # Add a label for the new widget and position it next to the new widget
         if not isinstance(self.widgets[-1], QtWidgets.QGroupBox):
-            self.widgets.append(add_widget.add_role_label(element_description, self.central_widget))
+            self.widgets.append(add_widget.add_role_label(element_description, location))
             self.form_layout.setWidget(self.num_widgets, QtWidgets.QFormLayout.LabelRole,
                                        self.widgets[-1])
 
@@ -153,32 +145,53 @@ class UIWindow:
                 return widget
         return None
 
-    def set_up_file_upload(self, main_window):
-        self.upload_files_group_box = QtWidgets.QGroupBox(main_window)
+    def set_up_file_upload(self):
+
+        self.upload_files_group_box = QtWidgets.QGroupBox(self.central_widget)
         self.upload_files_group_box.setObjectName("upload_files_group_box")
+        self.upload_files_group_box.setTitle("Upload Files")
 
         self.file_upload_list_view = QtWidgets.QListView(self.upload_files_group_box)
         self.file_upload_list_view.setObjectName("file_upload_list_view")
 
         self.select_file_button = QtWidgets.QPushButton(self.upload_files_group_box)
         self.select_file_button.setObjectName("select_file_button")
+        self.select_file_button.setText("Select file to upolad")
 
         self.select_folder_button = QtWidgets.QPushButton(self.upload_files_group_box)
         self.select_folder_button.setObjectName("select_folder_button")
+        self.select_folder_button.setText("Select folder to upload")
 
         self.clear_files_button = QtWidgets.QPushButton(self.upload_files_group_box)
         self.clear_files_button.setObjectName("clear_files_button")
+        self.clear_files_button.setText("Clear files to upload")
 
         self.gridLayout = QtWidgets.QGridLayout(self.upload_files_group_box)
         self.gridLayout.setObjectName("group_box_grid")
+        # Position in grid given by: y-pos, x-pos, y-width, x-width.
         self.gridLayout.addWidget(self.file_upload_list_view, 0, 0, 1, 3)
         self.gridLayout.addWidget(self.select_file_button, 1, 0, 1, 1)
         self.gridLayout.addWidget(self.select_folder_button, 1, 1, 1, 1)
         self.gridLayout.addWidget(self.clear_files_button, 1, 2, 1, 1)
 
-        self.verticalLayout = QtWidgets.QVBoxLayout(main_window)
-        self.verticalLayout.setObjectName("main_form_vertical_layout")
-        self.verticalLayout.addWidget(self.upload_files_group_box)
+        self.vertical_layout.addWidget(self.upload_files_group_box)
+
+    def set_up_basic_widgets(self):
+        self.basic_group = QtWidgets.QGroupBox(self.central_widget)
+        self.basic_group.setTitle("Basic Metadata")
+
+        self.form_layout = QtWidgets.QFormLayout(self.basic_group)
+
+        # Iteratively insert each element onto the page
+        for element_name in self.ui_design:
+            element_description = self.ui_design[element_name]
+            element_description["_name"] = element_name
+            if "fancy_name" not in element_description:
+                element_description["fancy_name"] = element_name
+            if "widget" in element_description:
+                self.add_ui_element(element_description, self.basic_group)
+
+        self.vertical_layout.addWidget(self.basic_group)
 
 
 # noinspection PyArgumentList
