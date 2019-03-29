@@ -1,7 +1,8 @@
 """Generates the UI which is used to input data into Datalight"""
+import re
 import sys
 import yaml
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 from datalight.ui import add_widget
 
@@ -15,13 +16,13 @@ class UIWindow:
     """The main class for the UI Window. Stores a list of widgets which are associated
     with the UI."""
     def __init__(self):
-        self.ui_design = None
+        self.ui_specification = None
         self.num_widgets = 0
         self.widgets = []
+        self.layouts = {}
+        self.file_upload = {}
+        self.group_boxes = {}
         self.central_widget = None
-        self.vertical_layout = None
-        self.menu_bar = None
-        self.status_bar = None
         self.ok_button = None
 
     def ui_setup(self, main_window):
@@ -89,14 +90,15 @@ class UIWindow:
         self.central_widget.setObjectName("central_widget")
 
         # Layout of central widget
-        self.vertical_layout = QtWidgets.QVBoxLayout(self.central_widget)
-        self.vertical_layout.setObjectName("verticalLayout")
+        self.layouts["vertical_layout"] = QtWidgets.QVBoxLayout(self.central_widget)
+        self.layouts["vertical_layout"].setObjectName("vertical_layout")
+
         main_window.setCentralWidget(self.central_widget)
 
     def read_basic_ui(self):
         with open("minimum_ui.yaml", 'r') as input_file:
             ui_design = yaml.load(input_file, Loader=yaml.FullLoader)
-        self.ui_design = ui_design
+        self.ui_specification = ui_design
 
     def add_ui_element(self, element_description, location):
         """ Add a widget to the form.
@@ -147,51 +149,78 @@ class UIWindow:
 
     def set_up_file_upload(self):
 
-        self.upload_files_group_box = QtWidgets.QGroupBox(self.central_widget)
-        self.upload_files_group_box.setObjectName("upload_files_group_box")
-        self.upload_files_group_box.setTitle("Upload Files")
+        self.group_boxes["upload"] = QtWidgets.QGroupBox(self.central_widget)
+        self.group_boxes["upload"].setTitle("Upload Files")
 
-        self.file_upload_list_view = QtWidgets.QListView(self.upload_files_group_box)
-        self.file_upload_list_view.setObjectName("file_upload_list_view")
+        self.file_upload["list"] = QtWidgets.QListWidget(self.group_boxes["upload"])
+        self.file_upload["list_model"] = QtGui.QStandardItemModel(self.file_upload["list"])
 
-        self.select_file_button = QtWidgets.QPushButton(self.upload_files_group_box)
-        self.select_file_button.setObjectName("select_file_button")
-        self.select_file_button.setText("Select file to upolad")
+        self.file_upload["file_button"] = QtWidgets.QPushButton(self.group_boxes["upload"])
+        self.file_upload["file_button"].setText("Select file to upload")
+        self.file_upload["file_button"].clicked.connect(
+            lambda: self.file_select_dialogue(directory=False))
 
-        self.select_folder_button = QtWidgets.QPushButton(self.upload_files_group_box)
-        self.select_folder_button.setObjectName("select_folder_button")
-        self.select_folder_button.setText("Select folder to upload")
+        self.file_upload["folder_button"] = QtWidgets.QPushButton(self.group_boxes["upload"])
+        self.file_upload["folder_button"].setText("Select folder to upload")
+        self.file_upload["folder_button"].clicked.connect(
+            lambda: self.file_select_dialogue(directory=True))
 
-        self.clear_files_button = QtWidgets.QPushButton(self.upload_files_group_box)
-        self.clear_files_button.setObjectName("clear_files_button")
-        self.clear_files_button.setText("Clear files to upload")
+        self.file_upload["clear_button"] = QtWidgets.QPushButton(self.group_boxes["upload"])
+        self.file_upload["clear_button"].setText("Remove selected files")
+        self.file_upload["clear_button"].clicked.connect(
+            self.remove_selected_items)
 
-        self.gridLayout = QtWidgets.QGridLayout(self.upload_files_group_box)
-        self.gridLayout.setObjectName("group_box_grid")
+        self.layouts["upload_grid"] = QtWidgets.QGridLayout(self.group_boxes["upload"])
+
         # Position in grid given by: y-pos, x-pos, y-width, x-width.
-        self.gridLayout.addWidget(self.file_upload_list_view, 0, 0, 1, 3)
-        self.gridLayout.addWidget(self.select_file_button, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.select_folder_button, 1, 1, 1, 1)
-        self.gridLayout.addWidget(self.clear_files_button, 1, 2, 1, 1)
+        self.layouts["upload_grid"].addWidget(self.file_upload["list"], 0, 0, 1, 3)
+        self.layouts["upload_grid"].addWidget(self.file_upload["file_button"], 1, 0, 1, 1)
+        self.layouts["upload_grid"].addWidget(self.file_upload["folder_button"], 1, 1, 1, 1)
+        self.layouts["upload_grid"].addWidget(self.file_upload["clear_button"], 1, 2, 1, 1)
 
-        self.vertical_layout.addWidget(self.upload_files_group_box)
+        self.layouts["vertical_layout"].addWidget(self.group_boxes["upload"])
+
+    def file_select_dialogue(self, directory):
+
+        file_dialogue = QtWidgets.QFileDialog(self.group_boxes["upload"])
+        if directory:
+            file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
+            # file_dialogue.options(file_dialogue.ShowDirsOnly)
+        else:
+            file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+
+        if file_dialogue.exec():
+            for path in file_dialogue.selectedFiles():
+                if not self.file_upload["list"].findItems(path, QtCore.Qt.MatchExactly):
+                    self.file_upload["list"].addItem(path)
+                else:
+                    QtWidgets.QMessageBox.warning(self.central_widget, "Warning",
+                                                  "File {}, already selected.".format(
+                                                      re.split("[\\\/]", path)[-1]))
 
     def set_up_basic_widgets(self):
-        self.basic_group = QtWidgets.QGroupBox(self.central_widget)
-        self.basic_group.setTitle("Basic Metadata")
 
-        self.form_layout = QtWidgets.QFormLayout(self.basic_group)
+        self.group_boxes["basic_metadata"] = QtWidgets.QGroupBox(self.central_widget)
+        self.group_boxes["basic_metadata"].setTitle("Basic Metadata")
+
+        self.form_layout = QtWidgets.QFormLayout(self.group_boxes["basic_metadata"])
 
         # Iteratively insert each element onto the page
-        for element_name in self.ui_design:
-            element_description = self.ui_design[element_name]
+        for element_name in self.ui_specification:
+            element_description = self.ui_specification[element_name]
             element_description["_name"] = element_name
             if "fancy_name" not in element_description:
                 element_description["fancy_name"] = element_name
             if "widget" in element_description:
-                self.add_ui_element(element_description, self.basic_group)
+                self.add_ui_element(element_description, self.group_boxes["basic_metadata"])
 
-        self.vertical_layout.addWidget(self.basic_group)
+        self.layouts["vertical_layout"].addWidget(self.group_boxes["basic_metadata"])
+
+    def remove_selected_items(self):
+        files = self.file_upload["list"].selectedItems()
+        for item in files:
+            row_index = self.file_upload["list"].row(item)
+            self.file_upload["list"].takeItem(row_index)
 
 
 # noinspection PyArgumentList
