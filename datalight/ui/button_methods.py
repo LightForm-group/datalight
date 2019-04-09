@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 
-from datalight.ui.form_generator import GuiError
+from datalight.ui import form_generator
 
 
 def do_ok_button(main_window):
@@ -21,5 +21,5 @@ def do_ok_button(main_window):
             elif isinstance(widget, QtWidgets.QGroupBox):
                 pass
             else:
-                raise GuiError("Unknown widget type when summarising data.")
+                raise form_generator.GuiError("Unknown widget type when summarising data.")
     print(output)
