@@ -2,8 +2,6 @@ import re
 
 from PyQt5 import QtWidgets, QtCore
 
-from datalight.ui import form_generator
-
 
 def remove_selected_items(self):
     files = self.file_upload["list"].selectedItems()

@@ -105,3 +105,4 @@ def _add_push_button(element_description, parent_widget):
     if "button_text" not in element_description:
         raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
     new_button.setText(element_description["button_text"])
+    return new_button
