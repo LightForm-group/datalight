@@ -101,12 +101,7 @@ def add_role_label(element_description, parent_widget):
 def _add_push_button(element_description, parent_widget):
     new_button = QtWidgets.QPushButton(parent_widget)
     name = element_description["_name"]
+    new_button.setObjectName(name)
     if "button_text" not in element_description:
         raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
     new_button.setText(element_description["button_text"])
-    try:
-        button_method = getattr(button_methods, name)
-    except AttributeError:
-        print("Warning, button '{}' has no method in button_methods.py.".format(name))
-        return new_button
-    new_button.clicked.connect(button_method)

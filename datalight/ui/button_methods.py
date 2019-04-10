@@ -30,25 +30,21 @@ def file_select_dialogue(ui, directory):
                                                   re.split("[\\\/]", path)[-1]))
 
 
-def ok_button(main_window):
+def ok_button(datalight_ui):
     """
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
     output = {}
-    for widget in main_window.widgets:
-        if not isinstance(widget, QtWidgets.QLabel):
-            name = widget.objectName()
-            if isinstance(widget, QtWidgets.QComboBox):
-                output[name] = widget.currentText()
-            elif isinstance(widget, QtWidgets.QPlainTextEdit):
-                output[name] = widget.toPlainText()
-            elif isinstance(widget, QtWidgets.QDateEdit):
-                output[name] = widget.date()
-            elif isinstance(widget, QtWidgets.QGroupBox):
-                pass
-            elif isinstance(widget, QtWidgets.QPushButton):
-                pass
-            else:
-                raise form_generator.GuiError("Unknown widget type when summarising data.")
+    widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
+    for widget in widgets:
+        name = widget.objectName()
+        if isinstance(widget, QtWidgets.QComboBox):
+            output[name] = widget.currentText()
+        elif isinstance(widget, QtWidgets.QPlainTextEdit):
+            output[name] = widget.toPlainText()
+        elif isinstance(widget, QtWidgets.QDateEdit):
+            output[name] = widget.date()
+        else:
+            pass
     print(output)

@@ -115,3 +115,6 @@ basic_metadata:
             optional: False
             values:
                 - cc-by-4.0
+ok_button:
+    widget: QPushButton
+    button_text: OK

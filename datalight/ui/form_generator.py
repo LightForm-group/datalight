@@ -3,7 +3,7 @@ import sys
 import yaml
 from PyQt5 import QtCore, QtWidgets
 
-from datalight.ui import add_widget
+from datalight.ui import add_widget, button_methods
 
 
 class GuiError(Exception):
@@ -19,7 +19,7 @@ class DatalightUIWindow:
     :ivar containers: (List of Container) Containers that contain group boxes that sit in the main
     window.
     :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
-    :ivar central_widget_layout: (QLayout) The layout of central_widget.
+    :ivar layout: (QLayout) The layout of central_widget.
     """
     def __init__(self):
         # The dictionary describing the form
@@ -33,7 +33,7 @@ class DatalightUIWindow:
 
         # The base elements of the main form.
         self.central_widget = QtWidgets.QWidget(self.main_window)
-        self.central_widget_layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.layout = QtWidgets.QVBoxLayout(self.central_widget)
 
         self.set_up_main_window()
 
@@ -101,11 +101,9 @@ class DatalightUIWindow:
 
             if element_description["widget"] == "QGroupBox":
                 self.containers[element_name] = Container(element_description, self.central_widget)
-                self.central_widget_layout.addWidget(self.containers[element_name].group_box)
+                self.layout.addWidget(self.containers[element_name].group_box)
             else:
                 add_widget.add_ui_element(self, element_description, self.central_widget)
-
-
 
 
 class Container:
@@ -176,11 +174,27 @@ def element_setup(element_name, element_description):
     return element_description
 
 
+def connect_button_methods(datalight_ui):
+
+    button_widgets = datalight_ui.main_window.findChildren(QtWidgets.QPushButton)
+
+    for button in button_widgets:
+        try:
+            button_method = getattr(button_methods, button.objectName())
+        except AttributeError:
+            print("Warning, button '{}' has no method in button_methods.py.".format(
+                button.objectName()))
+            continue
+
+        button.clicked.connect(lambda: button_method(datalight_ui))
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     datalight_ui = DatalightUIWindow()
     datalight_ui.ui_setup()
     datalight_ui.main_window.show()
+    connect_button_methods(datalight_ui)
     sys.exit(app.exec_())
 
 
