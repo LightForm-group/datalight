@@ -40,7 +40,7 @@ treated as general data and mashed into the `description` field.
 record. This is useful if you want to force a user to insert data into this element.
 
 All elements then have the further optional properties:
-* `fancy_name` - The display name of the element
+* `label` - If used then a label with this name will be added alongside the element
 * `active_when` - Allows the activation or deactivation of another element depending on
 the value of this element. Use this to have conditional fields which are active only
 for some values of this element.

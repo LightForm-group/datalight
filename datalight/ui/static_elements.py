@@ -11,7 +11,6 @@ def file_select_dialogue(ui, directory):
     file_dialogue = QtWidgets.QFileDialog(ui.group_boxes["upload"])
     if directory:
         file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
-        # file_dialogue.options(file_dialogue.ShowDirsOnly)
     else:
         file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
 
@@ -31,9 +30,7 @@ def add_ok_button(ui):
     ui.ok_button.setObjectName("pushButton_2")
     ui.ok_button.setText("OK")
     ui.ok_button.clicked.connect(button_methods.do_ok_button(main_window=ui))
-    ui.form_layout.setWidget(ui.num_widgets, QtWidgets.QFormLayout.FieldRole,
-                             ui.ok_button)
-    ui.num_widgets += 1
+    ui.form_layout.addWidget(QtWidgets.QFormLayout.FieldRole, ui.ok_button)
 
 
 def set_up_file_upload(ui):

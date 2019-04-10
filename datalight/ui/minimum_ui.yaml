@@ -2,30 +2,30 @@
 
 basic_metadata:
     widget: QGroupBox
-    fancy_name: Basic Metadata
+    label: Basic Metadata
     layout: QFormLayout
     children:
         title:
             widget: QPlainTextEdit
-            fancy_name: Title of Record
+            label: Title of Record
             optional: False
             tooltip: The title of the record
 
         description:
             widget: QPlainTextEdit
-            fancy_name: Record Description
+            label: Record Description
             optional: False
             tooltip: A description of the dataset being uploaded
 
         publication_date:
             widget: QDateEdit
-            fancy_name: Publication Date
+            label: Publication Date
             optional: False
             tooltip: The date of the publication of the record (you likely want todays date).
 
         upload_type:
             widget: QComboBox
-            fancy_name: Upload Type
+            label: Upload Type
             optional: False
             values:
                 publication: Publication
@@ -44,7 +44,7 @@ basic_metadata:
 
         publication_type:
             widget: QComboBox
-            fancy_name: Publication Type
+            label: Publication Type
             active_when:
                 upload_type: publication
             optional: False
@@ -67,7 +67,7 @@ basic_metadata:
 
         image_type:
             widget: QComboBox
-            fancy_name: Image Type
+            label: Image Type
             optional: False
             values:
                 figure: Figure
@@ -79,29 +79,29 @@ basic_metadata:
 
         creators:
             widget: QGroupBox
-            fancy_name: Author details
+            label: Author details
             layout: QFormLayout
             children:
                 name:
                     widget: QComboBox
-                    fancy_name: Author name
+                    label: Author name
                     optional: False
                     tooltip: The name(s) of the people who created the dataset.
 
                 affiliation:
                     widget: QPlainTextEdit
-                    fancy_name: Affiliation
+                    label: Affiliation
                     optional: True
                     default: Univeristy of Manchester
 
                 orcid:
                     widget: QPlainTextEdit
-                    fancy_name: ORCiD
+                    label: ORCiD
                     optional: True
 
         access-right:
             widget: QComboBox
-            fancy_name: Access Right
+            label: Access Right
             optional: False
             values:
                 open: Open Access
@@ -111,7 +111,7 @@ basic_metadata:
 
         license:
             widget: QComboBox
-            fancy_name: License
+            label: License
             optional: False
             values:
                 - cc-by-4.0
