@@ -3,7 +3,7 @@
 import datetime
 from PyQt5 import QtWidgets
 
-from datalight.ui import form_generator
+from datalight.ui import form_generator, button_methods
 
 
 def add_ui_element(storage_location, element_description, parent):
@@ -36,7 +36,7 @@ def add_ui_element(storage_location, element_description, parent):
             lambda: storage_location.enable_dependent_widget(element_description["activates_on"]))
 
 
-def add_new_widget(element_description, parent_widget):
+def add_new_widget(element_description, parent_widget, main_window=None):
     """Add a non-Group box widget."""
     widget_type = element_description["widget"]
 
@@ -46,6 +46,8 @@ def add_new_widget(element_description, parent_widget):
         new_widget = _add_plain_text_edit(element_description, parent_widget)
     elif widget_type == "QDateEdit":
         new_widget = _add_date_edit(element_description, parent_widget)
+    elif widget_type == "QPushButton":
+        new_widget = _add_push_button(element_description, parent_widget)
     else:
         raise TypeError("No method to add element {}.".format(widget_type))
 
@@ -57,40 +59,54 @@ def add_new_widget(element_description, parent_widget):
 
 
 def _add_combo_box(element_description, parent_widget):
-    new_widget = QtWidgets.QComboBox(parent_widget)
+    new_combo_box = QtWidgets.QComboBox(parent_widget)
     name = element_description["_name"]
-    new_widget.setObjectName(name)
+    new_combo_box.setObjectName(name)
 
     if "editable" in element_description:
-        new_widget.setEditable(element_description["editable"])
+        new_combo_box.setEditable(element_description["editable"])
 
     if "values" in element_description:
         for item in element_description["values"]:
-            new_widget.addItem(item)
+            new_combo_box.addItem(item)
 
-    return new_widget
+    return new_combo_box
 
 
 def _add_plain_text_edit(element_description, parent_widget):
-    new_widget = QtWidgets.QPlainTextEdit(parent_widget)
+    new_plain_text = QtWidgets.QPlainTextEdit(parent_widget)
     name = element_description["_name"]
-    new_widget.setObjectName(name)
-    return new_widget
+    new_plain_text.setObjectName(name)
+    return new_plain_text
 
 
 def _add_date_edit(element_description, parent_widget):
-    new_widget = QtWidgets.QDateEdit(parent_widget)
+    new_date_edit = QtWidgets.QDateEdit(parent_widget)
     name = element_description["_name"]
-    new_widget.setObjectName(name)
-    new_widget.setCalendarPopup(True)
-    new_widget.setDate(datetime.date.today())
-    return new_widget
+    new_date_edit.setObjectName(name)
+    new_date_edit.setCalendarPopup(True)
+    new_date_edit.setDate(datetime.date.today())
+    return new_date_edit
 
 
 def add_role_label(element_description, parent_widget):
+    new_label = QtWidgets.QLabel(parent_widget)
     name = element_description["_name"]
     label = element_description["label"]
-    new_label = QtWidgets.QLabel(parent_widget)
     new_label.setText(label)
     new_label.setObjectName("label_{}".format(name))
     return new_label
+
+
+def _add_push_button(element_description, parent_widget):
+    new_button = QtWidgets.QPushButton(parent_widget)
+    name = element_description["_name"]
+    if "button_text" not in element_description:
+        raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
+    new_button.setText(element_description["button_text"])
+    try:
+        button_method = getattr(button_methods, name)
+    except AttributeError:
+        print("Warning, button '{}' has no method in button_methods.py.".format(name))
+        return new_button
+    new_button.clicked.connect(button_method)

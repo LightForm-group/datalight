@@ -103,14 +103,9 @@ class DatalightUIWindow:
                 self.containers[element_name] = Container(element_description, self.central_widget)
                 self.central_widget_layout.addWidget(self.containers[element_name].group_box)
             else:
-                add_widget.add_ui_element(self, element_description, self.central_widget, label=False)
-                self.central_widget_layout.addWidget(self.widgets[-1])
+                add_widget.add_ui_element(self, element_description, self.central_widget)
 
-    def remove_selected_items(self):
-        files = self.file_upload["list"].selectedItems()
-        for item in files:
-            row_index = self.file_upload["list"].row(item)
-            self.file_upload["list"].takeItem(row_index)
+
 
 
 class Container:
