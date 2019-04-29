@@ -48,6 +48,8 @@ def add_new_widget(element_description, parent_widget, main_window=None):
         new_widget = _add_date_edit(element_description, parent_widget)
     elif widget_type == "QPushButton":
         new_widget = _add_push_button(element_description, parent_widget)
+    elif widget_type == "QListWidget":
+        new_widget = add_list_widget(element_description, parent_widget)
     else:
         raise TypeError("No method to add element {}.".format(widget_type))
 
@@ -89,15 +91,6 @@ def _add_date_edit(element_description, parent_widget):
     return new_date_edit
 
 
-def add_role_label(element_description, parent_widget):
-    new_label = QtWidgets.QLabel(parent_widget)
-    name = element_description["_name"]
-    label = element_description["label"]
-    new_label.setText(label)
-    new_label.setObjectName("label_{}".format(name))
-    return new_label
-
-
 def _add_push_button(element_description, parent_widget):
     new_button = QtWidgets.QPushButton(parent_widget)
     name = element_description["_name"]
@@ -106,3 +99,19 @@ def _add_push_button(element_description, parent_widget):
         raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
     new_button.setText(element_description["button_text"])
     return new_button
+
+
+def add_list_widget(element_description, parent_widget):
+    new_list_widget = QtWidgets.QListWidget(parent_widget)
+    name = element_description["_name"]
+    new_list_widget.setObjectName(name)
+    return new_list_widget
+
+
+def add_role_label(element_description, parent_widget):
+    new_label = QtWidgets.QLabel(parent_widget)
+    name = element_description["_name"]
+    label = element_description["label"]
+    new_label.setText(label)
+    new_label.setObjectName("label_{}".format(name))
+    return new_label

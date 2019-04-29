@@ -1,31 +1,21 @@
-import re
-
-from PyQt5 import QtWidgets, QtCore
-
-
-def remove_selected_items(self):
-    files = self.file_upload["list"].selectedItems()
-    for item in files:
-        row_index = self.file_upload["list"].row(item)
-        self.file_upload["list"].takeItem(row_index)
+"""
+This script contains functions which are linked to buttons in the UI.
+In order to be linked to a button, a function must have the same name as the button as specified
+in the UI YAML specification.
+"""
+from PyQt5 import QtWidgets
 
 
-def file_select_dialogue(ui, directory):
-    """Set up file dialogue widget."""
-    file_dialogue = QtWidgets.QFileDialog(ui.group_boxes["upload"])
-    if directory:
-        file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
-    else:
-        file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+def clear_button(datalight_ui):
+    print("clear button")
 
-    if file_dialogue.exec():
-        for path in file_dialogue.selectedFiles():
-            if not ui.file_upload["list"].findItems(path, QtCore.Qt.MatchExactly):
-                ui.file_upload["list"].addItem(path)
-            else:
-                QtWidgets.QMessageBox.warning(ui.central_widget, "Warning",
-                                              "File {}, already selected.".format(
-                                                  re.split("[\\\/]", path)[-1]))
+
+def select_file(datalight_ui):
+    print("file select button")
+
+
+def select_folder(datalight_ui):
+    print("folder select button")
 
 
 def ok_button(datalight_ui):

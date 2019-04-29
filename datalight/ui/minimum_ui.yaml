@@ -1,5 +1,22 @@
 # This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
 
+file_upload:
+    widget: QGroupBox
+    label: File Upload
+    layout: QFormLayout
+    children:
+        file_list:
+            widget: QListWidget
+        select_file:
+            widget: QPushButton
+            button_text: Select file to upload
+        select_folder:
+            widget: QPushButton
+            button_text: Select folder to upload
+        clear_button:
+            widget: QPushButton
+            button_text: Remove Selected Files
+
 basic_metadata:
     widget: QGroupBox
     label: Basic Metadata

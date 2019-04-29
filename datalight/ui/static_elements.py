@@ -4,13 +4,39 @@ from PyQt5 import QtWidgets, QtGui
 from datalight.ui import button_methods
 
 
+def remove_selected_items(self):
+    files = self.file_upload["list"].selectedItems()
+    for item in files:
+        row_index = self.file_upload["list"].row(item)
+        self.file_upload["list"].takeItem(row_index)
+
+
+def file_select_dialogue(ui, directory):
+    """Set up file dialogue widget."""
+    file_dialogue = QtWidgets.QFileDialog(ui.group_boxes["upload"])
+    if directory:
+        file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
+    else:
+        file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+
+    if file_dialogue.exec():
+        for path in file_dialogue.selectedFiles():
+            if not ui.file_upload["list"].findItems(path, QtCore.Qt.MatchExactly):
+                ui.file_upload["list"].addItem(path)
+            else:
+                QtWidgets.QMessageBox.warning(ui.central_widget, "Warning",
+                                              "File {}, already selected.".format(
+                                                  re.split("[\\\/]", path)[-1]))
+
+
+
 def set_up_file_upload(ui):
     """Set up the static widgets for the file upload section at the top of the form."""
     ui.group_boxes["upload"] = QtWidgets.QGroupBox(ui.central_widget)
     ui.group_boxes["upload"].setTitle("Upload Files")
 
     ui.file_upload["list"] = QtWidgets.QListWidget(ui.group_boxes["upload"])
-    ui.file_upload["list_model"] = QtGui.QStandardItemModel(ui.file_upload["list"])
+    #ui.file_upload["list_model"] = QtGui.QStandardItemModel(ui.file_upload["list"])
 
     ui.file_upload["file_button"] = QtWidgets.QPushButton(ui.group_boxes["upload"])
     ui.file_upload["file_button"].setText("Select file to upload")
