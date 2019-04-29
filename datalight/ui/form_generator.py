@@ -79,10 +79,17 @@ class DatalightUIWindow:
                 self.get_widget_by_name(child).setEnabled(False)
 
     def get_widget_by_name(self, name):
-        """Return the widget in self.widgets whose objectName ends with name.
+        """Return the widget in self.widgets whose objectName is name.
         :param name: (string) the name of the widget to find.
-        :returns widget if widget with `name` is found else returns none."""
-        for widget in self.widgets:
+        :returns widget if widget with `name` is found else returns None."""
+
+        widgets = self.widgets
+
+        # Must also consider widgets nested in containers.
+        for container in self.containers.values():
+            widgets.extend(container.list_widgets())
+
+        for widget in widgets:
             if widget.objectName() == name:
                 return widget
         return None
@@ -167,6 +174,14 @@ class Container:
                 element_description = self.element_description["children"][element_name]
                 element_description = element_setup(element_name, element_description)
                 add_widget.add_ui_element(self, element_description, self.group_box)
+
+    def list_widgets(self):
+        """Recursively list widgets in this container and contained Containers."""
+        widgets = []
+        for container in self.containers.values():
+            widgets.extend(container.list_widgets())
+        widgets.extend(self.widgets)
+        return widgets
 
 
 def element_setup(element_name, element_description):

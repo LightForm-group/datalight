@@ -7,13 +7,13 @@ file_upload:
     children:
         file_list:
             widget: QListWidget
-        select_file:
+        select_file_button:
             widget: QPushButton
             button_text: Select file to upload
-        select_folder:
+        select_folder_button:
             widget: QPushButton
             button_text: Select folder to upload
-        clear_button:
+        remove_item_button:
             widget: QPushButton
             button_text: Remove Selected Files
 
