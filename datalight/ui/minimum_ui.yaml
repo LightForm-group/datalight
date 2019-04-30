@@ -1,0 +1,137 @@
+# This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
+
+file_upload:
+    widget: QGroupBox
+    label: File Upload
+    layout: QFormLayout
+    children:
+        file_list:
+            widget: QListWidget
+        select_file_button:
+            widget: QPushButton
+            button_text: Select file to upload
+        select_folder_button:
+            widget: QPushButton
+            button_text: Select folder to upload
+        remove_item_button:
+            widget: QPushButton
+            button_text: Remove Selected Files
+
+basic_metadata:
+    widget: QGroupBox
+    label: Basic Metadata
+    layout: QFormLayout
+    children:
+        title:
+            widget: QPlainTextEdit
+            label: Title of Record
+            optional: False
+            tooltip: The title of the record
+
+        description:
+            widget: QPlainTextEdit
+            label: Record Description
+            optional: False
+            tooltip: A description of the dataset being uploaded
+
+        publication_date:
+            widget: QDateEdit
+            label: Publication Date
+            optional: False
+            tooltip: The date of the publication of the record (you likely want todays date).
+
+        upload_type:
+            widget: QComboBox
+            label: Upload Type
+            optional: False
+            values:
+                publication: Publication
+                poster: Poster
+                presentation: Presentation
+                dataset: Dataset
+                image: Image
+                video: Video/Audio
+                software: Software
+                lesson: Lesson
+                other: Other
+            activates_on:
+                publication_type: publication
+                image_type: image
+            tooltip: The data type of the upload.
+
+        publication_type:
+            widget: QComboBox
+            label: Publication Type
+            active_when:
+                upload_type: publication
+            optional: False
+            values:
+                book: Book
+                section: Book section
+                conferencepaper: Conference paper
+                article: Journal article
+                patent: Patent
+                preprint: Preprint
+                report: Report
+                deliverable: Project deliverable
+                milestone: Project milestone
+                proposal: Proposal
+                softwaredocumentation: Software documentation
+                thesis: Thesis
+                technicalnote: Technical note
+                workingpaper: Working paper
+                other: Other
+
+        image_type:
+            widget: QComboBox
+            label: Image Type
+            optional: False
+            values:
+                figure: Figure
+                plot: Plot
+                drawing: Drawing
+                diagram: Diagram
+                photo: Photo
+                other: Other
+
+        creators:
+            widget: QGroupBox
+            label: Author details
+            layout: QFormLayout
+            children:
+                name:
+                    widget: QComboBox
+                    label: Author name
+                    optional: False
+                    tooltip: The name(s) of the people who created the dataset.
+
+                affiliation:
+                    widget: QPlainTextEdit
+                    label: Affiliation
+                    optional: True
+                    default: Univeristy of Manchester
+
+                orcid:
+                    widget: QPlainTextEdit
+                    label: ORCiD
+                    optional: True
+
+        access-right:
+            widget: QComboBox
+            label: Access Right
+            optional: False
+            values:
+                open: Open Access
+                embargoed: Embargoed Access
+                restricted: Restricted Access
+                closed: Closed Access
+
+        license:
+            widget: QComboBox
+            label: License
+            optional: False
+            values:
+                - cc-by-4.0
+ok_button:
+    widget: QPushButton
+    button_text: OK
