@@ -107,7 +107,7 @@ class DatalightUIWindow:
                 self.containers[element_name] = Container(element_description, self.central_widget)
                 self.layout.addWidget(self.containers[element_name].group_box)
             else:
-                add_widget.add_ui_element(self, element_description, self.central_widget)
+                raise KeyError("Cannot add non group box to base widget.")
 
     def set_window_position(self):
         """Put the UI window in the middle of the screen."""
@@ -130,8 +130,8 @@ class Container:
     :ivar element_description: (dict) A description of the GroupBox and any child widgets.
     :ivar parent: (QWidget) The parent widget of the GroupBox.
     :ivar group_box: (QGroupBox) The GroupBox contained by this Container.
-    :ivar layout: (QLayout) The layout applied to group_box.
-    :ivar widgets: (list of QWidget) The widgets contained within group_box.
+    :ivar _layout: (QLayout) The layout applied to group_box.
+    :ivar _widgets: (list of QWidget) The widgets contained within group_box.
     """
 
     def __init__(self, group_box_description, parent):
@@ -144,9 +144,9 @@ class Container:
         self.element_description = group_box_description
         self.parent = parent
         self.group_box = None
-        self.containers = {}
-        self.layout = None
-        self.widgets = []
+        self._containers = {}
+        self._layout = None
+        self._widgets = []
 
         self._add_group_box()
         self._add_layout()
@@ -163,7 +163,7 @@ class Container:
             raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
                 self.group_box.objectName()))
         if self.element_description["layout"] == "QFormLayout":
-            self.layout = QtWidgets.QFormLayout(self.group_box)
+            self._layout = QtWidgets.QFormLayout(self.group_box)
         else:
             raise KeyError("layout type {} in GroupBox {} not understood.".format(
                 self.element_description["layout"], self.group_box.objectName()))
@@ -175,12 +175,27 @@ class Container:
                 element_description = element_setup(element_name, element_description)
                 add_widget.add_ui_element(self, element_description, self.group_box)
 
+    def add_container(self, name, container):
+        self._containers[name] = container
+
+    def add_widget(self, widget):
+        self._widgets.append(widget)
+
+    def add_widget_to_layout(self, widget, label=None):
+        if label is None:
+            if isinstance(self._layout, QtWidgets.QFormLayout):
+                self._layout.addRow(widget)
+            else:
+                self._layout.addWidget(widget)
+        else:
+            self._layout.addRow(label, widget)
+
     def list_widgets(self):
         """Recursively list widgets in this container and contained Containers."""
         widgets = []
-        for container in self.containers.values():
+        for container in self._containers.values():
             widgets.extend(container.list_widgets())
-        widgets.extend(self.widgets)
+        widgets.extend(self._widgets)
         return widgets
 
 

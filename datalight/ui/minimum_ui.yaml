@@ -133,5 +133,10 @@ basic_metadata:
             values:
                 - cc-by-4.0
 ok_button:
-    widget: QPushButton
-    button_text: OK
+    widget: QGroupBox
+    label: OK Button
+    layout: QFormLayout
+    children:
+        ok_button:
+            widget: QPushButton
+            button_text: OK
