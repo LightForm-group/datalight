@@ -29,9 +29,9 @@ def add_ui_element(parent_container: Container, element_description: dict, paren
             grid_layout = map(int, grid_layout)
         parent_container.add_widget(new_widget, label, grid_layout)
 
-
+    # TODO: Add widget dependencies.
     # Process widget dependencies
-    #if "activates_on" in element_description:
+    # if "activates_on" in element_description:
     #    parent_container.widgets[-2].currentTextChanged.connect(
     #        lambda: parent_container.enable_dependent_widget(element_description["activates_on"]))
 
@@ -40,16 +40,15 @@ def get_new_widget(element_description, parent_widget):
     """Return a new non-Group box widget."""
     widget_type = element_description["widget"]
 
-    if widget_type == "QComboBox":
-        new_widget = _new_combo_box(element_description, parent_widget)
-    elif widget_type == "QPlainTextEdit":
-        new_widget = _new_plain_text_edit(element_description, parent_widget)
-    elif widget_type == "QDateEdit":
-        new_widget = _new_date_edit(element_description, parent_widget)
-    elif widget_type == "QPushButton":
-        new_widget = _new_push_button(element_description, parent_widget)
-    elif widget_type == "QListWidget":
-        new_widget = _new_list_widget(element_description, parent_widget)
+    methods = {"QComboBox": _new_combo_box,
+               "QPlainTextEdit": _new_plain_text_edit,
+               "QDateEdit": _new_date_edit,
+               "QPushButton": _new_push_button,
+               "QListWidget": _new_list_widget,
+               "QLineEdit": _new_line_edit}
+
+    if widget_type in methods:
+        new_widget = methods[widget_type](element_description, parent_widget)
     else:
         raise TypeError("No method to add element {}.".format(widget_type))
 
@@ -106,3 +105,10 @@ def _new_list_widget(element_description, parent_widget):
     name = element_description["_name"]
     new_list_widget.setObjectName(name)
     return new_list_widget
+
+
+def _new_line_edit(element_description, parent_widget):
+    new_line_edit = QtWidgets.QLineEdit(parent_widget)
+    name = element_description["_name"]
+    new_line_edit.setObjectName(name)
+    return new_line_edit

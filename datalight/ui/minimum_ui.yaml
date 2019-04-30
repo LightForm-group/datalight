@@ -27,7 +27,7 @@ basic_metadata:
     layout: QFormLayout
     children:
         title:
-            widget: QPlainTextEdit
+            widget: QLineEdit
             label: Title of Record
             optional: False
             tooltip: The title of the record
@@ -110,13 +110,13 @@ basic_metadata:
                     tooltip: The name(s) of the people who created the dataset.
 
                 affiliation:
-                    widget: QPlainTextEdit
+                    widget: QLineEdit
                     label: Affiliation
                     optional: True
                     default: Univeristy of Manchester
 
                 orcid:
-                    widget: QPlainTextEdit
+                    widget: QLineEdit
                     label: ORCiD
                     optional: True
 
