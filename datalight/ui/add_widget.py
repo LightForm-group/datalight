@@ -7,7 +7,7 @@ from datalight.ui.form_generator import Container
 
 
 def add_ui_element(parent_container: Container, element_description: dict, parent):
-    """ Add a non-GroupBox widget to the form.
+    """Add a non-GroupBox widget to the form.
     :param parent_container: (Container) Where the widget instance will be stored.
     :param element_description: (dict) A description of the element to add.
     :param parent: (QWidget) The instance of the parent widget of the new widget.
@@ -18,12 +18,17 @@ def add_ui_element(parent_container: Container, element_description: dict, paren
         name = element_description["_name"]
         new_container = Container(element_description, parent)
         parent_container.add_container(name, new_container)
-    elif "label" in element_description:
-        # Add a widget and label and add them to a layout
-        parent_container.add_widget(get_new_widget(element_description, parent), element_description["label"])
     else:
-        # Add a widget with no label
-        parent_container.add_widget(get_new_widget(element_description, parent))
+        label = None
+        grid_layout = None
+        new_widget = get_new_widget(element_description, parent)
+        if "label" in element_description:
+            label = element_description["label"]
+        if "grid_layout" in element_description:
+            grid_layout = element_description["grid_layout"].split(",")
+            grid_layout = map(int, grid_layout)
+        parent_container.add_widget(new_widget, label, grid_layout)
+
 
     # Process widget dependencies
     #if "activates_on" in element_description:

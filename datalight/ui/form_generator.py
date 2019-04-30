@@ -17,7 +17,6 @@ class DatalightUIWindow:
     with the UI.
     :ivar ui_specification:(dict) A dict describing the elements on the form. Read from a YAML file
     :ivar main_window: (QMainWindow) The main application window object.
-    :ivar widgets: (List of QWidget) Non QGroupBox widgets that sit in the main window.
     :ivar containers: (List of Container) Containers that contain group boxes that sit in the main
     window.
     :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
@@ -156,8 +155,11 @@ class Container:
         if "layout" not in self.element_description:
             raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
                 self.group_box.objectName()))
-        if self.element_description["layout"] == "QFormLayout":
+        layout = self.element_description["layout"]
+        if layout == "QFormLayout":
             self._layout = QtWidgets.QFormLayout(self.group_box)
+        elif layout == "QGridLayout":
+            self._layout = QtWidgets.QGridLayout(self.group_box)
         else:
             raise KeyError("layout type {} in GroupBox {} not understood.".format(
                 self.element_description["layout"], self.group_box.objectName()))
@@ -173,21 +175,26 @@ class Container:
         self._containers[name] = container
         self.add_widget_to_layout(self._containers[name].group_box)
 
-    def add_widget(self, widget, label=None):
+    def add_widget(self, widget, label=None, grid_layout=None):
         self._widgets.append(widget)
-        if label is None:
-            self.add_widget_to_layout(self._widgets[-1])
-        else:
-            self.add_widget_to_layout(self._widgets[-1], label)
+        self.add_widget_to_layout(self._widgets[-1], label, grid_layout)
 
-    def add_widget_to_layout(self, widget, label=None):
+    def add_widget_to_layout(self, widget, label=None, grid_layout=None):
+        if isinstance(self._layout, QtWidgets.QFormLayout):
+            self.add_widget_to_form_layout(widget, label)
+        elif isinstance(self._layout, QtWidgets.QGridLayout):
+            self.add_widget_to_grid_layout(widget, grid_layout)
+        else:
+            print("Unknown layout type '{}'".format(self._layout))
+
+    def add_widget_to_form_layout(self, widget, label=None):
         if label is None:
-            if isinstance(self._layout, QtWidgets.QFormLayout):
-                self._layout.addRow(widget)
-            else:
-                self._layout.addWidget(widget)
+            self._layout.addRow(widget)
         else:
             self._layout.addRow(label, widget)
+
+    def add_widget_to_grid_layout(self, widget, grid_layout):
+        self._layout.addWidget(widget, *grid_layout)
 
     def list_widgets(self):
         """Recursively list widgets in this container and contained Containers."""

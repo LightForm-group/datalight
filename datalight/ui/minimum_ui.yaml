@@ -3,19 +3,23 @@
 file_upload:
     widget: QGroupBox
     label: File Upload
-    layout: QFormLayout
+    layout: QGridLayout
     children:
         file_list:
             widget: QListWidget
+            grid_layout: 0, 0, 1, 3
         select_file_button:
             widget: QPushButton
             button_text: Select file to upload
+            grid_layout: 1, 0, 1, 1
         select_folder_button:
             widget: QPushButton
             button_text: Select folder to upload
+            grid_layout: 1, 1, 1, 1
         remove_item_button:
             widget: QPushButton
             button_text: Remove Selected Files
+            grid_layout: 1, 2, 1, 1
 
 basic_metadata:
     widget: QGroupBox
