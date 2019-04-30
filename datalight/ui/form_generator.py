@@ -30,7 +30,6 @@ class DatalightUIWindow:
         # The main window. The widget from which all other widgets are descended.
         self.main_window = QtWidgets.QMainWindow()
 
-        self.widgets = []
         self.containers = {}
 
         # The base elements of the main form.
@@ -48,14 +47,8 @@ class DatalightUIWindow:
         self.main_window.setCentralWidget(self.central_widget)
 
     def ui_setup(self):
-        """ Initialise widgets on main window before display."""
-
-        # Set up file upload widgets
-        # static_elements.set_up_file_upload(ui=self)
-
-        # Read ui description from YAML file
+        """ Load UI description from style and then add widgets hierarchically."""
         self.read_basic_ui()
-
         self.set_up_base_widgets()
 
     def read_basic_ui(self):
@@ -83,9 +76,9 @@ class DatalightUIWindow:
         :param name: (string) the name of the widget to find.
         :returns widget if widget with `name` is found else returns None."""
 
-        widgets = self.widgets
+        widgets = []
 
-        # Must also consider widgets nested in containers.
+        # All widgets are nested in containers.
         for container in self.containers.values():
             widgets.extend(container.list_widgets())
 
@@ -95,9 +88,7 @@ class DatalightUIWindow:
         return None
 
     def set_up_base_widgets(self):
-        """Add the widgets that are children of the main form.
-        These should mostly be group boxes, though it might be useful to add some buttons at
-        the bottom. If you do this the layout probably wont be great though."""
+        """Add the group boxes that are children of the main form."""
 
         # Iteratively insert each element onto the form
         for element_name in self.ui_specification:
@@ -107,7 +98,7 @@ class DatalightUIWindow:
                 self.containers[element_name] = Container(element_description, self.central_widget)
                 self.layout.addWidget(self.containers[element_name].group_box)
             else:
-                raise KeyError("Cannot add non group box to base widget.")
+                raise KeyError("Cannot add non group box to base form.")
 
     def set_window_position(self):
         """Put the UI window in the middle of the screen."""
@@ -156,7 +147,10 @@ class Container:
         name = self.element_description["_name"]
         self.group_box = QtWidgets.QGroupBox(self.parent)
         self.group_box.setObjectName(name)
-        self.group_box.setTitle(self.element_description["label"])
+        if "label" in self.element_description:
+            self.group_box.setTitle(self.element_description["label"])
+        else:
+            self.group_box.setFlat(True)
 
     def _add_layout(self):
         if "layout" not in self.element_description:
@@ -177,9 +171,14 @@ class Container:
 
     def add_container(self, name, container):
         self._containers[name] = container
+        self.add_widget_to_layout(self._containers[name].group_box)
 
-    def add_widget(self, widget):
+    def add_widget(self, widget, label=None):
         self._widgets.append(widget)
+        if label is None:
+            self.add_widget_to_layout(self._widgets[-1])
+        else:
+            self.add_widget_to_layout(self._widgets[-1], label)
 
     def add_widget_to_layout(self, widget, label=None):
         if label is None:

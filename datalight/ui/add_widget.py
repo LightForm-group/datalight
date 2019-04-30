@@ -13,21 +13,17 @@ def add_ui_element(parent_container: Container, element_description: dict, paren
     :param parent: (QWidget) The instance of the parent widget of the new widget.
     """
 
-    # If it is a group box then add a new Container to the parent
     if element_description["widget"] == "QGroupBox":
+        # If it is a group box then add a new Container to the parent
         name = element_description["_name"]
         new_container = Container(element_description, parent)
         parent_container.add_container(name, new_container)
-        parent_container.add_widget_to_layout(parent_container._containers[name].group_box)
-
     elif "label" in element_description:
         # Add a widget and label and add them to a layout
-        parent_container.add_widget(get_new_widget(element_description, parent))
-        parent_container.add_widget(new_role_label(element_description, parent))
-        parent_container.add_widget_to_layout(parent_container._widgets[-2], parent_container._widgets[-1])
+        parent_container.add_widget(get_new_widget(element_description, parent), element_description["label"])
     else:
+        # Add a widget with no label
         parent_container.add_widget(get_new_widget(element_description, parent))
-        parent_container.add_widget_to_layout(parent_container._widgets[-1])
 
     # Process widget dependencies
     #if "activates_on" in element_description:
@@ -35,8 +31,8 @@ def add_ui_element(parent_container: Container, element_description: dict, paren
     #        lambda: parent_container.enable_dependent_widget(element_description["activates_on"]))
 
 
-def get_new_widget(element_description, parent_widget, main_window=None):
-    """Add a non-Group box widget."""
+def get_new_widget(element_description, parent_widget):
+    """Return a new non-Group box widget."""
     widget_type = element_description["widget"]
 
     if widget_type == "QComboBox":
@@ -105,12 +101,3 @@ def _new_list_widget(element_description, parent_widget):
     name = element_description["_name"]
     new_list_widget.setObjectName(name)
     return new_list_widget
-
-
-def new_role_label(element_description, parent_widget):
-    new_label = QtWidgets.QLabel(parent_widget)
-    name = element_description["_name"]
-    label = element_description["label"]
-    new_label.setText(label)
-    new_label.setObjectName("label_{}".format(name))
-    return new_label

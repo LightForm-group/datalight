@@ -134,7 +134,6 @@ basic_metadata:
                 - cc-by-4.0
 ok_button:
     widget: QGroupBox
-    label: OK Button
     layout: QFormLayout
     children:
         ok_button:
