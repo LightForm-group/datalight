@@ -106,15 +106,14 @@ basic_metadata:
                 name:
                     widget: QComboBox
                     label: Author name
+                    editable: True
                     optional: False
                     tooltip: The name(s) of the people who created the dataset.
-
                 affiliation:
                     widget: QLineEdit
                     label: Affiliation
                     optional: True
                     default: Univeristy of Manchester
-
                 orcid:
                     widget: QLineEdit
                     label: ORCiD

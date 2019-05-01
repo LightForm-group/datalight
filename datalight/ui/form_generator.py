@@ -5,7 +5,7 @@ from functools import partial
 import yaml
 from PyQt5 import QtWidgets
 
-from datalight.ui import add_widget, button_methods
+from datalight.ui import add_widget, slot_methods
 
 
 class GuiError(Exception):
@@ -49,6 +49,7 @@ class DatalightUIWindow:
         """ Load UI description from style and then add widgets hierarchically."""
         self.read_basic_ui()
         self.set_up_base_widgets()
+        self.populate_author_list()
 
     def read_basic_ui(self):
         """Read the UI specification from a YAML file."""
@@ -111,6 +112,18 @@ class DatalightUIWindow:
         window_vertical = (screen_height - window_height) / 2
         window_horizontal = (screen_width - window_width) / 2
         self.main_window.move(window_horizontal, window_vertical)
+
+    def populate_author_list(self):
+        with open("author_details.yaml", 'r') as input_file:
+            authors = yaml.load(input_file, Loader=yaml.FullLoader)
+        author_list_box = self.get_widget_by_name("name")
+        affiliation_box = self.get_widget_by_name("affiliation")
+        orcid_box = self.get_widget_by_name("orcid")
+        author_list_box.addItem("")
+        for name in authors:
+            author_list_box.addItem(name)
+        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box)
+        author_list_box.currentIndexChanged[str].connect(update_method)
 
 
 class Container:
@@ -227,7 +240,7 @@ def connect_button_methods(datalight_ui):
     for button in button_widgets:
         button_name = button.objectName()
         try:
-            button_method = getattr(button_methods, button_name)
+            button_method = getattr(slot_methods, button_name)
         except AttributeError:
             print("Warning, button '{}' has no method in button_methods.py.".format(
                 button.objectName()))

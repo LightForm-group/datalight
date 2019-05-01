@@ -5,7 +5,9 @@ in the UI YAML specification.
 """
 import re
 
+import yaml
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import pyqtSlot
 
 
 def remove_item_button(datalight_ui):
@@ -42,7 +44,6 @@ def open_file_window(datalight_ui, file_dialogue):
                                               "File {}, already selected.".format(
                                                   re.split("[\\\/]", path)[-1]))
 
-
 def ok_button(datalight_ui):
     """
     The on click method for the OK button. Take all data from the form and package
@@ -61,3 +62,11 @@ def ok_button(datalight_ui):
         else:
             pass
     print(output)
+
+
+def update_author_details(name, affiliation, orcid):
+    with open("author_details.yaml", 'r') as input_file:
+        author_list = yaml.load(input_file, Loader=yaml.FullLoader)
+    if name in author_list:
+        affiliation.setText(author_list[name]["affiliation"])
+        orcid.setText(author_list[name]["orcid"])
