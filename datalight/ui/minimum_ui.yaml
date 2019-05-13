@@ -142,3 +142,15 @@ ok_button:
         ok_button:
             widget: QPushButton
             button_text: OK
+
+ebsd:
+    widget: QGroupBox
+    label: EBSD metadata
+    layout: QFormLayout
+    children:
+        file_warning:
+            widget: QLabel
+            text: All EBSD data should be uploaded as ctf files as this has the correct metadata.
+        temperatures:
+            widget: QLineEdit
+            label: Temperature (°C)

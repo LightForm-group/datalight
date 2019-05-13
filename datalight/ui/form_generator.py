@@ -53,7 +53,7 @@ class DatalightUIWindow:
 
     def read_basic_ui(self):
         """Read the UI specification from a YAML file."""
-        with open("minimum_ui.yaml", 'r') as input_file:
+        with open("minimum_ui.yaml", encoding='utf8') as input_file:
             ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
         self.ui_specification = ui_specification
 

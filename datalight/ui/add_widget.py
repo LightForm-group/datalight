@@ -45,7 +45,8 @@ def get_new_widget(element_description, parent_widget):
                "QDateEdit": _new_date_edit,
                "QPushButton": _new_push_button,
                "QListWidget": _new_list_widget,
-               "QLineEdit": _new_line_edit}
+               "QLineEdit": _new_line_edit,
+               "QLabel": _new_label}
 
     if widget_type in methods:
         new_widget = methods[widget_type](element_description, parent_widget)
@@ -112,3 +113,11 @@ def _new_line_edit(element_description, parent_widget):
     name = element_description["_name"]
     new_line_edit.setObjectName(name)
     return new_line_edit
+
+
+def _new_label(element_description, parent_widget):
+    new_label = QtWidgets.QLabel(parent_widget)
+    name = element_description["_name"]
+    new_label.setObjectName(name)
+    new_label.setText(element_description["text"])
+    return new_label
