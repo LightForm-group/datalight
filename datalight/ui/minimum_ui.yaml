@@ -58,9 +58,6 @@ basic_metadata:
                 software: Software
                 lesson: Lesson
                 other: Other
-            activates_on:
-                publication_type: publication
-                image_type: image
             tooltip: The data type of the upload.
 
         publication_type:
@@ -90,6 +87,8 @@ basic_metadata:
             widget: QComboBox
             label: Image Type
             optional: False
+            active_when:
+                upload_type: image
             values:
                 figure: Figure
                 plot: Plot

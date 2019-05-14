@@ -1,8 +1,5 @@
 """Methods to prepare widgets for addition to a UI form"""
 
-import datetime
-from PyQt5 import QtWidgets
-
 from datalight.ui import custom_widgets
 from datalight.ui.form_generator import Container
 
@@ -29,12 +26,6 @@ def add_ui_element(parent_container: Container, element_description: dict, paren
             grid_layout = element_description["grid_layout"].split(",")
             grid_layout = [int(x) for x in grid_layout]
         parent_container.add_widget(new_widget, label, grid_layout)
-
-    # TODO: Add widget dependencies.
-    # Process widget dependencies
-    # if "activates_on" in element_description:
-    #    parent_container.widgets[-2].currentTextChanged.connect(
-    #        lambda: parent_container.enable_dependent_widget(element_description["activates_on"]))
 
 
 def get_new_widget(element_description, parent_widget):
