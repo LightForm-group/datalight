@@ -184,7 +184,7 @@ class Container:
                 element_description = element_setup(element_name, element_description)
                 add_widget.add_ui_element(self, element_description, self.group_box)
 
-    def add_container(self, name, container):
+    def add_container(self, name, container: "Container"):
         self._containers[name] = container
         self.add_widget_to_layout(self._containers[name].group_box)
 
