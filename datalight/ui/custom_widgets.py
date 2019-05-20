@@ -1,10 +1,43 @@
 import datetime
 
+import sys
+
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui
 
+from datalight.ui.form_generator import element_setup
 
-class QComboBox(QtWidgets.QComboBox):
+
+def get_new_widget(parent: "GroupBox", widget_description: dict):
+    """Return an instance of a widget described by widget_description.
+
+    :param widget_description: (dict) A description of the element to add.
+    :param parent: The instance of the parent widget of the new widget.
+    """
+
+    label = None
+    grid_layout = None
+    widget_type = widget_description["widget"]
+
+    try:
+        widget_method = getattr(sys.modules[__name__], widget_type)
+    except AttributeError:
+        raise AttributeError("No method to add widget {}.".format(widget_type))
+    new_widget = widget_method(parent, widget_description)
+
+    # Set widget properties common to all widgets
+    if "tooltip" in widget_description:
+        new_widget.setToolTip = widget_description["tooltip"]
+    if "label" in widget_description:
+        label = widget_description["label"]
+    if "grid_layout" in widget_description:
+        grid_layout = widget_description["grid_layout"].split(",")
+        grid_layout = [int(x) for x in grid_layout]
+
+    return new_widget, label, grid_layout
+
+
+class ComboBox(QtWidgets.QComboBox):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -35,7 +68,7 @@ class QComboBox(QtWidgets.QComboBox):
         return self.currentText()
 
 
-class QPlainTextEdit(QtWidgets.QPlainTextEdit):
+class PlainTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -46,7 +79,7 @@ class QPlainTextEdit(QtWidgets.QPlainTextEdit):
         return self.toPlainText()
 
 
-class QDateEdit(QtWidgets.QDateEdit):
+class DateEdit(QtWidgets.QDateEdit):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -59,7 +92,7 @@ class QDateEdit(QtWidgets.QDateEdit):
         return self.date()
 
 
-class QPushButton(QtWidgets.QPushButton):
+class PushButton(QtWidgets.QPushButton):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -70,7 +103,7 @@ class QPushButton(QtWidgets.QPushButton):
         self.setText(widget_description["button_text"])
 
 
-class QListWidget(QtWidgets.QListWidget):
+class ListWidget(QtWidgets.QListWidget):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -81,7 +114,7 @@ class QListWidget(QtWidgets.QListWidget):
         return self.currentItem()
 
 
-class QLineEdit(QtWidgets.QLineEdit):
+class LineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
@@ -92,10 +125,93 @@ class QLineEdit(QtWidgets.QLineEdit):
         self.text()
 
 
-class QLabel(QtWidgets.QLabel):
+class Label(QtWidgets.QLabel):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
 
         name = widget_description["_name"]
         self.setObjectName(name)
         self.setText(widget_description["text"])
+
+
+class GroupBox(QtWidgets.QGroupBox):
+    """A GroupBox stores child widgets. A GroupBox layout organises the layout of child widgets.
+
+    :ivar element_description: (dict) A description of the GroupBox and any child widgets.
+    :ivar parent: (QWidget) The parent widget of the GroupBox.
+    :ivar _layout: (QLayout) The layout applied to group_box.
+    :ivar _widgets: (list of QWidget) The widgets contained within this GroupBox.
+    """
+
+    def __init__(self, parent, group_box_description):
+        """ Initialise a new GroupBox
+
+        :param parent: (QWidget) The parent of the group box.
+        :param group_box_description: (dict) Specification of the group box and widgets
+        contained by this GroupBox.
+        """
+        super().__init__(parent)
+        self.element_description = group_box_description
+        self.parent = parent
+        self._layout = None
+        self._widgets = []
+
+        name = self.element_description["_name"]
+        self.setObjectName(name)
+        if "title" in self.element_description:
+            self.setTitle(self.element_description["title"])
+        else:
+            self.setStyleSheet("QGroupBox#{} {{ border: 0px;}}".format(name))
+
+        self._add_layout()
+        self._add_children()
+
+    def _add_layout(self):
+        if "layout" not in self.element_description:
+            raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
+                self.objectName()))
+        layout = self.element_description["layout"]
+        if layout == "QFormLayout":
+            self._layout = QtWidgets.QFormLayout(self)
+        elif layout == "QGridLayout":
+            self._layout = QtWidgets.QGridLayout(self)
+        else:
+            raise KeyError("layout type {} in GroupBox {} not understood.".format(
+                self.element_description["layout"], self.objectName()))
+
+    def _add_children(self):
+        if "children" in self.element_description:
+            for element_name in self.element_description["children"]:
+                element_description = self.element_description["children"][element_name]
+                element_description = element_setup(element_name, element_description)
+                self.add_widget(*get_new_widget(self, element_description))
+
+    def add_widget(self, widget, label=None, grid_layout=None):
+        self._widgets.append(widget)
+        self.add_widget_to_layout(self._widgets[-1], label, grid_layout)
+
+    def add_widget_to_layout(self, widget, label=None, grid_layout=None):
+        if isinstance(self._layout, QtWidgets.QFormLayout):
+            self.add_widget_to_form_layout(widget, label)
+        elif isinstance(self._layout, QtWidgets.QGridLayout):
+            self.add_widget_to_grid_layout(widget, grid_layout)
+        else:
+            print("Unknown layout type '{}'".format(self._layout))
+
+    def add_widget_to_form_layout(self, widget, label=None):
+        if label is None:
+            self._layout.addRow(widget)
+        else:
+            self._layout.addRow(label, widget)
+
+    def add_widget_to_grid_layout(self, widget, grid_layout):
+        self._layout.addWidget(widget, *grid_layout)
+
+    def list_widgets(self):
+        """Recursively list widgets in this GroupBox and contained GroupBoxes."""
+        widgets = []
+        for widget in self._widgets:
+            if isinstance(widget, GroupBox):
+                widgets.extend(widget.list_widgets())
+        widgets.extend(self._widgets)
+        return widgets

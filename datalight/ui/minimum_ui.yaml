@@ -1,51 +1,51 @@
 # This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
 
 file_upload:
-    widget: QGroupBox
-    label: File Upload
+    widget: GroupBox
+    title: File Upload
     layout: QGridLayout
     children:
         file_list:
-            widget: QListWidget
+            widget: ListWidget
             grid_layout: 0, 0, 1, 3
         select_file_button:
-            widget: QPushButton
+            widget: PushButton
             button_text: Select file to upload
             grid_layout: 1, 0, 1, 1
         select_folder_button:
-            widget: QPushButton
+            widget: PushButton
             button_text: Select folder to upload
             grid_layout: 1, 1, 1, 1
         remove_item_button:
-            widget: QPushButton
+            widget: PushButton
             button_text: Remove Selected Files
             grid_layout: 1, 2, 1, 1
 
 basic_metadata:
-    widget: QGroupBox
-    label: Basic Metadata
+    widget: GroupBox
+    title: Basic Metadata
     layout: QFormLayout
     children:
         title:
-            widget: QLineEdit
+            widget: LineEdit
             label: Title of Record
             optional: False
             tooltip: The title of the record
 
         description:
-            widget: QPlainTextEdit
+            widget: PlainTextEdit
             label: Record Description
             optional: False
             tooltip: A description of the dataset being uploaded
 
         publication_date:
-            widget: QDateEdit
+            widget: DateEdit
             label: Publication Date
             optional: False
             tooltip: The date of the publication of the record (you likely want todays date).
 
         upload_type:
-            widget: QComboBox
+            widget: ComboBox
             label: Upload Type
             optional: False
             values:
@@ -61,7 +61,7 @@ basic_metadata:
             tooltip: The data type of the upload.
 
         publication_type:
-            widget: QComboBox
+            widget: ComboBox
             label: Publication Type
             active_when:
                 upload_type: publication
@@ -84,7 +84,7 @@ basic_metadata:
                 other: Other
 
         image_type:
-            widget: QComboBox
+            widget: ComboBox
             label: Image Type
             optional: False
             active_when:
@@ -98,28 +98,28 @@ basic_metadata:
                 other: Other
 
         creators:
-            widget: QGroupBox
-            label: Author details
+            widget: GroupBox
+            title: Author details
             layout: QFormLayout
             children:
                 name:
-                    widget: QComboBox
+                    widget: ComboBox
                     label: Author name
                     editable: True
                     optional: False
                     tooltip: The name(s) of the people who created the dataset.
                 affiliation:
-                    widget: QLineEdit
+                    widget: LineEdit
                     label: Affiliation
                     optional: True
                     default: Univeristy of Manchester
                 orcid:
-                    widget: QLineEdit
+                    widget: LineEdit
                     label: ORCiD
                     optional: True
 
         access-right:
-            widget: QComboBox
+            widget: ComboBox
             label: Access Right
             optional: False
             values:
@@ -129,27 +129,27 @@ basic_metadata:
                 closed: Closed Access
 
         license:
-            widget: QComboBox
+            widget: ComboBox
             label: License
             optional: False
             values:
                 - cc-by-4.0
 ok_button:
-    widget: QGroupBox
+    widget: GroupBox
     layout: QFormLayout
     children:
         ok_button:
-            widget: QPushButton
+            widget: PushButton
             button_text: OK
 
 ebsd:
-    widget: QGroupBox
-    label: EBSD metadata
+    widget: GroupBox
+    title: EBSD metadata
     layout: QFormLayout
     children:
         file_warning:
-            widget: QLabel
+            widget: Label
             text: All EBSD data should be uploaded as ctf files as this has the correct metadata.
         temperatures:
-            widget: QLineEdit
+            widget: LineEdit
             label: Temperature (°C)

@@ -5,11 +5,7 @@ from functools import partial
 import yaml
 from PyQt5 import QtWidgets
 
-from datalight.ui import add_widget, slot_methods
-
-
-class GuiError(Exception):
-    """An error raised by the GUI."""
+from datalight.ui import slot_methods, custom_widgets
 
 
 class DatalightUIWindow:
@@ -17,8 +13,6 @@ class DatalightUIWindow:
     with the UI.
     :ivar ui_specification:(dict) A dict describing the elements on the form. Read from a YAML file
     :ivar main_window: (QMainWindow) The main application window object.
-    :ivar containers: (List of Container) Containers that contain group boxes that sit in the main
-    window.
     :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
     :ivar layout: (QLayout) The layout of central_widget.
     """
@@ -29,26 +23,24 @@ class DatalightUIWindow:
         # The main window. The widget from which all other widgets are descended.
         self.main_window = QtWidgets.QMainWindow()
 
-        self.containers = {}
-
         # The base elements of the main form.
         self.central_widget = QtWidgets.QWidget(self.main_window)
         self.layout = QtWidgets.QVBoxLayout(self.central_widget)
 
+        self.group_box = None
         self.set_up_main_window()
 
     def set_up_main_window(self):
         """ Set up the widgets on the main window.
         :return:
         """
-        # Get main window
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setCentralWidget(self.central_widget)
 
     def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
         self.read_basic_ui()
-        self.set_up_base_widgets()
+        self.add_base_group_box()
         self.populate_author_list()
 
     def read_basic_ui(self):
@@ -56,6 +48,29 @@ class DatalightUIWindow:
         with open("minimum_ui.yaml", encoding='utf8') as input_file:
             ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
         self.ui_specification = ui_specification
+
+    def add_base_group_box(self):
+        """Add a base group box that will contain all other widgets."""
+
+        base_description = {"widget": "GroupBox",
+                            "layout": "QFormLayout",
+                            "_name": "BaseGroupBox",
+                            "children": self.ui_specification}
+
+        self.group_box = custom_widgets.get_new_widget(self.central_widget, base_description)[0]
+        self.layout.addWidget(self.group_box)
+
+    def populate_author_list(self):
+        with open("author_details.yaml", 'r') as input_file:
+            authors = yaml.load(input_file, Loader=yaml.FullLoader)
+        author_list_box = self.get_widget_by_name("name")
+        affiliation_box = self.get_widget_by_name("affiliation")
+        orcid_box = self.get_widget_by_name("orcid")
+        author_list_box.addItem("")
+        for name in authors:
+            author_list_box.addItem(name)
+        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box)
+        author_list_box.currentIndexChanged[str].connect(update_method)
 
     def enable_dependent_widget(self, dependencies):
         """Process the 'activates_on' dependency. This turns a widget on or off depending
@@ -76,29 +91,12 @@ class DatalightUIWindow:
         :param name: (string) the name of the widget to find.
         :returns widget if widget with `name` is found else returns None."""
 
-        widgets = []
-
-        # All widgets are nested in containers.
-        for container in self.containers.values():
-            widgets.extend(container.list_widgets())
+        widgets = self.group_box.list_widgets()
 
         for widget in widgets:
             if widget.objectName() == name:
                 return widget
         return None
-
-    def set_up_base_widgets(self):
-        """Add the group boxes that are children of the main form."""
-
-        # Iteratively insert each element onto the form
-        for element_name in self.ui_specification:
-            element_description = element_setup(element_name, self.ui_specification[element_name])
-
-            if element_description["widget"] == "QGroupBox":
-                self.containers[element_name] = Container(element_description, self.central_widget)
-                self.layout.addWidget(self.containers[element_name].group_box)
-            else:
-                raise KeyError("Cannot add non group box to base form.")
 
     def set_window_position(self):
         """Put the UI window in the middle of the screen."""
@@ -112,110 +110,6 @@ class DatalightUIWindow:
         window_vertical = (screen_height - window_height) / 2
         window_horizontal = (screen_width - window_width) / 2
         self.main_window.move(window_horizontal, window_vertical)
-
-    def populate_author_list(self):
-        with open("author_details.yaml", 'r') as input_file:
-            authors = yaml.load(input_file, Loader=yaml.FullLoader)
-        author_list_box = self.get_widget_by_name("name")
-        affiliation_box = self.get_widget_by_name("affiliation")
-        orcid_box = self.get_widget_by_name("orcid")
-        author_list_box.addItem("")
-        for name in authors:
-            author_list_box.addItem(name)
-        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box)
-        author_list_box.currentIndexChanged[str].connect(update_method)
-
-
-class Container:
-    """A Container provides hierarchical storage in order to better organise GroupBoxes
-    and layouts. A Container stores a GroupBox widget, its layout, its child widgets and any
-    child Containers.
-    :ivar element_description: (dict) A description of the GroupBox and any child widgets.
-    :ivar parent: (QWidget) The parent widget of the GroupBox.
-    :ivar group_box: (QGroupBox) The GroupBox contained by this Container.
-    :ivar _layout: (QLayout) The layout applied to group_box.
-    :ivar _widgets: (list of QWidget) The widgets contained within group_box.
-    """
-
-    def __init__(self, group_box_description, parent):
-        """ Initialise a new GroupBox
-
-        :param group_box_description: (dict) Specification of the group box and widgets
-        contained by this Container.
-        :param parent: (QWidget) The parent of the group box.
-        """
-        self.element_description = group_box_description
-        self.parent = parent
-        self.group_box = None
-        self._containers = {}
-        self._layout = None
-        self._widgets = []
-
-        self._add_group_box()
-        self._add_layout()
-        self._add_elements()
-
-    def _add_group_box(self):
-        name = self.element_description["_name"]
-        self.group_box = QtWidgets.QGroupBox(self.parent)
-        self.group_box.setObjectName(name)
-        if "label" in self.element_description:
-            self.group_box.setTitle(self.element_description["label"])
-        else:
-            self.group_box.setFlat(True)
-
-    def _add_layout(self):
-        if "layout" not in self.element_description:
-            raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
-                self.group_box.objectName()))
-        layout = self.element_description["layout"]
-        if layout == "QFormLayout":
-            self._layout = QtWidgets.QFormLayout(self.group_box)
-        elif layout == "QGridLayout":
-            self._layout = QtWidgets.QGridLayout(self.group_box)
-        else:
-            raise KeyError("layout type {} in GroupBox {} not understood.".format(
-                self.element_description["layout"], self.group_box.objectName()))
-
-    def _add_elements(self):
-        if "children" in self.element_description:
-            for element_name in self.element_description["children"]:
-                element_description = self.element_description["children"][element_name]
-                element_description = element_setup(element_name, element_description)
-                add_widget.add_ui_element(self, element_description, self.group_box)
-
-    def add_container(self, name, container: "Container"):
-        self._containers[name] = container
-        self.add_widget_to_layout(self._containers[name].group_box)
-
-    def add_widget(self, widget, label=None, grid_layout=None):
-        self._widgets.append(widget)
-        self.add_widget_to_layout(self._widgets[-1], label, grid_layout)
-
-    def add_widget_to_layout(self, widget, label=None, grid_layout=None):
-        if isinstance(self._layout, QtWidgets.QFormLayout):
-            self.add_widget_to_form_layout(widget, label)
-        elif isinstance(self._layout, QtWidgets.QGridLayout):
-            self.add_widget_to_grid_layout(widget, grid_layout)
-        else:
-            print("Unknown layout type '{}'".format(self._layout))
-
-    def add_widget_to_form_layout(self, widget, label=None):
-        if label is None:
-            self._layout.addRow(widget)
-        else:
-            self._layout.addRow(label, widget)
-
-    def add_widget_to_grid_layout(self, widget, grid_layout):
-        self._layout.addWidget(widget, *grid_layout)
-
-    def list_widgets(self):
-        """Recursively list widgets in this container and contained Containers."""
-        widgets = []
-        for container in self._containers.values():
-            widgets.extend(container.list_widgets())
-        widgets.extend(self._widgets)
-        return widgets
 
 
 def element_setup(element_name, element_description):
