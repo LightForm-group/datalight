@@ -63,7 +63,7 @@ class DatalightUIWindow:
     def populate_author_list(self):
         with open("author_details.yaml", 'r') as input_file:
             authors = yaml.load(input_file, Loader=yaml.FullLoader)
-        author_list_box = self.get_widget_by_name("name")
+        author_list_box = self.get_widget_by_name("author_name")
         affiliation_box = self.get_widget_by_name("affiliation")
         orcid_box = self.get_widget_by_name("orcid")
         author_list_box.addItem("")

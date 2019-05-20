@@ -1,5 +1,4 @@
 import datetime
-
 import sys
 
 import PyQt5.QtWidgets as QtWidgets
@@ -43,6 +42,8 @@ class ComboBox(QtWidgets.QComboBox):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
 
         if "editable" in widget_description:
             self.setEditable(widget_description["editable"])
@@ -67,6 +68,12 @@ class ComboBox(QtWidgets.QComboBox):
     def get_value(self):
         return self.currentText()
 
+    def is_valid(self):
+        if not self.optional and self.get_value() == "":
+            return False
+        else:
+            return True
+
 
 class PlainTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self, parent_widget, widget_description):
@@ -74,9 +81,17 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
 
     def get_value(self):
         return self.toPlainText()
+
+    def is_valid(self):
+        if not self.optional and self.get_value() == "":
+            return False
+        else:
+            return True
 
 
 class DateEdit(QtWidgets.QDateEdit):
@@ -85,6 +100,9 @@ class DateEdit(QtWidgets.QDateEdit):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
+
         self.setCalendarPopup(True)
         self.setDate(datetime.date.today())
 
@@ -98,6 +116,7 @@ class PushButton(QtWidgets.QPushButton):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+
         if "button_text" not in widget_description:
             raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
         self.setText(widget_description["button_text"])
@@ -109,9 +128,20 @@ class ListWidget(QtWidgets.QListWidget):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
 
     def get_value(self):
-        return self.currentItem()
+        items = []
+        for index in range(self.count()):
+            items.append(self.item(index).text())
+        return items
+
+    def is_valid(self):
+        if not self.optional and self.get_value() == []:
+            return False
+        else:
+            return True
 
 
 class LineEdit(QtWidgets.QLineEdit):
@@ -120,9 +150,17 @@ class LineEdit(QtWidgets.QLineEdit):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
 
     def get_value(self):
-        self.text()
+        return self.text()
+
+    def is_valid(self):
+        if not self.optional and self.get_value() is "":
+            return False
+        else:
+            return True
 
 
 class Label(QtWidgets.QLabel):
@@ -131,6 +169,9 @@ class Label(QtWidgets.QLabel):
 
         name = widget_description["_name"]
         self.setObjectName(name)
+        if "optional" in widget_description:
+            self.optional = widget_description["optional"]
+
         self.setText(widget_description["text"])
 
 

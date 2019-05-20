@@ -7,7 +7,6 @@ import re
 
 import yaml
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import pyqtSlot
 
 
 def remove_item_button(datalight_ui):
@@ -51,14 +50,30 @@ def ok_button(datalight_ui):
     it up into a dictionary.
     """
     output = {}
+    valid_output = {}
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
     for widget in widgets:
-        name = widget.objectName()
+        widget_name = widget.objectName()
         try:
-            output[name] = widget.get_value()
+            output[widget_name] = widget.get_value()
+            valid_output[widget_name] = widget.is_valid()
         except AttributeError:
             pass
-    print(output)
+
+    print(valid_output)
+
+    if False in list(valid_output.values()):
+        warning_text = "Some mandatory fields have not been completed: \n"
+        for item in valid_output:
+            if valid_output[item] is False:
+                warning_text += "• {}\n".format(item)
+        warning_box = QtWidgets.QMessageBox()
+        warning_box.setIcon(QtWidgets.QMessageBox.Warning)
+        warning_box.setText(warning_text)
+        warning_box.setWindowTitle("Datalight warning")
+        warning_box.exec()
+    else:
+        print(output)
 
 
 def update_author_details(name, affiliation, orcid):
