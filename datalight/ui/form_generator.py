@@ -1,9 +1,10 @@
 """Generates the UI which is used to input data into Datalight"""
+import os
 import sys
 from functools import partial
 
 import yaml
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 from datalight.ui import slot_methods, custom_widgets
 
@@ -36,6 +37,7 @@ class DatalightUIWindow:
         """
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setCentralWidget(self.central_widget)
+        self.main_window.setWindowIcon(QtGui.QIcon("icon.png"))
 
     def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
