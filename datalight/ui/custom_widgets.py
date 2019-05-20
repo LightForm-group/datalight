@@ -4,8 +4,6 @@ import sys
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui
 
-from datalight.ui.form_generator import element_setup
-
 
 def get_new_widget(parent: "GroupBox", widget_description: dict):
     """Return an instance of a widget described by widget_description.
@@ -256,3 +254,18 @@ class GroupBox(QtWidgets.QGroupBox):
                 widgets.extend(widget.list_widgets())
         widgets.extend(self._widgets)
         return widgets
+
+
+def element_setup(element_name, element_description):
+    """This is where secondary processing of the YAML data takes place. These method is applied to
+    every widget.
+    :param element_name: (string) The base name of the widget being added.
+    :param element_description: (string) The name of the element being added
+    :returns element_description: (dict) A description of an element, ready to add.
+    """
+    element_description["_name"] = element_name
+    # Every element must have a widget type
+    if "widget" not in element_description:
+        raise KeyError("Missing 'widget:' type in UI element {}".format(element_name))
+
+    return element_description

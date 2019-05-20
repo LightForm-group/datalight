@@ -1,6 +1,5 @@
 """Generates the UI which is used to input data into Datalight"""
-import os
-import sys
+import pathlib
 from functools import partial
 
 import yaml
@@ -39,15 +38,18 @@ class DatalightUIWindow:
         self.main_window.setCentralWidget(self.central_widget)
         self.main_window.setWindowIcon(QtGui.QIcon("icon.png"))
 
-    def ui_setup(self):
+    def ui_setup(self, ui_path):
         """ Load UI description from style and then add widgets hierarchically."""
-        self.read_basic_ui()
+        self.read_basic_ui(ui_path)
         self.add_base_group_box()
-        self.populate_author_list()
+        self.populate_author_list(ui_path)
 
-    def read_basic_ui(self):
+    def read_basic_ui(self, ui_path):
         """Read the UI specification from a YAML file."""
-        with open("minimum_ui.yaml", encoding='utf8') as input_file:
+        ui_path = pathlib.Path(ui_path)
+        ui_file = pathlib.Path("minimum_ui.yaml")
+
+        with open(ui_path / ui_file, encoding='utf8') as input_file:
             ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
         self.ui_specification = ui_specification
 
@@ -62,8 +64,11 @@ class DatalightUIWindow:
         self.group_box = custom_widgets.get_new_widget(self.central_widget, base_description)[0]
         self.layout.addWidget(self.group_box)
 
-    def populate_author_list(self):
-        with open("author_details.yaml", 'r') as input_file:
+    def populate_author_list(self, ui_path):
+        ui_path = pathlib.Path(ui_path)
+        author_file = pathlib.Path("author_details.yaml")
+
+        with open(ui_path / author_file, 'r') as input_file:
             authors = yaml.load(input_file, Loader=yaml.FullLoader)
         author_list_box = self.get_widget_by_name("author_name")
         affiliation_box = self.get_widget_by_name("affiliation")
@@ -114,21 +119,6 @@ class DatalightUIWindow:
         self.main_window.move(window_horizontal, window_vertical)
 
 
-def element_setup(element_name, element_description):
-    """This is where secondary processing of the YAML data takes place. These method is applied to
-    every widget.
-    :param element_name: (string) The base name of the widget being added.
-    :param element_description: (string) The name of the element being added
-    :returns element_description: (dict) A description of an element, ready to add.
-    """
-    element_description["_name"] = element_name
-    # Every element must have a widget type
-    if "widget" not in element_description:
-        raise KeyError("Missing 'widget:' type in UI element {}".format(element_name))
-
-    return element_description
-
-
 def connect_button_methods(datalight_ui):
     """Create an association between the buttons on the form and their functions in the code."""
     button_widgets = datalight_ui.main_window.findChildren(QtWidgets.QPushButton)
@@ -142,18 +132,3 @@ def connect_button_methods(datalight_ui):
                 button.objectName()))
             continue
         button.clicked.connect(partial(button_method, datalight_ui))
-
-
-def main():
-    """The main function."""
-    app = QtWidgets.QApplication(sys.argv)
-    datalight_ui = DatalightUIWindow()
-    datalight_ui.ui_setup()
-    datalight_ui.main_window.show()
-    datalight_ui.set_window_position()
-    connect_button_methods(datalight_ui)
-    sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    main()

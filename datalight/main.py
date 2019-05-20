@@ -1,12 +1,17 @@
 """Main module for datalight."""
 
 import os
+import sys
 
-import datalight.common as common
+from PyQt5 import QtWidgets
+
+from datalight import common
+from datalight.ui import form_generator
+from datalight.ui.form_generator import DatalightUIWindow
 from datalight.zenodo import Zenodo as DataRepo
 
 
-def main(directory_name, metadata_path, zip_name="data.zip", publish=False, sandbox=True):
+def upload_record(directory_name, metadata_path, zip_name="data.zip", publish=False, sandbox=True):
     """Run datalight scripts to upload file to data repository"""
 
     token = common.get_authentication_token(sandbox)
@@ -32,5 +37,18 @@ def main(directory_name, metadata_path, zip_name="data.zip", publish=False, sand
     data_repo.deposit_record(files, directory, publish)
 
 
-if __name__ == '__main__':
-    main("C:/Users/Peter/Desktop/test/", "../tests/metadata/minimum_valid.yml")
+def main(ui_path):
+    """The main function."""
+    app = QtWidgets.QApplication(sys.argv)
+    datalight_ui = DatalightUIWindow()
+    datalight_ui.ui_setup(ui_path)
+    datalight_ui.main_window.show()
+    datalight_ui.set_window_position()
+    form_generator.connect_button_methods(datalight_ui)
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    UI_PATH = sys.argv[1]
+    main(UI_PATH)
+
