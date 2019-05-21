@@ -32,19 +32,16 @@ basic_metadata:
             label: Title of Record
             optional: False
             tooltip: The title of the record
-
         description:
             widget: PlainTextEdit
             label: Record Description
             optional: False
             tooltip: A description of the dataset being uploaded
-
         publication_date:
             widget: DateEdit
             label: Publication Date
             optional: False
             tooltip: The date of the publication of the record (you likely want todays date).
-
         upload_type:
             widget: ComboBox
             label: Upload Type
@@ -60,7 +57,6 @@ basic_metadata:
                 lesson: Lesson
                 other: Other
             tooltip: The data type of the upload.
-
         publication_type:
             widget: ComboBox
             label: Publication Type
@@ -83,7 +79,6 @@ basic_metadata:
                 technicalnote: Technical note
                 workingpaper: Working paper
                 other: Other
-
         image_type:
             widget: ComboBox
             label: Image Type
@@ -97,7 +92,6 @@ basic_metadata:
                 diagram: Diagram
                 photo: Photo
                 other: Other
-
         creators:
             widget: GroupBox
             title: Author details
@@ -116,7 +110,6 @@ basic_metadata:
                 orcid:
                     widget: LineEdit
                     label: ORCiD
-
         access_right:
             widget: ComboBox
             label: Access Right
@@ -126,13 +119,13 @@ basic_metadata:
                 embargoed: Embargoed Access
                 restricted: Restricted Access
                 closed: Closed Access
-
         license:
             widget: ComboBox
             label: License
             optional: False
             values:
-                - cc-by-4.0
+                cc_by_4: cc-by-4.0
+
 ok_button:
     widget: GroupBox
     layout: QFormLayout
@@ -140,15 +133,3 @@ ok_button:
         ok_button:
             widget: PushButton
             button_text: OK
-
-ebsd:
-    widget: GroupBox
-    title: EBSD metadata
-    layout: QFormLayout
-    children:
-        file_warning:
-            widget: Label
-            text: All EBSD data should be uploaded as ctf files as this has the correct metadata.
-        temperatures:
-            widget: LineEdit
-            label: Temperature (°C)

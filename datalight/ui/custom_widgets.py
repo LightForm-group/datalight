@@ -48,7 +48,7 @@ class ComboBox(QtWidgets.QComboBox):
 
         if "values" in widget_description:
             for item in widget_description["values"]:
-                self.addItem(item)
+                self.addItem(widget_description["values"][item])
 
         if "active_when" in widget_description:
             self.active_when = widget_description["active_when"]
@@ -150,6 +150,9 @@ class LineEdit(QtWidgets.QLineEdit):
         self.setObjectName(name)
         if "optional" in widget_description:
             self.optional = widget_description["optional"]
+
+        if "default" in widget_description:
+            self.setText(str(widget_description["default"]))
 
     def get_value(self):
         return self.text()
