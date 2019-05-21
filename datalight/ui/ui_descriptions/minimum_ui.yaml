@@ -1,135 +1,148 @@
 # This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
-
-file_upload:
+zenodo_core_metadata:
     widget: GroupBox
-    title: File Upload
-    layout: QGridLayout
+    layout: VBoxLayout
     children:
-        file_list:
-            widget: ListWidget
-            optional: False
-            grid_layout: 0, 0, 1, 3
-        select_file_button:
-            widget: PushButton
-            button_text: Select file to upload
-            grid_layout: 1, 0, 1, 1
-        select_folder_button:
-            widget: PushButton
-            button_text: Select folder to upload
-            grid_layout: 1, 1, 1, 1
-        remove_item_button:
-            widget: PushButton
-            button_text: Remove Selected Files
-            grid_layout: 1, 2, 1, 1
-
-basic_metadata:
-    widget: GroupBox
-    title: Basic Metadata
-    layout: QFormLayout
-    children:
-        title:
-            widget: LineEdit
-            label: Title of Record
-            optional: False
-            tooltip: The title of the record
-        description:
-            widget: PlainTextEdit
-            label: Record Description
-            optional: False
-            tooltip: A description of the dataset being uploaded
-        publication_date:
-            widget: DateEdit
-            label: Publication Date
-            optional: False
-            tooltip: The date of the publication of the record (you likely want todays date).
-        upload_type:
-            widget: ComboBox
-            label: Upload Type
-            optional: False
-            values:
-                publication: Publication
-                poster: Poster
-                presentation: Presentation
-                dataset: Dataset
-                image: Image
-                video: Video/Audio
-                software: Software
-                lesson: Lesson
-                other: Other
-            tooltip: The data type of the upload.
-        publication_type:
-            widget: ComboBox
-            label: Publication Type
-            active_when:
-                upload_type: publication
-            optional: False
-            values:
-                book: Book
-                section: Book section
-                conferencepaper: Conference paper
-                article: Journal article
-                patent: Patent
-                preprint: Preprint
-                report: Report
-                deliverable: Project deliverable
-                milestone: Project milestone
-                proposal: Proposal
-                softwaredocumentation: Software documentation
-                thesis: Thesis
-                technicalnote: Technical note
-                workingpaper: Working paper
-                other: Other
-        image_type:
-            widget: ComboBox
-            label: Image Type
-            optional: False
-            active_when:
-                upload_type: image
-            values:
-                figure: Figure
-                plot: Plot
-                drawing: Drawing
-                diagram: Diagram
-                photo: Photo
-                other: Other
-        creators:
+        file_upload:
             widget: GroupBox
-            title: Author details
-            layout: QFormLayout
+            title: File Upload
+            layout: GridLayout
             children:
-                author_name:
-                    widget: ComboBox
-                    label: Author name
-                    editable: True
+                file_list:
+                    widget: ListWidget
                     optional: False
-                    tooltip: The name(s) of the people who created the dataset.
-                affiliation:
-                    widget: LineEdit
-                    label: Affiliation
-                    default: Univeristy of Manchester
-                orcid:
-                    widget: LineEdit
-                    label: ORCiD
-        access_right:
-            widget: ComboBox
-            label: Access Right
-            optional: False
-            values:
-                open: Open Access
-                embargoed: Embargoed Access
-                restricted: Restricted Access
-                closed: Closed Access
-        license:
-            widget: ComboBox
-            label: License
-            optional: False
-            values:
-                cc_by_4: cc-by-4.0
+                    grid_layout: 0, 0, 1, 3
+                select_file_button:
+                    widget: PushButton
+                    button_text: Select file to upload
+                    grid_layout: 1, 0, 1, 1
+                select_folder_button:
+                    widget: PushButton
+                    button_text: Select folder to upload
+                    grid_layout: 1, 1, 1, 1
+                remove_item_button:
+                    widget: PushButton
+                    button_text: Remove Selected Files
+                    grid_layout: 1, 2, 1, 1
 
-ok_button:
-    widget: GroupBox
-    layout: QFormLayout
-    children:
+        basic_metadata:
+            widget: GroupBox
+            title: Basic Metadata
+            layout: FormLayout
+            children:
+                title:
+                    widget: LineEdit
+                    label: Title of Record
+                    optional: False
+                    tooltip: The title of the record
+                description:
+                    widget: PlainTextEdit
+                    label: Record Description
+                    optional: False
+                    tooltip: A description of the dataset being uploaded
+                publication_date:
+                    widget: DateEdit
+                    label: Publication Date
+                    optional: False
+                    tooltip: The date of the publication of the record (you likely want todays date).
+                upload_type:
+                    widget: ComboBox
+                    label: Upload Type
+                    optional: False
+                    values:
+                        publication: Publication
+                        poster: Poster
+                        presentation: Presentation
+                        dataset: Dataset
+                        image: Image
+                        video: Video/Audio
+                        software: Software
+                        lesson: Lesson
+                        other: Other
+                    tooltip: The data type of the upload.
+                publication_type:
+                    widget: ComboBox
+                    label: Publication Type
+                    active_when:
+                        upload_type: publication
+                    optional: False
+                    values:
+                        book: Book
+                        section: Book section
+                        conferencepaper: Conference paper
+                        article: Journal article
+                        patent: Patent
+                        preprint: Preprint
+                        report: Report
+                        deliverable: Project deliverable
+                        milestone: Project milestone
+                        proposal: Proposal
+                        softwaredocumentation: Software documentation
+                        thesis: Thesis
+                        technicalnote: Technical note
+                        workingpaper: Working paper
+                        other: Other
+                image_type:
+                    widget: ComboBox
+                    label: Image Type
+                    optional: False
+                    active_when:
+                        upload_type: image
+                    values:
+                        figure: Figure
+                        plot: Plot
+                        drawing: Drawing
+                        diagram: Diagram
+                        photo: Photo
+                        other: Other
+                creators:
+                    widget: GroupBox
+                    title: Author details
+                    layout: FormLayout
+                    children:
+                        author_name:
+                            widget: ComboBox
+                            label: Author name
+                            editable: True
+                            optional: False
+                            tooltip: The name(s) of the people who created the dataset.
+                        affiliation:
+                            widget: LineEdit
+                            label: Affiliation
+                            default: Univeristy of Manchester
+                        orcid:
+                            widget: LineEdit
+                            label: ORCiD
+                access_right:
+                    widget: ComboBox
+                    label: Access Right
+                    optional: False
+                    values:
+                        open: Open Access
+                        embargoed: Embargoed Access
+                        restricted: Restricted Access
+                        closed: Closed Access
+                license:
+                    widget: ComboBox
+                    label: License
+                    optional: False
+                    values:
+                        cc_by_4: cc-by-4.0
+
         ok_button:
-            widget: PushButton
-            button_text: OK
+            widget: GroupBox
+            layout: FormLayout
+            children:
+                ok_button:
+                    widget: PushButton
+                    button_text: OK
+
+experimental_metadata:
+    widget: GroupBox
+    layout: VBoxLayout
+    children:
+        experiment_selection:
+            widget: ComboBox
+            values:
+                ebsd: EBSD
+                TEM: TEM

@@ -213,10 +213,14 @@ class GroupBox(QtWidgets.QGroupBox):
             raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
                 self.objectName()))
         layout = self.element_description["layout"]
-        if layout == "QFormLayout":
+        if layout == "FormLayout":
             self._layout = QtWidgets.QFormLayout(self)
-        elif layout == "QGridLayout":
+        elif layout == "GridLayout":
             self._layout = QtWidgets.QGridLayout(self)
+        elif layout == "HBoxLayout":
+            self._layout = QtWidgets.QHBoxLayout(self)
+        elif layout == "VBoxLayout":
+            self._layout = QtWidgets.QVBoxLayout(self)
         else:
             raise KeyError("layout type {} in GroupBox {} not understood.".format(
                 self.element_description["layout"], self.objectName()))
@@ -237,6 +241,10 @@ class GroupBox(QtWidgets.QGroupBox):
             self.add_widget_to_form_layout(widget, label)
         elif isinstance(self._layout, QtWidgets.QGridLayout):
             self.add_widget_to_grid_layout(widget, grid_layout)
+        elif isinstance(self._layout, QtWidgets.QHBoxLayout):
+            self._layout.addWidget(widget)
+        elif isinstance(self._layout, QtWidgets.QVBoxLayout):
+            self._layout.addWidget(widget)
         else:
             print("Unknown layout type '{}'".format(self._layout))
 

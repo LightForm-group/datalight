@@ -25,7 +25,7 @@ class DatalightUIWindow:
 
         # The base elements of the main form.
         self.central_widget = QtWidgets.QWidget(self.main_window)
-        self.layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.layout = QtWidgets.QHBoxLayout(self.central_widget)
 
         self.group_box = None
         self.set_up_main_window()
@@ -57,12 +57,16 @@ class DatalightUIWindow:
         """Add a base group box that will contain all other widgets."""
 
         base_description = {"widget": "GroupBox",
-                            "layout": "QFormLayout",
+                            "layout": "FormLayout",
                             "_name": "BaseGroupBox",
                             "children": self.ui_specification}
 
         self.group_box = custom_widgets.get_new_widget(self.central_widget, base_description)[0]
         self.layout.addWidget(self.group_box)
+
+    def add_experimental_group_box(self):
+        """Add a group box to deal with the different metadata for each experiment."""
+
 
     def populate_author_list(self, ui_path):
         ui_path = pathlib.Path(ui_path)

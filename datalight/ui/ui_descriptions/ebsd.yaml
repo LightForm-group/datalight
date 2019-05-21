@@ -1,7 +1,7 @@
 ebsd:
     widget: GroupBox
     title: EBSD metadata
-    layout: QFormLayout
+    layout: FormLayout
     children:
         file_warning:
             widget: Label
@@ -39,7 +39,7 @@ ebsd:
         material:
             widget: GroupBox
             title: Material Description
-            layout: QFormLayout
+            layout: FormLayout
             tooltip: A description of the material analysed. Consider adding information about the type of material and the forming process.
             children:
                 material_description:
