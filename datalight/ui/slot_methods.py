@@ -8,6 +8,8 @@ import re
 import yaml
 from PyQt5 import QtWidgets, QtCore
 
+from datalight.zenodo import upload_record
+
 
 def remove_item_button(datalight_ui):
     """Remove the selected item(s) from the file/folder upload list."""
@@ -49,13 +51,13 @@ def ok_button(datalight_ui):
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    output = {}
+    metadata_output = {}
     valid_output = {}
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
     for widget in widgets:
         widget_name = widget.objectName()
         try:
-            output[widget_name] = widget.get_value()
+            metadata_output[widget_name] = widget.get_value()
             valid_output[widget_name] = widget.is_valid()
         except AttributeError:
             pass
@@ -73,11 +75,12 @@ def ok_button(datalight_ui):
         warning_box.setWindowTitle("Datalight warning")
         warning_box.exec()
     else:
-        print(output)
+        print(metadata_output)
+        upload_record(metadata_output["file_list"][0], metadata_output)
 
 
-def update_author_details(name, affiliation, orcid):
-    with open("author_details.yaml", 'r') as input_file:
+def update_author_details(name, affiliation, orcid, author_path):
+    with open(author_path, 'r') as input_file:
         author_list = yaml.load(input_file, Loader=yaml.FullLoader)
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])

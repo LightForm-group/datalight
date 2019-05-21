@@ -117,7 +117,7 @@ basic_metadata:
                     widget: LineEdit
                     label: ORCiD
 
-        access-right:
+        access_right:
             widget: ComboBox
             label: Access Right
             optional: False

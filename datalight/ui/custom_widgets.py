@@ -2,7 +2,7 @@ import datetime
 import sys
 
 import PyQt5.QtWidgets as QtWidgets
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 
 
 def get_new_widget(parent: "GroupBox", widget_description: dict):
@@ -105,7 +105,7 @@ class DateEdit(QtWidgets.QDateEdit):
         self.setDate(datetime.date.today())
 
     def get_value(self):
-        return self.date()
+        return self.date().toString(QtCore.Qt.ISODate)
 
 
 class PushButton(QtWidgets.QPushButton):

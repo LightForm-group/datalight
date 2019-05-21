@@ -67,8 +67,9 @@ class DatalightUIWindow:
     def populate_author_list(self, ui_path):
         ui_path = pathlib.Path(ui_path)
         author_file = pathlib.Path("author_details.yaml")
+        author_path = ui_path / author_file
 
-        with open(ui_path / author_file, 'r') as input_file:
+        with open(author_path, 'r') as input_file:
             authors = yaml.load(input_file, Loader=yaml.FullLoader)
         author_list_box = self.get_widget_by_name("author_name")
         affiliation_box = self.get_widget_by_name("affiliation")
@@ -76,7 +77,7 @@ class DatalightUIWindow:
         author_list_box.addItem("")
         for name in authors:
             author_list_box.addItem(name)
-        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box)
+        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box, author_path)
         author_list_box.currentIndexChanged[str].connect(update_method)
 
     def enable_dependent_widget(self, dependencies):

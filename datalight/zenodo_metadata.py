@@ -79,6 +79,11 @@ class ZenodoMetadata:
         if isinstance(metadata_path, str) or issubclass(type(metadata_path), pathlib.Path):
             logger.info('Metadata provided by file: {}'.format(metadata_path))
             self.metadata = self._read_metadata(metadata_path)
+        elif isinstance(metadata_path, dict):
+            self.metadata = metadata_path
+            self.metadata["creators"] = {"author_name": self.metadata.pop("author_name"),
+                                         "affiliation": self.metadata.pop("affiliation"),
+                                         "orcid": self.metadata.pop("orcid")}
         else:
             raise TypeError("Metadata path of wrong type. Needs to be a path.")
 
