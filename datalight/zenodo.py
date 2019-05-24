@@ -4,13 +4,13 @@ import os
 import json
 import requests
 
-from datalight.zenodo_metadata import ZenodoMetadata
+import datalight.zenodo_metadata as zenodo_metadata
 from datalight import common
 from datalight.common import logger
 
 
 class ZenodoException(Exception):
-    """General exception raised when there is some failiure to interface with Zenodo."""
+    """General exception raised when there is some failure to interface with Zenodo."""
 
 
 def upload_record(directory_name, metadata, zip_name="data.zip", publish=False, sandbox=True):
@@ -68,9 +68,9 @@ class Zenodo:
     def deposit_record(self, files, directory, publish):
         """The main method which calls the many parts of the upload process."""
 
+        self.checked_metadata = self.get_metadata()
         self._get_deposition_id()
         self._upload_files(files, path=directory)
-        self.set_metadata()
         self.upload_metadata()
         if publish:
             self.publish()
@@ -124,13 +124,12 @@ class Zenodo:
                                     files=files)
             self._check_status_code(request.status_code)
 
-    def set_metadata(self):
-        """Method to validate metadata."""
-        datalight_metadata = ZenodoMetadata()
-        datalight_metadata.set_schema()
-        datalight_metadata.set_metadata(self.metadata_path)
-        datalight_metadata.validate_metadata()
-        self.checked_metadata = {'metadata': datalight_metadata.metadata}
+    def get_metadata(self):
+        """Method to get and validate metadata."""
+        schema = zenodo_metadata.read_schema_from_file()
+        metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
+        validated_metadata = zenodo_metadata.validate_metadata(metadata, schema)
+        return {'metadata': validated_metadata}
 
     def upload_metadata(self):
         """Upload metadata to Zenodo repository.
