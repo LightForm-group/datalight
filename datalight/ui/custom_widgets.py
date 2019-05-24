@@ -30,6 +30,8 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
     if "grid_layout" in widget_description:
         grid_layout = widget_description["grid_layout"].split(",")
         grid_layout = [int(x) for x in grid_layout]
+    # Make sure widget is killed when closed to stop memory leak.
+    new_widget.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
     return new_widget, label, grid_layout
 

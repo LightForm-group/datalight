@@ -3,11 +3,13 @@ This script contains functions which are linked to buttons in the UI.
 In order to be linked to a button, a function must have the same name as the button as specified
 in the UI YAML specification.
 """
+import pathlib
 import re
 
 import yaml
 from PyQt5 import QtWidgets, QtCore
 
+from datalight.ui.custom_widgets import GroupBox, get_new_widget
 from datalight.zenodo import upload_record
 
 
@@ -85,3 +87,30 @@ def update_author_details(name, affiliation, orcid, author_path):
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
         orcid.setText(author_list[name]["orcid"])
+
+
+def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui_folder):
+    # Get all children remove them from the layout and close them
+    children = experimental_group_box.children()
+    for child in reversed(children):
+        if not isinstance(child, QtWidgets.QLayout):
+            experimental_group_box._layout.removeWidget(child)
+            child.close()
+
+    new_widgets = read_ui_file(ui_folder, new_value)
+    for widget in new_widgets:
+        # Create a new widget and add it
+        new_widget = get_new_widget(experimental_group_box, new_widgets[widget])
+        experimental_group_box.add_widget(*new_widget)
+
+
+def read_ui_file(ui_path, ui_name):
+        """Read the UI specification from a YAML file."""
+        ui_path = pathlib.Path(ui_path)
+        ui_file = pathlib.Path("{}.yaml".format(ui_name))
+        if not (ui_path / ui_file).exists():
+            raise FileNotFoundError("Cannot find experimental metadata file: {}".format(
+                ui_path / ui_file))
+
+        with open(ui_path / ui_file, encoding='utf8') as input_file:
+            return yaml.load(input_file, Loader=yaml.FullLoader)

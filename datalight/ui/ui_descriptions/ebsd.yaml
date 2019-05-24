@@ -2,6 +2,7 @@ ebsd:
     widget: GroupBox
     title: EBSD metadata
     layout: FormLayout
+    _name: ebsd
     children:
         file_warning:
             widget: Label

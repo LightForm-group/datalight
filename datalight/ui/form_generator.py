@@ -16,7 +16,7 @@ class DatalightUIWindow:
     :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
     :ivar layout: (QLayout) The layout of central_widget.
     """
-    def __init__(self):
+    def __init__(self, ui_path):
         # The dictionary describing the form
         self.ui_specification = None
 
@@ -25,10 +25,13 @@ class DatalightUIWindow:
 
         # The base elements of the main form.
         self.central_widget = QtWidgets.QWidget(self.main_window)
+        # This layout contains a single element - the BaseGroupBox. The layout is
+        # necessary to make the central_widget size itself appropriately.
         self.layout = QtWidgets.QHBoxLayout(self.central_widget)
 
         self.group_box = None
         self.set_up_main_window()
+        self.ui_path = ui_path
 
     def set_up_main_window(self):
         """ Set up the widgets on the main window.
@@ -38,11 +41,12 @@ class DatalightUIWindow:
         self.main_window.setCentralWidget(self.central_widget)
         self.main_window.setWindowIcon(QtGui.QIcon("icon.png"))
 
-    def ui_setup(self, ui_path):
+    def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
-        self.read_basic_ui(ui_path)
+        self.read_basic_ui(self.ui_path)
         self.add_base_group_box()
-        self.populate_author_list(ui_path)
+        self.populate_author_list(self.ui_path)
+        self.link_experimental_group_box()
 
     def read_basic_ui(self, ui_path):
         """Read the UI specification from a YAML file."""
@@ -57,16 +61,23 @@ class DatalightUIWindow:
         """Add a base group box that will contain all other widgets."""
 
         base_description = {"widget": "GroupBox",
-                            "layout": "FormLayout",
+                            "layout": "HBoxLayout",
                             "_name": "BaseGroupBox",
                             "children": self.ui_specification}
 
         self.group_box = custom_widgets.get_new_widget(self.central_widget, base_description)[0]
         self.layout.addWidget(self.group_box)
 
-    def add_experimental_group_box(self):
-        """Add a group box to deal with the different metadata for each experiment."""
+    def link_experimental_group_box(self):
+        """Link the experimental combo box to the method for updating experimental data."""
+        # The combo box which selects the experiment type
+        combo_box = self.get_widget_by_name("experiment_selection")
 
+        # The group box containing the experimental data
+        experimental_group_box = self.get_widget_by_name("experimental_metadata")
+
+        update_method = lambda name: slot_methods.update_experimental_metadata(experimental_group_box, combo_box.get_value(), self.ui_path)
+        combo_box.currentIndexChanged[str].connect(update_method)
 
     def populate_author_list(self, ui_path):
         ui_path = pathlib.Path(ui_path)

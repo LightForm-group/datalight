@@ -137,12 +137,16 @@ zenodo_core_metadata:
                     widget: PushButton
                     button_text: OK
 
-experimental_metadata:
+experimental_metadata_selector:
     widget: GroupBox
     layout: VBoxLayout
     children:
         experiment_selection:
             widget: ComboBox
             values:
-                ebsd: EBSD
-                TEM: TEM
+                none: Select an Experiment
+                ebsd: ebsd
+                tem: tem
+        experimental_metadata:
+            widget: GroupBox
+            layout: FormLayout
