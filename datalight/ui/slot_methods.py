@@ -45,7 +45,7 @@ def open_file_window(datalight_ui, file_dialogue):
             else:
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
                                               "File {}, already selected.".format(
-                                                  re.split("[\\\/]", path)[-1]))
+                                                  re.split(r"[\\\/]", path)[-1]))
 
 
 def ok_button(datalight_ui):
@@ -94,23 +94,24 @@ def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui
     children = experimental_group_box.children()
     for child in reversed(children):
         if not isinstance(child, QtWidgets.QLayout):
-            experimental_group_box._layout.removeWidget(child)
+            experimental_group_box.remove_widget_from_layout(child)
             child.close()
 
-    new_widgets = read_ui_file(ui_folder, new_value)
-    for widget in new_widgets:
-        # Create a new widget and add it
-        new_widget = get_new_widget(experimental_group_box, new_widgets[widget])
-        experimental_group_box.add_widget(*new_widget)
+    if new_value != "none":
+        new_widgets = read_ui_file(ui_folder, new_value)
+        for widget in new_widgets:
+            # Create a new widget and add it
+            new_widget = get_new_widget(experimental_group_box, new_widgets[widget])
+            experimental_group_box.add_widget(*new_widget)
 
 
 def read_ui_file(ui_path, ui_name):
-        """Read the UI specification from a YAML file."""
-        ui_path = pathlib.Path(ui_path)
-        ui_file = pathlib.Path("{}.yaml".format(ui_name))
-        if not (ui_path / ui_file).exists():
-            raise FileNotFoundError("Cannot find experimental metadata file: {}".format(
-                ui_path / ui_file))
+    """Read the UI specification from a YAML file."""
+    ui_path = pathlib.Path(ui_path)
+    ui_file = pathlib.Path("{}.yaml".format(ui_name))
+    if not (ui_path / ui_file).exists():
+        raise FileNotFoundError("Cannot find experimental metadata file: {}".format(
+            ui_path / ui_file))
 
-        with open(ui_path / ui_file, encoding='utf8') as input_file:
-            return yaml.load(input_file, Loader=yaml.FullLoader)
+    with open(ui_path / ui_file, encoding='utf8') as input_file:
+        return yaml.load(input_file, Loader=yaml.FullLoader)

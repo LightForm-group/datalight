@@ -50,7 +50,7 @@ class ComboBox(QtWidgets.QComboBox):
 
         if "values" in widget_description:
             for item in widget_description["values"]:
-                self.addItem(widget_description["values"][item])
+                self.addItem(widget_description["values"][item], item)
 
         if "active_when" in widget_description:
             self.active_when = widget_description["active_when"]
@@ -249,6 +249,9 @@ class GroupBox(QtWidgets.QGroupBox):
             self._layout.addWidget(widget)
         else:
             print("Unknown layout type '{}'".format(self._layout))
+
+    def remove_widget_from_layout(self, widget):
+        self._layout.removeWidget(widget)
 
     def add_widget_to_form_layout(self, widget, label=None):
         if label is None:

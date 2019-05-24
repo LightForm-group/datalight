@@ -76,7 +76,7 @@ class DatalightUIWindow:
         # The group box containing the experimental data
         experimental_group_box = self.get_widget_by_name("experimental_metadata")
 
-        update_method = lambda name: slot_methods.update_experimental_metadata(experimental_group_box, combo_box.get_value(), self.ui_path)
+        update_method = lambda name: slot_methods.update_experimental_metadata(experimental_group_box, combo_box.itemData(combo_box.currentIndex()), self.ui_path)
         combo_box.currentIndexChanged[str].connect(update_method)
 
     def populate_author_list(self, ui_path):

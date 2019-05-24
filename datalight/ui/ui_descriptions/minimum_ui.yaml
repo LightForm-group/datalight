@@ -109,7 +109,6 @@ zenodo_core_metadata:
                         affiliation:
                             widget: LineEdit
                             label: Affiliation
-                            default: Univeristy of Manchester
                         orcid:
                             widget: LineEdit
                             label: ORCiD
@@ -144,9 +143,9 @@ experimental_metadata_selector:
         experiment_selection:
             widget: ComboBox
             values:
-                none: Select an Experiment
-                ebsd: ebsd
-                tem: tem
+                none: No Experiment Selected
+                ebsd: EBSD
+                tem: TEM
         experimental_metadata:
             widget: GroupBox
             layout: FormLayout
