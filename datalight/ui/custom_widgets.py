@@ -1,5 +1,6 @@
 import datetime
 import sys
+from abc import abstractmethod
 
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui, QtCore
@@ -36,14 +37,39 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
     return new_widget, label, grid_layout
 
 
-class ComboBox(QtWidgets.QComboBox):
-    def __init__(self, parent_widget, widget_description):
-        super().__init__(parent_widget)
+class WidgetMixin:
+    """This is a mixin class to provide common methods for Widget classes.
 
+    Even though 'optional' is a class variable in the mixin, it is converted to an
+    instance variable on calling the set_common_properties method. set_common_properties
+    is a pseudo __init__ method, __init__ cannot be used directly because its parameters
+    vary from the __init__ methods of the widget superclasses. For this reason, any subclass
+    of this class should call super().set_common_properties()
+    """
+    optional = None
+
+    def check_optional(self):
+        if not self.optional and self.get_value() == "":
+            return False
+        else:
+            return True
+
+    def set_common_properties(self, widget_description):
         name = widget_description["_name"]
         self.setObjectName(name)
+
         if "optional" in widget_description:
             self.optional = widget_description["optional"]
+
+    def get_value(self):
+        # If the subclass does not implement this method, raise an AttributeError
+        raise AttributeError
+
+
+class ComboBox(QtWidgets.QComboBox, WidgetMixin):
+    def __init__(self, parent_widget, widget_description):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
 
         if "editable" in widget_description:
             self.setEditable(widget_description["editable"])
@@ -70,45 +96,29 @@ class ComboBox(QtWidgets.QComboBox):
         if self.isEditable():
             return self.currentText()
         else:
-            # For fixed vocabulary boxes, return the currentData filed
+            # For fixed vocabulary boxes, return the currentData field
             # as this returns the key value stored in the UserRole
             return self.currentData()
 
-    def is_valid(self):
-        if not self.optional and self.get_value() == "":
-            return False
-        else:
-            return True
 
-
-class PlainTextEdit(QtWidgets.QPlainTextEdit):
+class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
 
-        name = widget_description["_name"]
-        self.setObjectName(name)
-        if "optional" in widget_description:
-            self.optional = widget_description["optional"]
+        if "minimum_length" in widget_description:
+            self.minimum_length = widget_description["minimum_length"]
+
         self.setTabChangesFocus(True)
 
     def get_value(self):
         return self.toPlainText()
 
-    def is_valid(self):
-        if not self.optional and self.get_value() == "":
-            return False
-        else:
-            return True
 
-
-class DateEdit(QtWidgets.QDateEdit):
+class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
-
-        name = widget_description["_name"]
-        self.setObjectName(name)
-        if "optional" in widget_description:
-            self.optional = widget_description["optional"]
+        super().set_common_properties(widget_description)
 
         self.setCalendarPopup(True)
         self.setDate(datetime.date.today())
@@ -117,26 +127,20 @@ class DateEdit(QtWidgets.QDateEdit):
         return self.date().toString(QtCore.Qt.ISODate)
 
 
-class PushButton(QtWidgets.QPushButton):
+class PushButton(QtWidgets.QPushButton, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
-
-        name = widget_description["_name"]
-        self.setObjectName(name)
+        super().set_common_properties(widget_description)
 
         if "button_text" not in widget_description:
-            raise KeyError("PushButton {} must have a 'button_text' property.".format(name))
+            raise KeyError("PushButton {} must have a 'button_text' property.".format(self.name))
         self.setText(widget_description["button_text"])
 
 
-class ListWidget(QtWidgets.QListWidget):
+class ListWidget(QtWidgets.QListWidget, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
-
-        name = widget_description["_name"]
-        self.setObjectName(name)
-        if "optional" in widget_description:
-            self.optional = widget_description["optional"]
+        super().set_common_properties(widget_description)
 
     def get_value(self):
         items = []
@@ -144,21 +148,11 @@ class ListWidget(QtWidgets.QListWidget):
             items.append(self.item(index).text())
         return items
 
-    def is_valid(self):
-        if not self.optional and self.get_value() == []:
-            return False
-        else:
-            return True
 
-
-class LineEdit(QtWidgets.QLineEdit):
+class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
-
-        name = widget_description["_name"]
-        self.setObjectName(name)
-        if "optional" in widget_description:
-            self.optional = widget_description["optional"]
+        super().set_common_properties(widget_description)
 
         if "default" in widget_description:
             self.setText(str(widget_description["default"]))
@@ -166,26 +160,16 @@ class LineEdit(QtWidgets.QLineEdit):
     def get_value(self):
         return self.text()
 
-    def is_valid(self):
-        if not self.optional and self.get_value() is "":
-            return False
-        else:
-            return True
 
-
-class Label(QtWidgets.QLabel):
+class Label(QtWidgets.QLabel, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
-
-        name = widget_description["_name"]
-        self.setObjectName(name)
-        if "optional" in widget_description:
-            self.optional = widget_description["optional"]
+        super().set_common_properties(widget_description)
 
         self.setText(widget_description["text"])
 
 
-class GroupBox(QtWidgets.QGroupBox):
+class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
     """A GroupBox stores child widgets. A GroupBox layout organises the layout of child widgets.
 
     :ivar element_description: (dict) A description of the GroupBox and any child widgets.
@@ -202,13 +186,12 @@ class GroupBox(QtWidgets.QGroupBox):
         contained by this GroupBox.
         """
         super().__init__(parent)
+        super().set_common_properties(group_box_description)
         self.element_description = group_box_description
         self.parent = parent
         self._layout = None
         self._widgets = []
 
-        name = self.element_description["_name"]
-        self.setObjectName(name)
         if "title" in self.element_description:
             self.setTitle(self.element_description["title"])
         else:

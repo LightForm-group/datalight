@@ -60,9 +60,10 @@ def ok_button(datalight_ui):
         widget_name = widget.objectName()
         try:
             metadata_output[widget_name] = widget.get_value()
-            valid_output[widget_name] = widget.is_valid()
         except AttributeError:
-            pass
+            # If the widget does not have a get_value method then ignore the widget.
+            continue
+        valid_output[widget_name] = widget.check_optional()
 
     print(valid_output)
 
