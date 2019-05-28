@@ -48,6 +48,7 @@ class ComboBox(QtWidgets.QComboBox):
         if "editable" in widget_description:
             self.setEditable(widget_description["editable"])
 
+        # Add items with the key as a extra field stored in the UserRole.
         if "values" in widget_description:
             for item in widget_description["values"]:
                 self.addItem(widget_description["values"][item], item)
@@ -66,7 +67,12 @@ class ComboBox(QtWidgets.QComboBox):
         #     print(source_widget)
 
     def get_value(self):
-        return self.currentText()
+        if self.isEditable():
+            return self.currentText()
+        else:
+            # For fixed vocabulary boxes, return the currentData filed
+            # as this returns the key value stored in the UserRole
+            return self.currentData()
 
     def is_valid(self):
         if not self.optional and self.get_value() == "":

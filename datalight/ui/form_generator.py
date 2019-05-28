@@ -86,7 +86,7 @@ class DatalightUIWindow:
 
         with open(author_path, 'r') as input_file:
             authors = yaml.load(input_file, Loader=yaml.FullLoader)
-        author_list_box = self.get_widget_by_name("author_name")
+        author_list_box = self.get_widget_by_name("name")
         affiliation_box = self.get_widget_by_name("affiliation")
         orcid_box = self.get_widget_by_name("orcid")
         author_list_box.addItem("")

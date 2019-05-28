@@ -100,7 +100,7 @@ zenodo_core_metadata:
                     title: Author details
                     layout: FormLayout
                     children:
-                        author_name:
+                        name:
                             widget: ComboBox
                             label: Author name
                             editable: True
@@ -126,7 +126,7 @@ zenodo_core_metadata:
                     label: License
                     optional: False
                     values:
-                        cc_by_4: cc-by-4.0
+                        CC-BY-4.0: cc-by-4.0
 
         ok_button:
             widget: GroupBox

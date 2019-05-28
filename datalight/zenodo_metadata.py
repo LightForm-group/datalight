@@ -40,12 +40,12 @@ SCHEMA_FILE = SCHEMAS_DIR / pathlib.Path('zenodo/zenodo_upload_metadata_schema.j
 def read_schema_from_file():
     """Method to read the schema. Reads schema from self.schema_path
     Stores schema dictionary in self.schema"""
-    logger.info('Reading schema from: {}'.format(self.schema_path))
+    logger.info('Reading schema from: {}'.format(SCHEMA_FILE))
     try:
         with open(SCHEMA_FILE) as input_file:
             return json.load(input_file)
     except FileNotFoundError:
-        raise ZenodoMetadataException('Schema file: {} not found.'.format(self.schema_path))
+        raise ZenodoMetadataException('Schema file: {} not found.'.format(SCHEMA_FILE))
 
 
 def read_metadata_from_file(metadata_path):

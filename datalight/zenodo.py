@@ -18,6 +18,7 @@ class ZenodoException(Exception):
 
 def upload_record(file_path, metadata: Union[str, dict], zip_name="data.zip", publish=False, sandbox=True):
     """Run datalight scripts to upload file to data repository"""
+    #metadata = "C:/Users/Peter/Documents/git/datalight/tests/metadata/minimum_valid.yml"
 
     token = common.get_authentication_token(sandbox)
     if token is None:
@@ -147,7 +148,19 @@ class Zenodo:
         """Method to get and validate metadata."""
         schema = zenodo_metadata.read_schema_from_file()
         if self.raw_metadata is None:
+            # If metadata was provided as a path then read it from a file.
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
+        else:
+            # If metadata comes from the UI, need to parcel the creator data up.
+            creators = {}
+            if "name" in self.raw_metadata:
+                creators["name"] = self.raw_metadata.pop("name")
+            if "affiliation" in self.raw_metadata:
+                creators["affiliation"] = self.raw_metadata.pop("affiliation")
+            if "orcid" in self.raw_metadata:
+                creators["orcid"] = self.raw_metadata.pop("orcid")
+            # A list of a dictionary makes a JSON array type.
+            self.raw_metadata["creators"] = [creators]
         validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         return {'metadata': validated_metadata}
 
