@@ -75,9 +75,14 @@ def zip_data(files, base_directory, zip_name):
 
     try:
         with zipfile.ZipFile(zip_name, 'w') as output_zip:
-            for relative_path in files:
-                absolute_path = base_directory / relative_path
-                output_zip.write(absolute_path, relative_path)
+            for path in files:
+                if base_directory is None:
+                    # If files were selected then merge them all into a single folder.
+                    output_zip.write(path, path.name)
+                else:
+                    # If a directory was selected then retain the original directory structure.
+                    absolute_path = base_directory / path
+                    output_zip.write(absolute_path, path)
     except FileExistsError:
         print("Error: Zip file \"{}\" already exists. Cannot overwrite.".format(zip_name))
         sys.exit()

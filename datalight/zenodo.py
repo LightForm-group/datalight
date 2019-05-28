@@ -3,7 +3,7 @@
 import os
 import json
 import pathlib
-from typing import List
+from typing import List, Union
 
 import requests
 
@@ -16,7 +16,7 @@ class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
-def upload_record(file_path, metadata, zip_name="data.zip", publish=False, sandbox=True):
+def upload_record(file_path, metadata: Union[str, dict], zip_name="data.zip", publish=False, sandbox=True):
     """Run datalight scripts to upload file to data repository"""
 
     token = common.get_authentication_token(sandbox)
@@ -27,10 +27,11 @@ def upload_record(file_path, metadata, zip_name="data.zip", publish=False, sandb
 
     common.zip_data(files, base_directory, zip_name)
     # Change the name of the files to upload for the zip file created
-    files, directory = [zip_name], '.'
+    files = [zip_name]
+    zip_directory = '.'
 
-    data_repo = Zenodo(token=token, metadata_path=metadata, sandbox=sandbox)
-    data_repo.deposit_record(files, directory, publish)
+    data_repo = Zenodo(token, metadata, sandbox)
+    data_repo.deposit_record(files, zip_directory, publish)
 
 
 def get_file_paths(file_paths: List[str]):
@@ -55,14 +56,20 @@ class Zenodo:
     """Class to upload and download files on Zenodo
     The deposit record method should be called and this does all
     of the steps required to upload a file.
-
-    :var token: (str) API token for connection to Zenodo.
-    :var sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo.
     """
 
-    def __init__(self, token, metadata_path, sandbox=False):
+    def __init__(self, token: str, metadata: Union[str, dict], sandbox=False):
+        """
+        :param token: API token for connection to Zenodo.
+        :param metadata: Either a path to a metadata file or a dictionary of metadata.
+        :param sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
+        self.raw_metadata = None
+        self.metadata_path = None
 
-        self.metadata_path = metadata_path
+        if isinstance(metadata, dict):
+            self.raw_metadata = metadata
+        else:
+            self.metadata_path = metadata
 
         if sandbox:
             self.api_base_url = 'https://sandbox.zenodo.org/api/'
@@ -78,7 +85,7 @@ class Zenodo:
         self._try_connection()
 
     def deposit_record(self, files, directory, publish):
-        """The main method which calls the many parts of the upload process."""
+        """Method which calls the parts of the upload process."""
 
         self.checked_metadata = self.get_metadata()
         self._get_deposition_id()
@@ -139,8 +146,9 @@ class Zenodo:
     def get_metadata(self):
         """Method to get and validate metadata."""
         schema = zenodo_metadata.read_schema_from_file()
-        metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
-        validated_metadata = zenodo_metadata.validate_metadata(metadata, schema)
+        if self.raw_metadata is None:
+            self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
+        validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         return {'metadata': validated_metadata}
 
     def upload_metadata(self):

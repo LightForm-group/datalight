@@ -83,6 +83,7 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit):
         self.setObjectName(name)
         if "optional" in widget_description:
             self.optional = widget_description["optional"]
+        self.setTabChangesFocus(True)
 
     def get_value(self):
         return self.toPlainText()
