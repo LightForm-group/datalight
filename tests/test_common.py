@@ -3,7 +3,7 @@ import os
 import pathlib
 import pytest
 
-from datalight.common import get_files_path, zip_data
+from datalight.common import get_files_from_directory, zip_data
 
 # Path where the tests are
 test_directory = pathlib.Path(__file__).parent
@@ -20,18 +20,18 @@ zip_name = pathlib.Path("data.zip")
 
 def test_get_files_path_file():
     """Get the path of a single file."""
-    assert [file_path_1] == get_files_path(file_path_1)
+    assert [file_path_1] == get_files_from_directory(file_path_1)
 
 
 def test_get_files_path_directory():
     """ Get the paths of all files in a directory"""
-    assert sorted([file_path_1, file_path_2, file_path_3]) == get_files_path(common_dir)
+    assert sorted([file_path_1, file_path_2, file_path_3]) == get_files_from_directory(common_dir)
 
 
 def test_get_files_path_exception():
     """Getting a non-existant file should raise an exception."""
     with pytest.raises(FileNotFoundError):
-        get_files_path('doesnotexist')
+        get_files_from_directory('doesnotexist')
 
 
 def test_zip_data_nofile_or_file_does_not_exist():

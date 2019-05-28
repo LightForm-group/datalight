@@ -4,6 +4,7 @@ import sys
 import zipfile
 import pathlib
 import configparser
+from typing import List
 
 import logging.config
 
@@ -39,39 +40,34 @@ class DatalightException(Exception):
     """Class for exception"""
 
 
-def get_files_path(directory_name):
-    """Recursively collect file paths within the given directory.
-
-    The function will return a list of file paths relative to directory_name.
-    :param directory_name: (str) The path to a directory
-    :return files_paths: (list of string) Paths of files relative to directory_name.
+def get_files_from_directory(directory_name: pathlib.Path) -> List[pathlib.Path]:
+    """Recursively collect file paths within the given directory returning
+     a list of paths relative to the directory.
+    :param directory_name: The path to a directory
+    :return: Absolute paths of files.
     :raises FileNotFoundError: if the directory does not exist.
     """
+    relative_paths = []
 
-    directory_name = pathlib.Path(directory_name)
     # If directory_name is a file, return a list with file_name
-    if directory_name.is_file():
-        file_paths = [directory_name]
-    else:
-        file_paths = directory_name.glob('**/*')
-
-    absolute_paths = []
+    file_paths = directory_name.glob('**/*')
 
     for path in file_paths:
         # Glob finds directories as well as files so remove these.
         if not path.is_dir():
-            absolute_paths.append(path.resolve())
+            relative_paths.append(path.relative_to(directory_name))
 
-    if len(absolute_paths) == 0:
+    if len(relative_paths) == 0:
         raise FileNotFoundError('Directory: {} does not exist.'.format(directory_name))
 
-    return sorted(absolute_paths)
+    return relative_paths
 
 
-def zip_data(files, zip_name):
+def zip_data(files, base_directory, zip_name):
     """Method to zip files which will be uploaded to the data repository.
 
     :param files: (list of string) The paths of the files written to the zip archive.
+    :param base_directory: The directory that file paths are relative to.
     :param zip_name: (str) Name of the zip file to create.
     """
 
@@ -79,8 +75,9 @@ def zip_data(files, zip_name):
 
     try:
         with zipfile.ZipFile(zip_name, 'w') as output_zip:
-            for file in files:
-                output_zip.write(file)
+            for relative_path in files:
+                absolute_path = base_directory / relative_path
+                output_zip.write(absolute_path, relative_path)
     except FileExistsError:
         print("Error: Zip file \"{}\" already exists. Cannot overwrite.".format(zip_name))
         sys.exit()

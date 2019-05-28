@@ -78,7 +78,7 @@ def ok_button(datalight_ui):
         warning_box.exec()
     else:
         print(metadata_output)
-        upload_record(metadata_output["file_list"][0], metadata_output)
+        upload_record(metadata_output["file_list"], metadata_output)
 
 
 def update_author_details(name, affiliation, orcid, author_path):

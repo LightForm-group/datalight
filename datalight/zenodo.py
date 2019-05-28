@@ -2,6 +2,9 @@
 
 import os
 import json
+import pathlib
+from typing import List
+
 import requests
 
 import datalight.zenodo_metadata as zenodo_metadata
@@ -13,25 +16,16 @@ class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
-def upload_record(directory_name, metadata, zip_name="data.zip", publish=False, sandbox=True):
+def upload_record(file_path, metadata, zip_name="data.zip", publish=False, sandbox=True):
     """Run datalight scripts to upload file to data repository"""
 
     token = common.get_authentication_token(sandbox)
     if token is None:
-        common.logger.error("Unable to load API token from datalight.config.")
         raise FileNotFoundError("Unable to load API token from datalight.config.")
 
-    try:
-        files = common.get_files_path(directory_name)
-    except common.DatalightException:
-        common.logger.error('Problem with the files to upload.')
-        raise common.DatalightException
+    files, base_directory = get_file_paths(file_path)
 
-    #if not os.path.exists(metadata_path):
-    #    common.logger.error('Metadata file: {} does not exist.'.format(metadata_path))
-    #    raise FileNotFoundError
-
-    common.zip_data(files, zip_name)
+    common.zip_data(files, base_directory, zip_name)
     # Change the name of the files to upload for the zip file created
     files, directory = [zip_name], '.'
 
@@ -39,10 +33,28 @@ def upload_record(directory_name, metadata, zip_name="data.zip", publish=False, 
     data_repo.deposit_record(files, directory, publish)
 
 
+def get_file_paths(file_paths: List[str]):
+    """File_path is list of strings representing either file paths, or a directory.
+    This function iterates through the list, getting full paths of any files and recursively
+    getting paths of files in directories."""
+
+    files = []
+    base_directory = None
+
+    for path in file_paths:
+        path = pathlib.Path(path)
+        if path.is_dir():
+            base_directory = file_paths[0]
+            files.extend(common.get_files_from_directory(path))
+        else:
+            files.append(path)
+    return files, base_directory
+
+
 class Zenodo:
     """Class to upload and download files on Zenodo
     The deposit record method should be called and this does all
-    of the steps required to uplad a file.
+    of the steps required to upload a file.
 
     :var token: (str) API token for connection to Zenodo.
     :var sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo.
