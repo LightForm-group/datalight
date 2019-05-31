@@ -40,28 +40,28 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
 class WidgetMixin:
     """This is a mixin class to provide common methods for Widget classes.
 
-    Even though 'optional' is a class variable in the mixin, it is converted to an
-    instance variable on calling the set_common_properties method. set_common_properties
+    Even though 'optional' and 'name' are class variables in the mixin, they are converted to
+    instance variables on calling the set_common_properties method. set_common_properties
     is a pseudo __init__ method, __init__ cannot be used directly because its parameters
     vary from the __init__ methods of the widget superclasses. For this reason, any subclass
     of this class should call super().set_common_properties()
     """
     optional = None
-
-    def check_optional(self):
-        if not self.optional and self.get_value() == "":
-            return False
-        else:
-            return True
+    name = None
+    minimum_length = None
 
     def set_common_properties(self, widget_description):
-        name = widget_description["_name"]
-        self.setObjectName(name)
+        self.name = widget_description["_name"]
+        self.setObjectName(self.name)
 
         if "optional" in widget_description:
             self.optional = widget_description["optional"]
 
     def get_value(self):
+        # If the subclass does not implement this method, raise an AttributeError
+        raise AttributeError
+
+    def check_optional(self):
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
@@ -100,6 +100,12 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
             # as this returns the key value stored in the UserRole
             return self.currentData()
 
+    def check_optional(self):
+        if not self.optional and self.get_value() is "":
+            return False
+        else:
+            return True
+
 
 class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
@@ -113,6 +119,12 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
 
     def get_value(self):
         return self.toPlainText()
+
+    def check_optional(self):
+        if not self.optional and self.get_value() is "":
+            return False
+        else:
+            return True
 
 
 class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
@@ -148,6 +160,12 @@ class ListWidget(QtWidgets.QListWidget, WidgetMixin):
             items.append(self.item(index).text())
         return items
 
+    def check_optional(self):
+        if not self.optional and self.get_value() is []:
+            return False
+        else:
+            return True
+
 
 class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
@@ -156,6 +174,15 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
 
         if "default" in widget_description:
             self.setText(str(widget_description["default"]))
+
+        if "minimum_length" in widget_description:
+            self.minimum_length = widget_description["minimum_length"]
+
+    def check_optional(self):
+        if not self.optional and self.get_value() is "":
+            return False
+        else:
+            return True
 
     def get_value(self):
         return self.text()
@@ -187,6 +214,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         """
         super().__init__(parent)
         super().set_common_properties(group_box_description)
+
         self.element_description = group_box_description
         self.parent = parent
         self._layout = None
@@ -195,7 +223,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         if "title" in self.element_description:
             self.setTitle(self.element_description["title"])
         else:
-            self.setStyleSheet("QGroupBox#{} {{ border: 0px;}}".format(name))
+            self.setStyleSheet("QGroupBox#{} {{ border: 0px;}}".format(self.name))
 
         self._add_layout()
         self._add_children()

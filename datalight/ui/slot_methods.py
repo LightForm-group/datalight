@@ -55,15 +55,20 @@ def ok_button(datalight_ui):
     """
     metadata_output = {}
     valid_output = {}
+    valid_length = {}
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
     for widget in widgets:
         widget_name = widget.objectName()
         try:
             metadata_output[widget_name] = widget.get_value()
+            valid_output[widget_name] = widget.check_optional()
+            valid_length[widget_name] = widget.check_length()
         except AttributeError:
             # If the widget does not have a get_value method then ignore the widget.
+            # If the widget does not have a check_optional method then do not add it to the valid
+            # output list.
             continue
-        valid_output[widget_name] = widget.check_optional()
+
 
     print(valid_output)
 
