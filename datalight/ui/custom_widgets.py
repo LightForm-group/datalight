@@ -42,13 +42,13 @@ class WidgetMixin:
 
     Even though 'optional' and 'name' are class variables in the mixin, they are converted to
     instance variables on calling the set_common_properties method. set_common_properties
-    is a pseudo __init__ method, __init__ cannot be used directly because its parameters
+    is a pseudo __init__ method, __init__ cannot be used directly because its arguments
     vary from the __init__ methods of the widget superclasses. For this reason, any subclass
     of this class should call super().set_common_properties()
     """
     optional = None
     name = None
-    minimum_length = None
+    minimum_length = 0
 
     def set_common_properties(self, widget_description):
         self.name = widget_description["_name"]
@@ -62,6 +62,10 @@ class WidgetMixin:
         raise AttributeError
 
     def check_optional(self):
+        # If the subclass does not implement this method, raise an AttributeError
+        raise AttributeError
+
+    def check_length(self):
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
@@ -126,6 +130,12 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
         else:
             return True
 
+    def check_length(self):
+        """Return True if value of Text box is greater than the minimum length."""
+        if len(self.get_value()) >= self.minimum_length:
+            return True
+        return False
+
 
 class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
@@ -186,6 +196,12 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
 
     def get_value(self):
         return self.text()
+
+    def check_length(self):
+        """Return True if value of Text box is greater than the minimum length."""
+        if len(self.get_value()) >= self.minimum_length:
+            return True
+        return False
 
 
 class Label(QtWidgets.QLabel, WidgetMixin):
@@ -288,6 +304,15 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
                 widgets.extend(widget.list_widgets())
         widgets.extend(self._widgets)
         return widgets
+
+
+def warning_box(warning_text):
+    """A generic warning box to alert thw user of something."""
+    warning_box = QtWidgets.QMessageBox()
+    warning_box.setIcon(QtWidgets.QMessageBox.Warning)
+    warning_box.setText(warning_text)
+    warning_box.setWindowTitle("Datalight warning")
+    warning_box.exec()
 
 
 def element_setup(element_name, element_description):

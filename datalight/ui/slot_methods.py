@@ -9,6 +9,8 @@ import re
 import yaml
 from PyQt5 import QtWidgets, QtCore
 
+from datalight.common import logger
+from datalight.ui import custom_widgets
 from datalight.ui.custom_widgets import GroupBox, get_new_widget
 from datalight.zenodo import upload_record
 
@@ -45,7 +47,7 @@ def open_file_window(datalight_ui, file_dialogue):
             else:
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
                                               "File {}, already selected.".format(
-                                                  re.split(r"[\\\/]", path)[-1]))
+                                                  re.split(r"[\\/]", path)[-1]))
 
 
 def ok_button(datalight_ui):
@@ -62,29 +64,37 @@ def ok_button(datalight_ui):
         try:
             metadata_output[widget_name] = widget.get_value()
             valid_output[widget_name] = widget.check_optional()
-            valid_length[widget_name] = widget.check_length()
         except AttributeError:
             # If the widget does not have a get_value method then ignore the widget.
             # If the widget does not have a check_optional method then do not add it to the valid
             # output list.
-            continue
+            pass
+        try:
+            valid_length[widget_name] = widget.check_length()
+        except AttributeError:
+            # If the widget does not have a check_length method
+            pass
 
+    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+    short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
-    print(valid_output)
+    logger.warning("Has invalid output: {}".format(incomplete_widgets))
+    logger.warning("Has invalid length: {}".format(short_widgets))
 
     if False in list(valid_output.values()):
         warning_text = "Some mandatory fields have not been completed: \n"
-        for item in valid_output:
-            if valid_output[item] is False:
-                warning_text += "• {}\n".format(item)
-        warning_box = QtWidgets.QMessageBox()
-        warning_box.setIcon(QtWidgets.QMessageBox.Warning)
-        warning_box.setText(warning_text)
-        warning_box.setWindowTitle("Datalight warning")
-        warning_box.exec()
+        for item in incomplete_widgets:
+            warning_text += "• {}\n".format(item)
+        custom_widgets.warning_box(warning_text)
+    elif False in list(valid_length.values()):
+        warning_text = "Some fields have a minimum length that has not been met: \n"
+        for item in short_widgets:
+            warning_text += "• {}\n".format(item)
+        custom_widgets.warning_box(warning_text)
     else:
         print(metadata_output)
         upload_record(metadata_output["file_list"], metadata_output)
+        logger.info("Datalight upload successful.")
 
 
 def update_author_details(name, affiliation, orcid, author_path):

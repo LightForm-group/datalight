@@ -39,7 +39,7 @@ class DatalightUIWindow:
         """
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setCentralWidget(self.central_widget)
-        self.main_window.setWindowIcon(QtGui.QIcon("icon.png"))
+        self.main_window.setWindowIcon(QtGui.QIcon("ui/icon.png"))
 
     def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
