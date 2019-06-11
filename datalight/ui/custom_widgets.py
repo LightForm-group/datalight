@@ -75,6 +75,8 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
+        self.parent_widget = parent_widget
+
         if "editable" in widget_description:
             self.setEditable(widget_description["editable"])
 
@@ -90,13 +92,22 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
+        # This needs to be the other way around with the source directing the dependents, since
+        # at the moment the dependent status only updates on mouseover.
 
         # Process widget dependencies
-        # if self.active_when:
-        #     source_widget = list(self.active_when.keys())[0]
-        #     print(source_widget)
+        if self.active_when:
+            source_widget_name = list(self.active_when.keys())[0]
+            source_widget = self.parent_widget.findChild(QtWidgets.QWidget, source_widget_name)
+            if source_widget.get_value() == self.active_when[source_widget_name]:
+                self.setEnabled(True)
+            else:
+                self.setEnabled(False)
 
     def get_value(self):
+        if not self.isEnabled():
+            # If the combobox is disabled then we pretend it does not have a value at all.
+            raise AttributeError
         if self.isEditable():
             return self.currentText()
         else:
