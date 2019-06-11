@@ -51,6 +51,9 @@ zenodo_core_metadata:
                     widget: ComboBox
                     label: Upload Type
                     optional: False
+                    activates_when:
+                        publication: publication_type
+                        image: image_type
                     values:
                         publication: Publication
                         poster: Poster
@@ -65,8 +68,6 @@ zenodo_core_metadata:
                 publication_type:
                     widget: ComboBox
                     label: Publication Type
-                    active_when:
-                        upload_type: publication
                     optional: False
                     values:
                         book: Book
@@ -88,8 +89,6 @@ zenodo_core_metadata:
                     widget: ComboBox
                     label: Image Type
                     optional: False
-                    active_when:
-                        upload_type: image
                     values:
                         figure: Figure
                         plot: Plot

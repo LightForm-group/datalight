@@ -1,6 +1,8 @@
+"""This module contains overloaded PyQT widgets. By overloading the base widgets,
+ custom attributes and behaviour can be defined."""
+
 import datetime
 import sys
-from abc import abstractmethod
 
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui, QtCore
@@ -51,6 +53,10 @@ class WidgetMixin:
     minimum_length = 0
 
     def set_common_properties(self, widget_description):
+        """
+        A pseudo __init__ method for the mixin. Should be called by any child that inherits
+        this mixin class.
+        """
         self.name = widget_description["_name"]
         self.setObjectName(self.name)
 
@@ -58,19 +64,26 @@ class WidgetMixin:
             self.optional = widget_description["optional"]
 
     def get_value(self):
+        """Get the user input value of a widget. The result depends on the widget type."""
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
     def check_optional(self):
+        """
+        Check whether the widget is marked as optional and if not, check the user has input
+        a value.
+        """
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
     def check_length(self):
+        """If the widget has a minimum_length field, check whether the input meets this."""
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
 
 class ComboBox(QtWidgets.QComboBox, WidgetMixin):
+    """A widget that allows selection from a drop down list."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -85,24 +98,30 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
             for item in widget_description["values"]:
                 self.addItem(widget_description["values"][item], item)
 
-        if "active_when" in widget_description:
-            self.active_when = widget_description["active_when"]
+        # Keys are the values of this combobox that activate another widget. Values are the
+        # widget name it activates. There may be more than one key-value pair.
+        if "activates_when" in widget_description:
+            self.activates_when = widget_description["activates_when"]
         else:
-            self.active_when = None
+            self.activates_when = None
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        """
+        Overloads the method of the QComboBox superclass to do something every time the
+        box is repainted. This seems to be the easiest way to make the value of one widget
+        dependent on another.
+        """
         super().paintEvent(event)
-        # This needs to be the other way around with the source directing the dependents, since
-        # at the moment the dependent status only updates on mouseover.
 
         # Process widget dependencies
-        if self.active_when:
-            source_widget_name = list(self.active_when.keys())[0]
-            source_widget = self.parent_widget.findChild(QtWidgets.QWidget, source_widget_name)
-            if source_widget.get_value() == self.active_when[source_widget_name]:
-                self.setEnabled(True)
-            else:
-                self.setEnabled(False)
+        if self.activates_when:
+            for value, dependent_widget_name in self.activates_when.items():
+                dependent_widget = self.parent_widget.findChild(QtWidgets.QWidget,
+                                                                dependent_widget_name)
+                if self.get_value() == value:
+                    dependent_widget.setEnabled(True)
+                else:
+                    dependent_widget.setEnabled(False)
 
     def get_value(self):
         if not self.isEnabled():
@@ -116,13 +135,13 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
             return self.currentData()
 
     def check_optional(self):
-        if not self.optional and self.get_value() is "":
+        if not self.optional and self.get_value() == "":
             return False
-        else:
-            return True
+        return True
 
 
 class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
+    """A larger box to add freeform text."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -136,10 +155,9 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
         return self.toPlainText()
 
     def check_optional(self):
-        if not self.optional and self.get_value() is "":
+        if not self.optional and self.get_value() == "":
             return False
-        else:
-            return True
+        return True
 
     def check_length(self):
         """Return True if value of Text box is greater than the minimum length."""
@@ -149,6 +167,7 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
 
 
 class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
+    """A widget that allows date selection from a dropdown popup."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -161,6 +180,7 @@ class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
 
 
 class PushButton(QtWidgets.QPushButton, WidgetMixin):
+    """A push button. In order to make the  """
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -182,10 +202,9 @@ class ListWidget(QtWidgets.QListWidget, WidgetMixin):
         return items
 
     def check_optional(self):
-        if not self.optional and self.get_value() is []:
+        if not self.optional and self.get_value() == []:
             return False
-        else:
-            return True
+        return True
 
 
 class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
@@ -200,10 +219,9 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
             self.minimum_length = widget_description["minimum_length"]
 
     def check_optional(self):
-        if not self.optional and self.get_value() is "":
+        if not self.optional and self.get_value() == "":
             return False
-        else:
-            return True
+        return True
 
     def get_value(self):
         return self.text()
@@ -319,11 +337,11 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
 
 def warning_box(warning_text):
     """A generic warning box to alert thw user of something."""
-    warning_box = QtWidgets.QMessageBox()
-    warning_box.setIcon(QtWidgets.QMessageBox.Warning)
-    warning_box.setText(warning_text)
-    warning_box.setWindowTitle("Datalight warning")
-    warning_box.exec()
+    warning_widget = QtWidgets.QMessageBox()
+    warning_widget.setIcon(QtWidgets.QMessageBox.Warning)
+    warning_widget.setText(warning_text)
+    warning_widget.setWindowTitle("Datalight warning")
+    warning_widget.exec()
 
 
 def element_setup(element_name, element_description):
