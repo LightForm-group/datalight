@@ -102,7 +102,7 @@ def update_author_details(name, affiliation, orcid, author_path):
         author_list = yaml.load(input_file, Loader=yaml.FullLoader)
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
-        orcid.setText(author_list[name]["orcid"])
+        orcid.setText(str(author_list[name]["orcid"]))
 
 
 def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui_folder):
