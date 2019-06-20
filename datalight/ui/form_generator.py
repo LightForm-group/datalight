@@ -1,6 +1,8 @@
 """Generates the UI which is used to input data into Datalight"""
+import json
 import pathlib
 from functools import partial
+import requests
 
 import yaml
 from PyQt5 import QtWidgets, QtGui
@@ -33,6 +35,9 @@ class DatalightUIWindow:
         self.set_up_main_window()
         self.ui_path = ui_path
 
+        # list of Experimental ui specifications
+        self.experiments = {}
+
     def set_up_main_window(self):
         """ Set up the widgets on the main window.
         :return:
@@ -43,9 +48,11 @@ class DatalightUIWindow:
 
     def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
+        self.get_experimental_metadata("https://lightform-group.github.io/wiki/datalight_index.json")
         self.read_basic_ui(self.ui_path)
         self.add_base_group_box()
         self.populate_author_list(self.ui_path)
+        self.populate_experimental_list()
         self.link_experimental_group_box()
 
     def read_basic_ui(self, ui_path):
@@ -76,7 +83,7 @@ class DatalightUIWindow:
         # The group box containing the experimental data
         experimental_group_box = self.get_widget_by_name("experimental_metadata")
 
-        update_method = lambda name: slot_methods.update_experimental_metadata(experimental_group_box, combo_box.itemData(combo_box.currentIndex()), self.ui_path)
+        update_method = lambda name: slot_methods.update_experimental_metadata(experimental_group_box, combo_box.itemData(combo_box.currentIndex()), self.experiments)
         combo_box.currentIndexChanged[str].connect(update_method)
 
     def populate_author_list(self, ui_path):
@@ -133,6 +140,28 @@ class DatalightUIWindow:
         window_vertical = (screen_height - window_height) / 2
         window_horizontal = (screen_width - window_width) / 2
         self.main_window.move(window_horizontal, window_vertical)
+
+    def get_experimental_metadata(self, url):
+        response = requests.get(url)
+        if response.status_code != requests.codes.ok:
+            response.raise_for_status()
+        urls = json.loads(response.text)
+        for experiment_name in urls:
+            response = requests.get(urls[experiment_name])
+            if response.status_code != requests.codes.ok:
+                # Experiment metadata does not exist
+                pass
+            else:
+                ui_description = yaml.load(response.text, Loader=yaml.FullLoader)
+                self.experiments.update(ui_description)
+
+        print(self.experiments)
+
+    def populate_experimental_list(self):
+        """Take the UI descriptions downloaded from the wiki and populate the selection box with them."""
+        experiment_combo_box = self.get_widget_by_name("experiment_selection")
+        for experiment in self.experiments.keys():
+            experiment_combo_box.addItem(experiment, experiment)
 
 
 def connect_button_methods(datalight_ui):

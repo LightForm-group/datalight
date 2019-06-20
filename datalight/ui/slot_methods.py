@@ -105,7 +105,7 @@ def update_author_details(name, affiliation, orcid, author_path):
         orcid.setText(str(author_list[name]["orcid"]))
 
 
-def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui_folder):
+def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui_descriptions):
     # Get all children remove them from the layout and close them
     children = experimental_group_box.children()
     for child in reversed(children):
@@ -114,14 +114,11 @@ def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui
             child.close()
 
     if new_value != "none":
-        new_widgets = read_ui_file(ui_folder, new_value)
-        for widget in new_widgets:
-            # Create a new widget and add it
-            new_widget = get_new_widget(experimental_group_box, new_widgets[widget])
-            experimental_group_box.add_widget(*new_widget)
+        new_widget = get_new_widget(experimental_group_box, ui_descriptions[new_value])
+        experimental_group_box.add_widget(*new_widget)
 
 
-def read_ui_file(ui_path, ui_name):
+def read_ui_yaml(ui_path, ui_name):
     """Read the UI specification from a YAML file."""
     ui_path = pathlib.Path(ui_path)
     ui_file = pathlib.Path("{}.yaml".format(ui_name))

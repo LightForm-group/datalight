@@ -145,8 +145,6 @@ experimental_metadata_selector:
             widget: ComboBox
             values:
                 none: No Experiment Selected
-                ebsd: EBSD
-                tem: TEM
         experimental_metadata:
             widget: GroupBox
             layout: FormLayout
