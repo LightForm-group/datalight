@@ -27,7 +27,7 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
 
     # Set widget properties common to all widgets
     if "tooltip" in widget_description:
-        new_widget.setToolTip = widget_description["tooltip"]
+        new_widget.setToolTip(widget_description["tooltip"])
     if "label" in widget_description:
         label = widget_description["label"]
     if "grid_layout" in widget_description:

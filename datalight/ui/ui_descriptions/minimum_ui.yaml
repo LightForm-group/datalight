@@ -12,18 +12,22 @@ zenodo_core_metadata:
                     widget: ListWidget
                     optional: False
                     grid_layout: 0, 0, 1, 3
+                    tooltip: A list of files that will be uploaded with the record.
                 select_file_button:
                     widget: PushButton
                     button_text: Select file to upload
                     grid_layout: 1, 0, 1, 1
+                    tooltip: Opens a dialog to select one or more files to add to the record.
                 select_folder_button:
                     widget: PushButton
                     button_text: Select folder to upload
                     grid_layout: 1, 1, 1, 1
+                    tooltip: Opens a dialog to select one or more folders to add to the record.
                 remove_item_button:
                     widget: PushButton
                     button_text: Remove Selected Files
                     grid_layout: 1, 2, 1, 1
+                    tooltip: Removes the selected files or folders from the record.
 
         basic_metadata:
             widget: GroupBox
@@ -34,13 +38,13 @@ zenodo_core_metadata:
                     widget: LineEdit
                     label: Title of Record
                     optional: False
-                    tooltip: The title of the record
+                    tooltip: The title of the record.
                     minimum_length: 3
                 description:
                     widget: PlainTextEdit
                     label: Record Description
                     optional: False
-                    tooltip: A description of the dataset being uploaded
+                    tooltip: A description of the dataset being uploaded.
                     minimum_length: 3
                 publication_date:
                     widget: DateEdit
@@ -85,6 +89,7 @@ zenodo_core_metadata:
                         technicalnote: Technical note
                         workingpaper: Working paper
                         other: Other
+                    tooltip: If the upload type is "publication", select a publication type.
                 image_type:
                     widget: ComboBox
                     label: Image Type
@@ -96,6 +101,7 @@ zenodo_core_metadata:
                         diagram: Diagram
                         photo: Photo
                         other: Other
+                    tooltip: If the upload type is "image", select an image type.
                 creators:
                     widget: GroupBox
                     title: Author details
@@ -110,9 +116,11 @@ zenodo_core_metadata:
                         affiliation:
                             widget: LineEdit
                             label: Affiliation
+                            tooltip: The affiliation of the Author.
                         orcid:
                             widget: LineEdit
                             label: ORCiD
+                            tooltip: The ORCiD of the Author.
                 access_right:
                     widget: ComboBox
                     label: Access Right
@@ -122,12 +130,14 @@ zenodo_core_metadata:
                         embargoed: Embargoed Access
                         restricted: Restricted Access
                         closed: Closed Access
+                    tooltip: Whether the record will be accessible to the public once published.
                 license:
                     widget: ComboBox
                     label: License
                     optional: False
                     values:
                         CC-BY-4.0: cc-by-4.0
+                    tooltip: The liscence type the record and data will be released under.
 
         ok_button:
             widget: GroupBox
@@ -136,6 +146,7 @@ zenodo_core_metadata:
                 ok_button:
                     widget: PushButton
                     button_text: OK
+                    tooltip: Submit this record to Zenodo
 
 experimental_metadata_selector:
     widget: GroupBox
@@ -145,6 +156,8 @@ experimental_metadata_selector:
             widget: ComboBox
             values:
                 none: No Experiment Selected
+            tooltip: If the dataset represents an experiment, select a type from
+              this list to add more specific metadata.
         experimental_metadata:
             widget: GroupBox
             layout: FormLayout
