@@ -57,7 +57,8 @@ class WidgetMixin:
         A pseudo __init__ method for the mixin. Should be called by any child that inherits
         this mixin class.
         """
-        self.name = widget_description["_name"]
+        if "name" not in widget_description:
+            self.name = widget_description["_name"]
         self.setObjectName(self.name)
 
         if "optional" in widget_description:
@@ -94,9 +95,18 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
             self.setEditable(widget_description["editable"])
 
         # Add items with the key as a extra field stored in the UserRole.
+        # This key is useful if Zenodo requires a specific format but it is not
+        # pretty to display as a label.
         if "values" in widget_description:
-            for item in widget_description["values"]:
-                self.addItem(widget_description["values"][item], item)
+            combo_values = widget_description["values"]
+            if isinstance(combo_values, dict):
+                for key, value in combo_values.items():
+                    self.addItem(value, key)
+            elif isinstance(combo_values, list):
+                for item in combo_values:
+                    self.addItem(item, item)
+            else:
+                raise TypeError("Cannot add {} to ComboBox, must be dict or list Type.".format(combo_values))
 
         # Keys are the values of this combobox that activate another widget. Values are the
         # widget name it activates. There may be more than one key-value pair.

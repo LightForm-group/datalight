@@ -116,15 +116,3 @@ def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui
     if new_value != "none":
         new_widget = get_new_widget(experimental_group_box, ui_descriptions[new_value])
         experimental_group_box.add_widget(*new_widget)
-
-
-def read_ui_yaml(ui_path, ui_name):
-    """Read the UI specification from a YAML file."""
-    ui_path = pathlib.Path(ui_path)
-    ui_file = pathlib.Path("{}.yaml".format(ui_name))
-    if not (ui_path / ui_file).exists():
-        raise FileNotFoundError("Cannot find experimental metadata file: {}".format(
-            ui_path / ui_file))
-
-    with open(ui_path / ui_file, encoding='utf8') as input_file:
-        return yaml.load(input_file, Loader=yaml.FullLoader)

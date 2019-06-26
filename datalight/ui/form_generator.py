@@ -1,5 +1,5 @@
 """Generates the UI which is used to input data into Datalight"""
-import json
+import re
 import pathlib
 from functools import partial
 import requests
@@ -48,7 +48,8 @@ class DatalightUIWindow:
 
     def ui_setup(self):
         """ Load UI description from style and then add widgets hierarchically."""
-        self.get_experimental_metadata("https://lightform-group.github.io/wiki/datalight_index.json")
+        #self.get_experimental_metadata("http://localhost:4000/wiki/datalight_index.yml")
+        self.get_experimental_metadata("https://lightform-group.github.io/wiki/datalight_index.yml")
         self.read_basic_ui(self.ui_path)
         self.add_base_group_box()
         self.populate_author_list(self.ui_path)
@@ -145,16 +146,8 @@ class DatalightUIWindow:
         response = requests.get(url)
         if response.status_code != requests.codes.ok:
             response.raise_for_status()
-        urls = json.loads(response.text)
-        for experiment_name in urls:
-            response = requests.get(urls[experiment_name])
-            if response.status_code != requests.codes.ok:
-                # Experiment metadata does not exist
-                pass
-            else:
-                ui_description = yaml.load(response.text, Loader=yaml.FullLoader)
-                self.experiments.update(ui_description)
-
+        response.encoding = 'utf-8'
+        self.add_experiments(yaml.load(response.text, Loader=yaml.FullLoader))
         print(self.experiments)
 
     def populate_experimental_list(self):
@@ -162,6 +155,14 @@ class DatalightUIWindow:
         experiment_combo_box = self.get_widget_by_name("experiment_selection")
         for experiment in self.experiments.keys():
             experiment_combo_box.addItem(experiment, experiment)
+
+    def add_experiments(self, experiment_description: dict):
+        for experiment_name, description in experiment_description.items():
+            if "_name" not in description:
+                _name = experiment_name.lower()
+                _name = re.sub(r"\s+", "", experiment_name, flags=re.UNICODE)
+                description["_name"] = _name
+            self.experiments[experiment_name] = description
 
 
 def connect_button_methods(datalight_ui):
