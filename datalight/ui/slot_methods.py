@@ -85,16 +85,18 @@ def ok_button(datalight_ui):
         warning_text = "Some mandatory fields have not been completed: \n"
         for item in incomplete_widgets:
             warning_text += "• {}\n".format(item)
-        custom_widgets.warning_box(warning_text)
+        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
     elif False in list(valid_length.values()):
         warning_text = "Some fields have a minimum length that has not been met: \n"
         for item in short_widgets:
             warning_text += "• {}\n".format(item)
-        custom_widgets.warning_box(warning_text)
+        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
     else:
         print(metadata_output)
         upload_record(metadata_output["file_list"], metadata_output)
         logger.info("Datalight upload successful.")
+        custom_widgets.message_box("Datalight upload successful.",
+                                   QtWidgets.QMessageBox.Information)
 
 
 def update_author_details(name, affiliation, orcid, author_path):

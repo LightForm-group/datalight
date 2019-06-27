@@ -345,12 +345,12 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         return widgets
 
 
-def warning_box(warning_text):
-    """A generic warning box to alert thw user of something."""
+def message_box(message_text, message_type):
+    """A generic message box to alert the user of something."""
     warning_widget = QtWidgets.QMessageBox()
-    warning_widget.setIcon(QtWidgets.QMessageBox.Warning)
-    warning_widget.setText(warning_text)
-    warning_widget.setWindowTitle("Datalight warning")
+    warning_widget.setIcon(message_type)
+    warning_widget.setText(message_text)
+    warning_widget.setWindowTitle("Datalight message")
     warning_widget.exec()
 
 
