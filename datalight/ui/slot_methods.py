@@ -3,10 +3,8 @@ This script contains functions which are linked to buttons in the UI.
 In order to be linked to a button, a function must have the same name as the button as specified
 in the UI YAML specification.
 """
-import pathlib
 import re
 
-import yaml
 from PyQt5 import QtWidgets, QtCore
 
 from datalight.common import logger
@@ -25,20 +23,21 @@ def remove_item_button(datalight_ui):
 
 
 def select_file_button(datalight_ui):
-    """Open a dialog box to select a file to upload."""
+    """Prepare to open a dialog box to select a file to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
     open_file_window(datalight_ui, file_dialogue)
 
 
 def select_folder_button(datalight_ui):
-    """Open a dialog box to select a folder` to upload."""
+    """Prepare to open a dialog box to select a folder` to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
     open_file_window(datalight_ui, file_dialogue)
 
 
 def open_file_window(datalight_ui, file_dialogue):
+    """Open a dialogue box to select a file or folder."""
     list_widget = datalight_ui.get_widget_by_name("file_list")
     if file_dialogue.exec():
         for path in file_dialogue.selectedFiles():
@@ -46,8 +45,7 @@ def open_file_window(datalight_ui, file_dialogue):
                 list_widget.addItem(path)
             else:
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
-                                              "File {}, already selected.".format(
-                                                  re.split(r"[\\/]", path)[-1]))
+                                              "File {}, already selected.".format(re.split(r"[\\/]", path)[-1]))
 
 
 def ok_button(datalight_ui):
@@ -99,15 +97,18 @@ def ok_button(datalight_ui):
                                    QtWidgets.QMessageBox.Information)
 
 
-def update_author_details(name, affiliation, orcid, author_path):
-    with open(author_path, 'r') as input_file:
-        author_list = yaml.load(input_file, Loader=yaml.FullLoader)
+def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox, author_list: dict):
+    """A function attached to the currentIndexChanged method of author_list_box.
+    Checks if the passed name is in the stored author list and if so, sets the relevant
+    affiliation and ORCID."""
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
         orcid.setText(str(author_list[name]["orcid"]))
 
 
-def update_experimental_metadata(experimental_group_box: GroupBox, new_value, ui_descriptions):
+def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str, ui_descriptions: dict):
+    """Clear the experimental group box and refill it with new widgets."""
+
     # Get all children remove them from the layout and close them
     children = experimental_group_box.children()
     for child in reversed(children):

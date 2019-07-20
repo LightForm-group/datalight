@@ -201,6 +201,7 @@ class PushButton(QtWidgets.QPushButton, WidgetMixin):
 
 
 class ListWidget(QtWidgets.QListWidget, WidgetMixin):
+    """Allows display and selection of items from a scrolling list."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -218,6 +219,7 @@ class ListWidget(QtWidgets.QListWidget, WidgetMixin):
 
 
 class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
+    """A free text box that spans a single line."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -244,6 +246,7 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
 
 
 class Label(QtWidgets.QLabel, WidgetMixin):
+    """A label to annotate the form."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -308,14 +311,15 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
                 self.add_widget(*get_new_widget(self, element_description))
 
     def add_widget(self, widget, label=None, grid_layout=None):
+        """Add 'widget' to this layout."""
         self._widgets.append(widget)
-        self.add_widget_to_layout(self._widgets[-1], label, grid_layout)
+        self._add_widget_to_layout(self._widgets[-1], label, grid_layout)
 
-    def add_widget_to_layout(self, widget, label=None, grid_layout=None):
+    def _add_widget_to_layout(self, widget, label=None, grid_layout=None):
         if isinstance(self._layout, QtWidgets.QFormLayout):
-            self.add_widget_to_form_layout(widget, label)
+            self._add_widget_to_form_layout(widget, label)
         elif isinstance(self._layout, QtWidgets.QGridLayout):
-            self.add_widget_to_grid_layout(widget, grid_layout)
+            self._add_widget_to_grid_layout(widget, grid_layout)
         elif isinstance(self._layout, QtWidgets.QHBoxLayout):
             self._layout.addWidget(widget)
         elif isinstance(self._layout, QtWidgets.QVBoxLayout):
@@ -324,15 +328,16 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
             print("Unknown layout type '{}'".format(self._layout))
 
     def remove_widget_from_layout(self, widget):
+        """Remove a widget from this layout."""
         self._layout.removeWidget(widget)
 
-    def add_widget_to_form_layout(self, widget, label=None):
+    def _add_widget_to_form_layout(self, widget, label=None):
         if label is None:
             self._layout.addRow(widget)
         else:
             self._layout.addRow(label, widget)
 
-    def add_widget_to_grid_layout(self, widget, grid_layout):
+    def _add_widget_to_grid_layout(self, widget, grid_layout):
         self._layout.addWidget(widget, *grid_layout)
 
     def list_widgets(self):
