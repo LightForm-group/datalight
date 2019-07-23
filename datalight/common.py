@@ -1,10 +1,8 @@
 """This module is common core functions for datalight."""
 
-import sys
-import zipfile
 import pathlib
 import configparser
-from typing import List
+from typing import Union
 
 import logging.config
 
@@ -40,62 +38,19 @@ class DatalightException(Exception):
     """Class for exception"""
 
 
-def get_files_from_directory(directory_name: pathlib.Path) -> List[pathlib.Path]:
-    """Recursively collect file paths within the given directory returning
-     a list of paths relative to the directory.
-    :param directory_name: The path to a directory
-    :return: Absolute paths of files.
-    :raises FileNotFoundError: if the directory does not exist.
-    """
-    relative_paths = []
-
-    # If directory_name is a file, return a list with file_name
-    file_paths = directory_name.glob('**/*')
-
-    for path in file_paths:
-        # Glob finds directories as well as files so remove these.
-        if not path.is_dir():
-            relative_paths.append(path.relative_to(directory_name))
-
-    if len(relative_paths) == 0:
-        raise FileNotFoundError('Directory: {} does not exist.'.format(directory_name))
-
-    return relative_paths
-
-
-def zip_data(files, base_directory, zip_name):
-    """Method to zip files which will be uploaded to the data repository.
-
-    :param files: (list of string) The paths of the files written to the zip archive.
-    :param base_directory: The directory that file paths are relative to.
-    :param zip_name: (str) Name of the zip file to create.
-    """
-
-    zip_name = pathlib.Path(zip_name).resolve()
-
-    try:
-        with zipfile.ZipFile(zip_name, 'w') as output_zip:
-            for path in files:
-                if base_directory is None:
-                    # If files were selected then merge them all into a single folder.
-                    output_zip.write(path, path.name)
-                else:
-                    # If a directory was selected then retain the original directory structure.
-                    absolute_path = base_directory / path
-                    output_zip.write(absolute_path, path)
-    except FileExistsError:
-        print("Error: Zip file \"{}\" already exists. Cannot overwrite.".format(zip_name))
-        sys.exit()
-
-
-def get_authentication_token(sandbox):
+def get_authentication_token(credentials_location: pathlib.Path, sandbox: bool) -> Union[str, None]:
     """A method to read the Zenodo authentication token from a local file. This file is not
-    committed to git and so will not appear online."""
-    current_directory = pathlib.Path(__file__).parent
+    committed to git and so will not appear online.
+    :param credentials_location: The location of the credentials file.
+    :param sandbox: Whether to get the Zenodo sandbox token or a real Zenodo token.
+    """
 
-    token_file = current_directory.parent / pathlib.Path("datalight.config")
+    if not credentials_location.exists():
+        raise FileNotFoundError(
+            "Unable to load API token from datalight.config. {} was not found.".format(credentials_location))
+
     zeno_config = configparser.ConfigParser()
-    zeno_config.read(token_file)
+    zeno_config.read(credentials_location)
     try:
         if sandbox:
             token = zeno_config['sandbox.zenodo.org']['token']
@@ -103,4 +58,5 @@ def get_authentication_token(sandbox):
             token = zeno_config['zenodo.org']['token']
         return token
     except KeyError:
-        return None
+        raise KeyError("Key not found in datalight.config.")
+

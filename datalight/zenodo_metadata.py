@@ -1,5 +1,7 @@
 """This module processes and validates metadata."""
 
+from os import PathLike
+
 import json
 import urllib
 import pathlib
@@ -37,7 +39,7 @@ SCHEMAS_DIR = pathlib.Path(__file__).parent / pathlib.Path('schemas')
 SCHEMA_FILE = SCHEMAS_DIR / pathlib.Path('zenodo/zenodo_upload_metadata_schema.json5')
 
 
-def read_schema_from_file():
+def read_schema_from_file() -> dict:
     """Method to read the schema. Reads schema from self.schema_path
     Stores schema dictionary in self.schema"""
     logger.info('Reading schema from: {}'.format(SCHEMA_FILE))
@@ -48,9 +50,9 @@ def read_schema_from_file():
         raise ZenodoMetadataException('Schema file: {} not found.'.format(SCHEMA_FILE))
 
 
-def read_metadata_from_file(metadata_path):
+def read_metadata_from_file(metadata_path: PathLike) -> dict:
     """Method to read metadata from a file.
-    :param metadata_path: (path) A path to a file which contains zenodo metadata (yaml format).
+    :param metadata_path: A path to a file which contains zenodo metadata (yaml format).
     """
     logger.info('Metadata read from file: {}'.format(metadata_path))
     try:
@@ -60,16 +62,9 @@ def read_metadata_from_file(metadata_path):
         raise ZenodoMetadataException('Metadata file {} not found.'.format(metadata_path))
 
 
-def validate_metadata(metadata, schema):
+def validate_metadata(metadata: dict, schema: dict) -> dict:
     """Method which verifies that the metadata have the correct type and that
      dependencies are respected."""
-
-    if metadata is None:
-        print("Metadata not set. Use set_metadata method.")
-        raise ZenodoMetadataException
-    if schema is None:
-        print("Schema not set. Use set_schema method.")
-        raise ZenodoMetadataException
 
     # Validate metadata before license to be sure that the "license" and "access_right"
     # keys are present.
@@ -91,7 +86,7 @@ def validate_metadata(metadata, schema):
     return metadata
 
 
-def remove_extra_properties(metadata):
+def remove_extra_properties(metadata: dict) -> dict:
     """Method to remove properties which are not allowed by zenodo.
 
     Json-schema has a major limitation, it does not allow the usage of::

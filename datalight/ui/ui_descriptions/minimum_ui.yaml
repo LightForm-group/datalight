@@ -11,22 +11,17 @@ zenodo_core_metadata:
                 file_list:
                     widget: ListWidget
                     optional: False
-                    grid_layout: 0, 0, 1, 3
+                    grid_layout: 0, 0, 1, 2
                     tooltip: A list of files that will be uploaded with the record.
                 select_file_button:
                     widget: PushButton
-                    button_text: Select file to upload
+                    button_text: Select file(s) to upload
                     grid_layout: 1, 0, 1, 1
                     tooltip: Opens a dialog to select one or more files to add to the record.
-                select_folder_button:
-                    widget: PushButton
-                    button_text: Select folder to upload
-                    grid_layout: 1, 1, 1, 1
-                    tooltip: Opens a dialog to select one or more folders to add to the record.
                 remove_item_button:
                     widget: PushButton
                     button_text: Remove Selected Files
-                    grid_layout: 1, 2, 1, 1
+                    grid_layout: 1, 1, 1, 1
                     tooltip: Removes the selected files or folders from the record.
 
         basic_metadata:

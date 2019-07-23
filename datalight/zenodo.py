@@ -1,6 +1,5 @@
 """This module is implements high level functions to upload and download data to Zenodo."""
 
-import os
 import json
 import pathlib
 from typing import List, Union
@@ -16,54 +15,33 @@ class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
-def upload_record(file_path, metadata: Union[str, dict], zip_name="data.zip", publish=False, sandbox=True):
-    """Run datalight scripts to upload file to data repository"""
-    #metadata = "C:/Users/Peter/Documents/git/datalight/tests/metadata/minimum_valid.yml"
+def upload_record(file_paths: List[pathlib.Path], metadata: dict, publish=False,
+                  sandbox=True, credentials_location="../datalight.config"):
+    """Run datalight scripts to upload file to data repository
+    :param file_paths: One or more paths of files to upload.
+    :param metadata: A dictionary of metadata describing the record.
+    :param publish: Whether to publish this record on Zenodo after uploading.
+    :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
+    :param credentials_location: Location of the file containing zenodo API tokens.
+    """
 
-    token = common.get_authentication_token(sandbox)
-    if token is None:
-        raise FileNotFoundError("Unable to load API token from datalight.config.")
-
-    files, base_directory = get_file_paths(file_path)
-
-    common.zip_data(files, base_directory, zip_name)
-    # Change the name of the files to upload for the zip file created
-    files = [zip_name]
-    zip_directory = '.'
+    credentials_location = pathlib.Path(credentials_location).resolve()
+    token = common.get_authentication_token(credentials_location, sandbox)
 
     data_repo = Zenodo(token, metadata, sandbox)
-    data_repo.deposit_record(files, zip_directory, publish)
-
-
-def get_file_paths(file_paths: List[str]):
-    """File_path is list of strings representing either file paths, or a directory.
-    This function iterates through the list, getting full paths of any files and recursively
-    getting paths of files in directories."""
-
-    files = []
-    base_directory = None
-
-    for path in file_paths:
-        path = pathlib.Path(path)
-        if path.is_dir():
-            base_directory = file_paths[0]
-            files.extend(common.get_files_from_directory(path))
-        else:
-            files.append(path)
-    return files, base_directory
+    data_repo.deposit_record(file_paths, publish)
 
 
 class Zenodo:
-    """Class to upload and download files on Zenodo
-    The deposit record method should be called and this does all
-    of the steps required to upload a file.
+    """Class to upload files to Zenodo
+    The :func:`~datalight.Zenodo.deposit_record` method handles all of the steps required to upload a file.
     """
 
-    def __init__(self, token: str, metadata: Union[str, dict], sandbox=False):
+    def __init__(self, token: str, metadata: Union[str, dict], sandbox: bool = False):
         """
         :param token: API token for connection to Zenodo.
         :param metadata: Either a path to a metadata file or a dictionary of metadata.
-        :param sandbox: (bool) If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
+        :param sandbox: If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
         self.raw_metadata = None
         self.metadata_path = None
 
@@ -85,13 +63,13 @@ class Zenodo:
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files, directory, publish):
+    def deposit_record(self, files: List[pathlib.Path], publish: bool):
         """Method which calls the parts of the upload process."""
 
-        self.checked_metadata = self.get_metadata()
+        self.checked_metadata = self._get_metadata()
         self._get_deposition_id()
-        self._upload_files(files, path=directory)
-        self.upload_metadata()
+        self._upload_files(files)
+        self._upload_metadata()
         if publish:
             self.publish()
 
@@ -113,25 +91,16 @@ class Zenodo:
         self.deposition_id = request.json()['id']
         logger.info('Deposition id: {}'.format(self.deposition_id))
 
-    def _upload_files(self, filenames, path):
+    def _upload_files(self, filenames: List[pathlib.Path]):
         """Method to upload a file to Zenodo
-
-        :param filenames: (str or list) Name of the file(s) to upload
-        :param path: (str) Path of where the file(s) is.
+        :param filenames: Paths of one or more files to upload.
         """
 
         # Create the url to upload with the deposition_id
         url = self.depositions_url + '/{}/files'.format(self.deposition_id)
         logger.info('url: {}'.format(url))
 
-        # if filenames is only a file convert it to list
-        if isinstance(filenames, str):
-            filenames = [filenames]
-
         for filename in filenames:
-            if path is not None:
-                filename = os.path.join(path, filename)
-
             # Create the zenodo data dictionary which contains the name of the file
             data = {'filename': filename}
             logger.info('filename: {}'.format(filename))
@@ -140,11 +109,10 @@ class Zenodo:
             files = {'file': open(filename, 'rb')}
 
             # upload the file
-            request = requests.post(url, params={'access_token': self.token}, data=data,
-                                    files=files)
+            request = requests.post(url, params={'access_token': self.token}, data=data, files=files)
             self._check_status_code(request.status_code)
 
-    def get_metadata(self):
+    def _get_metadata(self):
         """Method to get and validate metadata."""
         schema = zenodo_metadata.read_schema_from_file()
         if self.raw_metadata is None:
@@ -164,7 +132,7 @@ class Zenodo:
         validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         return {'metadata': validated_metadata}
 
-    def upload_metadata(self):
+    def _upload_metadata(self):
         """Upload metadata to Zenodo repository.
 
         After creating the request and uploading the file(s) we need to update
@@ -241,7 +209,7 @@ class Zenodo:
 
         if status_code == 403:
             message = 'Request failed with error: {}. This is' \
-                      ' due to insufficent privilege.'.format(status_code)
+                      ' due to insufficient privileges.'.format(status_code)
             logger.error(message)
             raise ZenodoException(message)
 
