@@ -83,6 +83,21 @@ class WidgetMixin:
         raise AttributeError
 
 
+class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
+    def __init__(self, parent_widget, widget_description):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
+
+        if widget_description["default"] is True:
+            self.setChecked(True)
+
+    def get_value(self):
+        if self.isChecked():
+            return True
+        else:
+            return False
+
+
 class ComboBox(QtWidgets.QComboBox, WidgetMixin):
     """A widget that allows selection from a drop down list."""
     def __init__(self, parent_widget, widget_description):

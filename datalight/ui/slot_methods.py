@@ -91,7 +91,8 @@ def ok_button(datalight_ui):
         custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
     else:
         print(metadata_output)
-        upload_record(metadata_output["file_list"], metadata_output)
+        upload_record(metadata_output["file_list"], metadata_output,
+                      publish=metadata_output["publish"], sandbox=metadata_output["sandbox"])
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)

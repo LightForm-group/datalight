@@ -24,6 +24,26 @@ zenodo_core_metadata:
                     grid_layout: 1, 1, 1, 1
                     tooltip: Removes the selected files or folders from the record.
 
+        zenodo_options:
+            widget: GroupBox
+            title: Zenodo Options
+            layout: HBoxLayout
+            children:
+                publish_label:
+                    widget: Label
+                    text: Publish after upload
+                publish:
+                    widget: CheckBox
+                    default: False
+                    tooltip: Whether to publish the record once it has been uploaded.
+                sandbox_label:
+                    widget: Label
+                    text: Use Zenodo Sandbox
+                sandbox:
+                    widget: CheckBox
+                    default: True
+                    tooltip: Whether to upload to the Zenodo sandbox or the real Zenodo.
+
         basic_metadata:
             widget: GroupBox
             title: Basic Metadata
