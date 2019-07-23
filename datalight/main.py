@@ -4,7 +4,7 @@ import sys
 
 from PyQt5 import QtWidgets
 
-from datalight.ui.form_generator import DatalightUIWindow, connect_button_methods
+from datalight.ui.main_form import DatalightUIWindow, connect_button_methods
 
 
 def main(ui_path, metadata_index):

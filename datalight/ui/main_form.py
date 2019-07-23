@@ -5,7 +5,7 @@ from typing import Union
 
 from PyQt5 import QtWidgets, QtGui
 
-from datalight.ui import slot_methods, custom_widgets
+from datalight.ui import slot_methods, custom_widgets, menu_bar
 from datalight.ui.ui_descriptions import file_readers
 
 
@@ -42,6 +42,9 @@ class DatalightUIWindow:
 
     def ui_setup(self, metadata_index: str):
         """ Load UI description from files and then add widgets hierarchically."""
+        # Setup menu bar
+        menu_bar.setup_menu(self.main_window)
+
         # Get and set experimental UI descriptions
         experimental_metadata = file_readers.get_experimental_metadata(metadata_index)
         self.add_experiments(experimental_metadata)
