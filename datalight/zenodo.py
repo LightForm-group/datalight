@@ -119,7 +119,7 @@ class Zenodo:
             # If metadata was provided as a path then read it from a file.
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
         else:
-            # If metadata comes from the UI, need to parcel the creator data up.
+            # If metadata comes from the UI, need to get some data into the right format.
             creators = {}
             if "name" in self.raw_metadata:
                 creators["name"] = self.raw_metadata.pop("name")
@@ -129,6 +129,12 @@ class Zenodo:
                 creators["orcid"] = self.raw_metadata.pop("orcid")
             # A list of a dictionary makes a JSON array type.
             self.raw_metadata["creators"] = [creators]
+
+            # Communities must also be a JSON array
+            if "communities" in self.raw_metadata:
+                communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
+                self.raw_metadata["communities"] = communities
+
         validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         return {'metadata': validated_metadata}
 

@@ -152,7 +152,15 @@ zenodo_core_metadata:
                     optional: False
                     values:
                         CC-BY-4.0: cc-by-4.0
-                    tooltip: The liscence type the record and data will be released under.
+                    tooltip: The license type the record and data will be released under.
+                communities:
+                    widget: ComboBox
+                    label: Zenodo Community
+                    editable: True
+                    values:
+                        - LightForm
+                        -
+                    tooltip: The community to associate this record with on Zenodo.
 
         ok_button:
             widget: GroupBox

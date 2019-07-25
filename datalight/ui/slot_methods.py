@@ -76,8 +76,10 @@ def ok_button(datalight_ui):
     incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
-    logger.warning("Has invalid output: {}".format(incomplete_widgets))
-    logger.warning("Has invalid length: {}".format(short_widgets))
+    if incomplete_widgets:
+        logger.warning("Has invalid output: {}".format(incomplete_widgets))
+    if short_widgets:
+        logger.warning("Has invalid length: {}".format(short_widgets))
 
     if False in list(valid_output.values()):
         warning_text = "Some mandatory fields have not been completed: \n"
