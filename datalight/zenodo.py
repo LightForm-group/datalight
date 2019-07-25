@@ -76,7 +76,7 @@ class Zenodo:
     def _try_connection(self):
         """Method to test that the API token and connection with Zenodo website is working."""
         request = requests.get(self.depositions_url, params={'access_token': self.token})
-        self._check_status_code(request.status_code)
+        self._check_request_response(request)
 
     def _get_deposition_id(self):
         """Get the deposition id needed to upload a new record to Zenodo"""
@@ -86,7 +86,7 @@ class Zenodo:
         request = requests.post(self.depositions_url, params={'access_token': self.token},
                                 json={}, headers=headers)
 
-        self._check_status_code(request.status_code)
+        self._check_request_response(request)
 
         self.deposition_id = request.json()['id']
         logger.info('Deposition id: {}'.format(self.deposition_id))
@@ -110,7 +110,7 @@ class Zenodo:
 
             # upload the file
             request = requests.post(url, params={'access_token': self.token}, data=data, files=files)
-            self._check_status_code(request.status_code)
+            self._check_request_response(request)
 
     def _get_metadata(self):
         """Method to get and validate metadata."""
@@ -147,7 +147,7 @@ class Zenodo:
         request = requests.put(url, params={'access_token': self.token},
                                data=json.dumps(self.checked_metadata), headers=headers)
 
-        self._check_status_code(request.status_code)
+        self._check_request_response(request)
 
     def publish(self):
         """Method which will publish the deposition linked with the id.
@@ -160,7 +160,7 @@ class Zenodo:
         publish_url = (self.depositions_url + '/{}/actions/publish'.format(self.deposition_id))
         request = requests.post(publish_url, params={'access_token': self.token})
 
-        self._check_status_code(request.status_code)
+        self._check_request_response(request)
 
     def delete(self, _id=None):
         """Method to delete an unpublished deposition.
@@ -180,46 +180,47 @@ class Zenodo:
 
         logger.info('Delete url: {}'.format(request_url))
         request = requests.delete(request_url, params={'access_token': self.token})
-        self._check_status_code(request.status_code)
+        self._check_request_response(request)
 
-    def _check_status_code(self, status_code):
+    def _check_request_response(self, response: requests.models.Response):
         """Check the status code returned from an interaction with the Zenodo API.
 
-        :param status_code: Status code to check.
+        :param response: A response to an HTTP request.
         :return status_code: If status code represents success.
         :raises ZenodoException: If status code represents a failure.
         """
-        self.status_code = status_code
+        self.status_code = response.status_code
 
-        if status_code in [200, 201, 202, 204]:
-            logger.debug('Request succeed with status code: {}'.format(status_code))
-            return status_code
+        if response.status_code in [200, 201, 202, 204]:
+            logger.debug('Request succeed with status code: {}'.format(response.status_code))
+            return response.status_code
 
-        if status_code == 400:
-            message = 'Request failed with error: {}. This is ' \
-                      'likely due to a malformed request.'.format(status_code)
+        if response.status_code == 400:
+            message = 'Request failed with error: {}. ' \
+                      'The details are: {}.'.format(response.status_code, response.content)
             logger.error(message)
             raise ZenodoException(message)
 
-        if status_code == 401:
+        if response.status_code == 401:
             message = 'Request failed with error: {}. This is ' \
-                      'due to a bad access token.'.format(status_code)
+                      'due to a bad access token.'.format(response.status_code)
             logger.error(message)
             raise ZenodoException(message)
 
-        if status_code == 403:
+        if response.status_code == 403:
             message = 'Request failed with error: {}. This is' \
-                      ' due to insufficient privileges.'.format(status_code)
+                      ' due to insufficient privileges.'.format(response.status_code)
             logger.error(message)
             raise ZenodoException(message)
 
-        if status_code == 500:
-            message = 'Zenodo server error {}. It is likely to be ' \
-                      'their problem not ours.'.format(status_code)
+        if response.status_code == 500:
+            message = 'Zenodo server error {}. It is likely to be their problem ' \
+                      'not ours. Details: {}'.format(response.status_code, response.content)
             logger.error(message)
             raise ZenodoException(message)
 
         else:
-            message = 'Unclassified error: {}.'.format(status_code)
+            message = 'Unclassified error: {}. Details: {}'.format(response.status_code,
+                                                                   response.content)
             logger.error(message)
             raise ZenodoException(message)
