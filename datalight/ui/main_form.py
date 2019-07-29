@@ -16,7 +16,7 @@ class DatalightUIWindow:
     :ivar experiments: (dict) UI specifications for experiments.
     :ivar main_window: (QMainWindow) The main application widget from which all other widgets are descended.
     :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
-    :ivar layout: (QLayout) The layout of central_widget.
+    :ivar central_widget_layout: (QLayout) The layout of central_widget.
     :ivar ui_path: (str) Path to the ui folder containing 'minimum_ui.yaml'.
     :ivar group_box: (GroupBox)
     :ivar authors: (dict) A dictionary of Author names, Affiliations and ORCIDs.
@@ -24,21 +24,33 @@ class DatalightUIWindow:
     def __init__(self, ui_path: str):
         self.ui_specification = {}
         self.experiments = {}
-        self.main_window = QtWidgets.QMainWindow()
-        self.central_widget = QtWidgets.QWidget(self.main_window)
 
+        # Main window and some properties
+        self.main_window = QtWidgets.QMainWindow()
+        self.main_window.setWindowTitle("Datalight Record Creator")
+        self.main_window.setWindowIcon(QtGui.QIcon("ui/icon.png"))
+        self.main_window.setGeometry(0, 0, 600, 800)
+
+        # Central widget and its layout
+        self.central_widget = QtWidgets.QWidget(self.main_window)
         # This layout contains a single element - the BaseGroupBox. The layout is
         # necessary to make the central_widget size itself appropriately.
-        self.layout = QtWidgets.QHBoxLayout(self.central_widget)
-
-        self.ui_path = ui_path
-        self.group_box = None
-        self.authors = {}
-
-        # Set some properties of the main window.
-        self.main_window.setWindowTitle("Datalight Record Creator")
+        self.central_widget_layout = QtWidgets.QHBoxLayout(self.central_widget)
         self.main_window.setCentralWidget(self.central_widget)
-        self.main_window.setWindowIcon(QtGui.QIcon("ui/icon.png"))
+
+        # Now add a scroll area
+        self.scroll_area = QtWidgets.QScrollArea(self.central_widget)
+        self.central_widget_layout.addWidget(self.scroll_area)
+
+        # Add a child of scroll area and its layout
+        self.scroll_area_contents = QtWidgets.QWidget(self.central_widget)
+        self.scroll_area_layout = QtWidgets.QHBoxLayout(self.scroll_area_contents)
+        self.scroll_area.setWidget(self.scroll_area_contents)
+
+        # Inside the scroll area will go the first group box - the first "user content".
+        self.group_box = None
+        self.ui_path = ui_path
+        self.authors = {}
 
     def ui_setup(self, metadata_index: str):
         """ Load UI description from files and then add widgets hierarchically."""
@@ -77,8 +89,9 @@ class DatalightUIWindow:
                             "layout": "HBoxLayout",
                             "_name": "BaseGroupBox",
                             "children": self.ui_specification}
-        self.group_box = custom_widgets.get_new_widget(self.central_widget, base_description)[0]
-        self.layout.addWidget(self.group_box)
+        self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents, base_description)[0]
+        self.group_box.setMinimumSize(600, 800)
+        self.scroll_area_layout.addWidget(self.group_box)
 
     def populate_author_list(self):
         """Populate the author combo_box with the names read from the authors file."""

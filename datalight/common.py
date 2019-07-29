@@ -6,7 +6,7 @@ import pathlib
 import configparser
 from typing import Union
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('datalight')
 
 
