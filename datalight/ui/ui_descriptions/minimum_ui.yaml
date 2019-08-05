@@ -151,7 +151,10 @@ zenodo_core_metadata:
                     label: License
                     optional: False
                     values:
-                        CC-BY-4.0: cc-by-4.0
+                        CC-BY-4.0: CC-BY-4.0
+                        CC-BY-SA-4.0: CC-BY-SA-4.0
+                        GPL-3.0: GNU GPLv3
+                        MIT: MIT
                     tooltip: The license type the record and data will be released under.
                 communities:
                     widget: ComboBox
