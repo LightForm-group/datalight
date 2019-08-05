@@ -33,19 +33,21 @@ class DatalightUIWindow:
 
         # Central widget and its layout
         self.central_widget = QtWidgets.QWidget(self.main_window)
-        # This layout contains a single element - the BaseGroupBox. The layout is
-        # necessary to make the central_widget size itself appropriately.
-        self.central_widget_layout = QtWidgets.QHBoxLayout(self.central_widget)
         self.main_window.setCentralWidget(self.central_widget)
+        self.central_widget_layout = QtWidgets.QHBoxLayout(self.central_widget)
+        self.central_widget_layout.setContentsMargins(0, 0, 0, 0)
 
         # Now add a scroll area
         self.scroll_area = QtWidgets.QScrollArea(self.central_widget)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.central_widget_layout.addWidget(self.scroll_area)
 
         # Add a child of scroll area and its layout
-        self.scroll_area_contents = QtWidgets.QWidget(self.central_widget)
-        self.scroll_area_layout = QtWidgets.QHBoxLayout(self.scroll_area_contents)
+        self.scroll_area_contents = QtWidgets.QWidget(self.scroll_area)
         self.scroll_area.setWidget(self.scroll_area_contents)
+        self.scroll_area_contents_layout = QtWidgets.QHBoxLayout(self.scroll_area_contents)
+        self.scroll_area_contents_layout.setContentsMargins(0, 0, 0, 0)
 
         # Inside the scroll area will go the first group box - the first "user content".
         self.group_box = None
@@ -91,7 +93,7 @@ class DatalightUIWindow:
                             "children": self.ui_specification}
         self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents, base_description)[0]
         self.group_box.setMinimumSize(600, 800)
-        self.scroll_area_layout.addWidget(self.group_box)
+        self.scroll_area_contents_layout.addWidget(self.group_box)
 
     def populate_author_list(self):
         """Populate the author combo_box with the names read from the authors file."""
