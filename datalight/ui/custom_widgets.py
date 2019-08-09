@@ -317,6 +317,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         else:
             raise KeyError("layout type {} in GroupBox {} not understood.".format(
                 self.element_description["layout"], self.objectName()))
+        self._layout.setSizeConstraint(2)
 
     def _add_children(self):
         if "children" in self.element_description:
