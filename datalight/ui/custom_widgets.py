@@ -19,11 +19,14 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
     grid_layout = None
     widget_type = widget_description["widget"]
 
-    try:
-        widget_method = getattr(sys.modules[__name__], widget_type)
-    except AttributeError:
-        raise AttributeError("No method to add widget {}.".format(widget_type))
-    new_widget = widget_method(parent, widget_description)
+    if "help_button" in widget_description:
+        new_widget = HelpWidget(parent, widget_description)
+    else:
+        try:
+            widget_method = getattr(sys.modules[__name__], widget_type)
+        except AttributeError:
+            raise AttributeError("No method to add widget {}.".format(widget_type))
+        new_widget = widget_method(parent, widget_description)
 
     # Set widget properties common to all widgets
     if "tooltip" in widget_description:
@@ -96,6 +99,18 @@ class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
             return True
         else:
             return False
+
+
+class HelpWidget(QtWidgets.QWidget, WidgetMixin):
+    pass
+    # Combination of another widget and a HelpButton.
+    # The frame should return no result but the derived element will
+
+
+class HelpButton(QtWidgets.QPushButton, WidgetMixin):
+    pass
+    # A small button with a question mark on it that raises some sort of help text.
+    # Must return no result like the GroupBox
 
 
 class ComboBox(QtWidgets.QComboBox, WidgetMixin):
