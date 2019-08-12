@@ -155,8 +155,11 @@ zenodo_core_metadata:
                         CC-BY-SA-4.0: CC-BY-SA-4.0
                         GPL-3.0: GNU GPLv3
                         MIT: MIT
-                    help_text: This is a more detailed help text that will be invoked by pressing the help button next
-                        to this element.
+                    help_text: |-
+                        CC-BY-4: For data. Permits almost any use subject to providing credit.
+                        CC-BY-SA-4: For data. Similar to CC-BY-4 but any derivative work must be distributed under the same license.
+                        GPL-3.0: For software. People can do anything with it but derivatives must stay open source.
+                        MIT: For software. Lets people do almost anything with your software. Very permissive.
                 communities:
                     widget: ComboBox
                     label: Zenodo Community

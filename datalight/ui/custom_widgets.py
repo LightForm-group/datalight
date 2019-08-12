@@ -108,19 +108,23 @@ class HelpWidget(QtWidgets.QWidget, WidgetMixin):
         super().set_common_properties(widget_description)
         self.help_text = widget_description.pop("help_text")
 
-        help_dictionary = {"_name": "{}_help".format(widget_description["_name"])}
+        # Add the help button and the actual widget that needs the help button.
+        button_name = {"_name": "{}_help".format(widget_description["_name"])}
+        self.help_button = HelpButton(self, button_name)
+        self.help_button.clicked.connect(lambda: self.set_tooltip())
+        self.input_widget = get_new_widget(self, widget_description)
 
-        help_button = HelpButton(self, help_dictionary)
-        input_widget = get_new_widget(self, widget_description)
-        help_button.clicked.connect(
-            lambda: QtWidgets.QToolTip.showText(help_button.mapToGlobal(QtCore.QPoint(25, -10)),
-                                                self.help_text))
-
+        # Add a layout to make sure that the two elements stack nicely.
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(input_widget[0])
-        self.layout.addWidget(help_button)
+        self.layout.addWidget(self.input_widget[0])
+        self.layout.addWidget(self.help_button)
+
+    def set_tooltip(self):
+        tip_position = self.help_button.mapToGlobal(QtCore.QPoint(25, -10))
+        QtWidgets.QToolTip.setFont(QtGui.QFont('SansSerif', 12))
+        QtWidgets.QToolTip.showText(tip_position, self.help_text)
 
 
 class HelpButton(QtWidgets.QToolButton, WidgetMixin):
