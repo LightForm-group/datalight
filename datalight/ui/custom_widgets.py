@@ -19,7 +19,7 @@ def get_new_widget(parent: "GroupBox", widget_description: dict):
     grid_layout = None
     widget_type = widget_description["widget"]
 
-    if "help_button" in widget_description:
+    if "help_text" in widget_description:
         new_widget = HelpWidget(parent, widget_description)
     else:
         try:
@@ -102,15 +102,34 @@ class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
 
 
 class HelpWidget(QtWidgets.QWidget, WidgetMixin):
-    pass
-    # Combination of another widget and a HelpButton.
-    # The frame should return no result but the derived element will
+    """Combination of another widget and a HelpButton."""
+    def __init__(self, parent_widget, widget_description):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
+
+        help_dictionary = {"_name": "{}_help".format(widget_description["_name"]),
+                           "help_text": widget_description.pop("help_text")}
+
+        help_button = HelpButton(self, help_dictionary)
+        input_widget = get_new_widget(self, widget_description)
+
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(input_widget[0])
+        self.layout.addWidget(help_button)
 
 
-class HelpButton(QtWidgets.QPushButton, WidgetMixin):
-    pass
-    # A small button with a question mark on it that raises some sort of help text.
-    # Must return no result like the GroupBox
+class HelpButton(QtWidgets.QToolButton, WidgetMixin):
+    """A small button with a question mark on it that raises some sort of help text.
+    Most of the time this shouldn't be called directly. In order to get the help button to line
+    up nicely with other widgets on a form layout it is nested in a HelpWidget."""
+
+    def __init__(self, parent_widget, widget_description):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
+
+        self.setIcon(QtGui.QIcon("ui/question.svg"))
 
 
 class ComboBox(QtWidgets.QComboBox, WidgetMixin):
@@ -332,7 +351,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         else:
             raise KeyError("layout type {} in GroupBox {} not understood.".format(
                 self.element_description["layout"], self.objectName()))
-        self._layout.setSizeConstraint(2)
+        self._layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
 
     def _add_children(self):
         if "children" in self.element_description:

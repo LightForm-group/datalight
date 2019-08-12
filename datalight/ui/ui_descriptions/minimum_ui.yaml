@@ -156,6 +156,8 @@ zenodo_core_metadata:
                         GPL-3.0: GNU GPLv3
                         MIT: MIT
                     tooltip: The license type the record and data will be released under.
+                    help_text: This is a more detailed help text that will be invoked by pressing the help button next
+                        to this element.
                 communities:
                     widget: ComboBox
                     label: Zenodo Community
