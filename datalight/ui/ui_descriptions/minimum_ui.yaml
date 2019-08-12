@@ -155,7 +155,6 @@ zenodo_core_metadata:
                         CC-BY-SA-4.0: CC-BY-SA-4.0
                         GPL-3.0: GNU GPLv3
                         MIT: MIT
-                    tooltip: The license type the record and data will be released under.
                     help_text: This is a more detailed help text that will be invoked by pressing the help button next
                         to this element.
                 communities:

@@ -106,12 +106,15 @@ class HelpWidget(QtWidgets.QWidget, WidgetMixin):
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
+        self.help_text = widget_description.pop("help_text")
 
-        help_dictionary = {"_name": "{}_help".format(widget_description["_name"]),
-                           "help_text": widget_description.pop("help_text")}
+        help_dictionary = {"_name": "{}_help".format(widget_description["_name"])}
 
         help_button = HelpButton(self, help_dictionary)
         input_widget = get_new_widget(self, widget_description)
+        help_button.clicked.connect(
+            lambda: QtWidgets.QToolTip.showText(help_button.mapToGlobal(QtCore.QPoint(25, -10)),
+                                                self.help_text))
 
         self.layout = QtWidgets.QHBoxLayout(self)
         self.layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
