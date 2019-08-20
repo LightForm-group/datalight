@@ -3,6 +3,7 @@
 
 import datetime
 import sys
+from typing import List
 
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui, QtCore
@@ -72,10 +73,11 @@ class WidgetMixin:
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
 
-    def check_optional(self):
+    def validate_input(self):
         """
-        Check whether the widget is marked as optional and if not, check the user has input
-        a value.
+        Validate the widget contents.
+        If the widget is not optional then the user must input a value.
+        Return True if the widget value is valid else return False.
         """
         # If the subclass does not implement this method, raise an AttributeError
         raise AttributeError
@@ -94,7 +96,7 @@ class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
         if widget_description["default"] is True:
             self.setChecked(True)
 
-    def get_value(self):
+    def get_value(self) -> bool:
         if self.isChecked():
             return True
         else:
@@ -189,7 +191,7 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
                 else:
                     dependent_widget.setEnabled(False)
 
-    def get_value(self):
+    def get_value(self) -> str:
         if not self.isEnabled():
             # If the combobox is disabled then we pretend it does not have a value at all.
             raise AttributeError
@@ -200,14 +202,14 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
             # as this returns the key value stored in the UserRole
             return self.currentData()
 
-    def check_optional(self):
+    def validate_input(self) -> bool:
         if not self.optional and self.get_value() == "":
             return False
         return True
 
 
 class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
-    """A larger box to add freeform text."""
+    """A larger box to add free-form text."""
     def __init__(self, parent_widget, widget_description):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
@@ -217,15 +219,15 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
 
         self.setTabChangesFocus(True)
 
-    def get_value(self):
+    def get_value(self) -> str:
         return self.toPlainText()
 
-    def check_optional(self):
+    def validate_input(self) -> bool:
         if not self.optional and self.get_value() == "":
             return False
         return True
 
-    def check_length(self):
+    def check_length(self) -> bool:
         """Return True if value of Text box is greater than the minimum length."""
         if len(self.get_value()) >= self.minimum_length:
             return True
@@ -241,7 +243,7 @@ class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
         self.setCalendarPopup(True)
         self.setDate(datetime.date.today())
 
-    def get_value(self):
+    def get_value(self) -> str:
         return self.date().toString(QtCore.Qt.ISODate)
 
 
@@ -262,13 +264,13 @@ class ListWidget(QtWidgets.QListWidget, WidgetMixin):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
-    def get_value(self):
+    def get_value(self) -> List[str]:
         items = []
         for index in range(self.count()):
             items.append(self.item(index).text())
         return items
 
-    def check_optional(self):
+    def validate_input(self) -> bool:
         if not self.optional and self.get_value() == []:
             return False
         return True
@@ -286,15 +288,15 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
         if "minimum_length" in widget_description:
             self.minimum_length = widget_description["minimum_length"]
 
-    def check_optional(self):
+    def validate_input(self) -> bool:
         if not self.optional and self.get_value() == "":
             return False
         return True
 
-    def get_value(self):
+    def get_value(self) -> str:
         return self.text()
 
-    def check_length(self):
+    def check_length(self) -> bool:
         """Return True if value of Text box is greater than the minimum length."""
         if len(self.get_value()) >= self.minimum_length:
             return True
@@ -397,7 +399,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
     def _add_widget_to_grid_layout(self, widget, grid_layout):
         self._layout.addWidget(widget, *grid_layout)
 
-    def list_widgets(self):
+    def list_widgets(self) -> List[QtWidgets.QWidget]:
         """Recursively list widgets in this GroupBox and contained GroupBoxes."""
         widgets = []
         for widget in self._widgets:
@@ -416,12 +418,12 @@ def message_box(message_text, message_type):
     warning_widget.exec()
 
 
-def element_setup(element_name, element_description):
+def element_setup(element_name: str, element_description: dict) -> dict:
     """This is where secondary processing of the YAML data takes place. These method is applied to
     every widget.
-    :param element_name: (string) The base name of the widget being added.
-    :param element_description: (string) The name of the element being added
-    :returns element_description: (dict) A description of an element, ready to add.
+    :param element_name: The base name of the widget being added.
+    :param element_description: The name of the element being added
+    :returns element_description: A description of an element, ready to add.
     """
     element_description["_name"] = element_name
     # Every element must have a widget type

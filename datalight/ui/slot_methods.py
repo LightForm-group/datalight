@@ -10,6 +10,7 @@ from PyQt5 import QtWidgets, QtCore
 from datalight.common import logger
 from datalight.ui import custom_widgets
 from datalight.ui.custom_widgets import GroupBox, get_new_widget
+import datalight.ui.validation
 from datalight.zenodo import upload_record
 
 
@@ -53,44 +54,18 @@ def ok_button(datalight_ui):
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    metadata_output = {}
-    valid_output = {}
-    valid_length = {}
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
-    for widget in widgets:
-        widget_name = widget.objectName()
-        try:
-            metadata_output[widget_name] = widget.get_value()
-            valid_output[widget_name] = widget.check_optional()
-        except AttributeError:
-            # If the widget does not have a get_value method then ignore the widget.
-            # If the widget does not have a check_optional method then do not add it to the valid
-            # output list.
-            pass
-        try:
-            valid_length[widget_name] = widget.check_length()
-        except AttributeError:
-            # If the widget does not have a check_length method
-            pass
 
+    metadata_output = get_widget_values(widgets)
+    valid_length = validate_output_length(widgets)
+    valid_output = validate_widget_contents(widgets)
+
+    # Validation of widget contents
     incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
-    if incomplete_widgets:
-        logger.warning("Has invalid output: {}".format(incomplete_widgets))
-    if short_widgets:
-        logger.warning("Has invalid length: {}".format(short_widgets))
-
-    if False in list(valid_output.values()):
-        warning_text = "Some mandatory fields have not been completed: \n"
-        for item in incomplete_widgets:
-            warning_text += "• {}\n".format(item)
-        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
-    elif False in list(valid_length.values()):
-        warning_text = "Some fields have a minimum length that has not been met: \n"
-        for item in short_widgets:
-            warning_text += "• {}\n".format(item)
-        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
+    if incomplete_widgets or short_widgets:
+        process_validation_warnings(incomplete_widgets, short_widgets)
     else:
         print(metadata_output)
         upload_record(metadata_output["file_list"], metadata_output,
