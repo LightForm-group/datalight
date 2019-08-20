@@ -28,7 +28,7 @@ class DatalightUIWindow:
         # Main window and some properties
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setWindowTitle("Datalight Record Creator")
-        self.main_window.setWindowIcon(QtGui.QIcon("ui/icon.png"))
+        self.main_window.setWindowIcon(QtGui.QIcon("ui/images/icon.png"))
         self.main_window.setGeometry(0, 0, 500, 800)
 
         # Central widget and its layout

@@ -34,7 +34,7 @@ def setup_about_menu(menu_bar: QtWidgets.QMenu, main_window: QtWidgets.QMainWind
 
 def about_menu_action():
     about_widget = QtWidgets.QMessageBox()
-    datalight_icon = QtGui.QPixmap("ui/icon.png").scaledToHeight(150, QtCore.Qt.SmoothTransformation)
+    datalight_icon = QtGui.QPixmap("ui/images/icon.png").scaledToHeight(150, QtCore.Qt.SmoothTransformation)
     about_widget.setIconPixmap(datalight_icon)
     about_widget.setTextFormat(QtCore.Qt.RichText)
     about_widget.setText("<a href='https://github.com/LightForm-group/datalight'>Click here to find out more about DataLight</a><br><br>"

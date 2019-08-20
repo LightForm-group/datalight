@@ -138,7 +138,7 @@ class HelpButton(QtWidgets.QToolButton, WidgetMixin):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
-        self.setIcon(QtGui.QIcon("ui/question.svg"))
+        self.setIcon(QtGui.QIcon("ui/images/question.svg"))
 
 
 class ComboBox(QtWidgets.QComboBox, WidgetMixin):
