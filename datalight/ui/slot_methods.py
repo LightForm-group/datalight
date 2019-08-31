@@ -56,23 +56,22 @@ def ok_button(datalight_ui):
     """
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
 
-    metadata_output = get_widget_values(widgets)
-    valid_length = validate_output_length(widgets)
-    valid_output = validate_widget_contents(widgets)
+    metadata_output = datalight.ui.validation.get_widget_values(widgets)
+    valid_length = datalight.ui.validation.validate_output_length(widgets)
+    valid_output = datalight.ui.validation.validate_widget_contents(widgets)
 
     # Validation of widget contents
     incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
     if incomplete_widgets or short_widgets:
-        process_validation_warnings(incomplete_widgets, short_widgets)
+        datalight.ui.validation.process_validation_warnings(incomplete_widgets, short_widgets)
     else:
         print(metadata_output)
-        upload_record(metadata_output["file_list"], metadata_output,
-                      publish=metadata_output["publish"], sandbox=metadata_output["sandbox"])
+        upload_record(metadata_output.pop("file_list"), metadata_output,
+                      publish=metadata_output.pop("publish"), sandbox=metadata_output.pop("sandbox"))
         logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.",
-                                   QtWidgets.QMessageBox.Information)
+        custom_widgets.message_box("Datalight upload successful.", QtWidgets.QMessageBox.Information)
 
 
 def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox, author_list: dict):

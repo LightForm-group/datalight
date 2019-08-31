@@ -65,6 +65,7 @@ class WidgetMixin:
             self.name = widget_description["_name"]
         self.setObjectName(self.name)
 
+        self.optional = True
         if "optional" in widget_description:
             self.optional = widget_description["optional"]
 

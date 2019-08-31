@@ -66,7 +66,9 @@ class Zenodo:
     def deposit_record(self, files: List[pathlib.Path], publish: bool):
         """Method which calls the parts of the upload process."""
 
-        self.checked_metadata = self._get_metadata()
+        self._get_metadata()
+        self.generate_metadata_summary()
+        self.checked_metadata = self.validate_metadata()
         self._get_deposition_id()
         self._upload_files(files)
         self._upload_metadata()
@@ -114,7 +116,6 @@ class Zenodo:
 
     def _get_metadata(self):
         """Method to get and validate metadata."""
-        schema = zenodo_metadata.read_schema_from_file()
         if self.raw_metadata is None:
             # If metadata was provided as a path then read it from a file.
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
@@ -134,9 +135,6 @@ class Zenodo:
             if "communities" in self.raw_metadata:
                 communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
                 self.raw_metadata["communities"] = communities
-
-        validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
-        return {'metadata': validated_metadata}
 
     def _upload_metadata(self):
         """Upload metadata to Zenodo repository.
@@ -230,3 +228,19 @@ class Zenodo:
                                                                    response.content)
             logger.error(message)
             raise ZenodoException(message)
+
+    def generate_metadata_summary(self):
+        """
+        A method to take all of the metadata and write it to a text file which will be uploaded along
+        with the data.
+        """
+        with open("metadata_summary.txt", 'w') as output_file:
+            output_file.write("Metadata auto recorded by Datalight (https://github.com/LightForm-group/datalight)")
+            for key, value in self.raw_metadata.items():
+                output_file.write("{}: {}\n".format(key, value))
+
+    def validate_metadata(self):
+        """Compare the metadata to the schema and remove anything not allowed by Zenodo."""
+        schema = zenodo_metadata.read_schema_from_file()
+        validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
+        return {'metadata': validated_metadata}
