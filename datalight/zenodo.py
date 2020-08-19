@@ -15,11 +15,11 @@ class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
-def upload_record(file_paths: List[pathlib.Path], metadata: dict, publish=False,
+def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict, publish=False,
                   sandbox=True, credentials_location="../datalight.config"):
     """Run datalight scripts to upload file to data repository
     :param file_paths: One or more paths of files to upload.
-    :param metadata: A dictionary of metadata describing the record.
+    :param repository_metadata: A dictionary of metadata describing the record.
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
     :param credentials_location: Location of the file containing zenodo API tokens.
@@ -28,7 +28,7 @@ def upload_record(file_paths: List[pathlib.Path], metadata: dict, publish=False,
     credentials_location = pathlib.Path(credentials_location).resolve()
     token = common.get_authentication_token(credentials_location, sandbox)
 
-    data_repo = Zenodo(token, metadata, sandbox)
+    data_repo = Zenodo(token, repository_metadata, sandbox)
     data_repo.deposit_record(file_paths, publish)
 
 

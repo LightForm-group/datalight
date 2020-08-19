@@ -4,6 +4,7 @@ In order to be linked to a button, a function must have the same name as the but
 in the UI YAML specification.
 """
 import re
+from typing import TYPE_CHECKING
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -12,6 +13,9 @@ from datalight.ui import custom_widgets
 from datalight.ui.custom_widgets import GroupBox, get_new_widget
 import datalight.ui.validation
 from datalight.zenodo import upload_record
+
+if TYPE_CHECKING:
+    from datalight.ui.main_form import DatalightUIWindow
 
 
 def remove_item_button(datalight_ui):
@@ -45,36 +49,51 @@ def open_file_window(datalight_ui, file_dialogue):
             if not list_widget.findItems(path, QtCore.Qt.MatchExactly):
                 list_widget.addItem(path)
             else:
+                file_name = re.split(r"[\\/]", path)[-1]
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
-                                              "File {}, already selected.".format(re.split(r"[\\/]", path)[-1]))
+                                              f"File {file_name}, already selected.")
 
 
-def ok_button(datalight_ui):
+def ok_button(datalight_ui: "DatalightUIWindow"):
     """
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
+    repository_widget = datalight_ui.get_widget_by_name("zenodo_core_metadata")
+    incomplete_widgets, short_widgets = validate_widgets(repository_widget)
 
-    metadata_output = datalight.ui.validation.get_widget_values(widgets)
-    valid_length = datalight.ui.validation.validate_output_length(widgets)
-    valid_output = datalight.ui.validation.validate_widget_contents(widgets)
+    if incomplete_widgets:
+        datalight.ui.validation.process_incomplete_widgets(incomplete_widgets)
+    elif short_widgets:
+        datalight.ui.validation.process_short_widgets(short_widgets)
+    else:
+        repository_metadata = datalight.ui.validation.get_widget_values(repository_widget)
+        experiment_widget = datalight_ui.get_widget_by_name("experimental_metadata")
+        experiment_metadata = datalight.ui.validation.get_widget_values(experiment_widget)
+
+        upload_record(repository_metadata.pop("file_list"), repository_metadata,
+                      publish=repository_metadata.pop("publish"),
+                      sandbox=repository_metadata.pop("sandbox"))
+        logger.info("Datalight upload successful.")
+        custom_widgets.message_box("Datalight upload successful.",
+                                   QtWidgets.QMessageBox.Information)
+
+
+def validate_widgets(widget: QtWidgets.QWidget):
+    child_widgets = widget.findChildren(QtWidgets.QWidget)
+
+    valid_length = datalight.ui.validation.validate_output_length(child_widgets)
+    valid_output = datalight.ui.validation.validate_widget_contents(child_widgets)
 
     # Validation of widget contents
     incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
-    if incomplete_widgets or short_widgets:
-        datalight.ui.validation.process_validation_warnings(incomplete_widgets, short_widgets)
-    else:
-        print(metadata_output)
-        upload_record(metadata_output.pop("file_list"), metadata_output,
-                      publish=metadata_output.pop("publish"), sandbox=metadata_output.pop("sandbox"))
-        logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.", QtWidgets.QMessageBox.Information)
+    return incomplete_widgets, short_widgets
 
 
-def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox, author_list: dict):
+def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox,
+                          author_list: dict):
     """A function attached to the currentIndexChanged method of author_list_box.
     Checks if the passed name is in the stored author list and if so, sets the relevant
     affiliation and ORCID."""
@@ -83,7 +102,8 @@ def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: Qt
         orcid.setText(str(author_list[name]["orcid"]))
 
 
-def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str, ui_descriptions: dict):
+def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str,
+                                 ui_descriptions: dict):
     """Clear the experimental group box and refill it with new widgets."""
 
     # Get all children remove them from the layout and close them
