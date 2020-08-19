@@ -12,14 +12,15 @@ from datalight.ui.ui_descriptions import file_readers
 class DatalightUIWindow:
     """The main class for the UI Window. Stores a list of widgets which are associated
     with the UI.
-    :ivar ui_specification:(dict) Description of the elements on the core form.
-    :ivar experiments: (dict) UI specifications for experiments.
-    :ivar main_window: (QMainWindow) The main application widget from which all other widgets are descended.
-    :ivar central_widget: (QWidget) The main blank area in which all other widgets sit.
-    :ivar central_widget_layout: (QLayout) The layout of central_widget.
-    :ivar ui_path: (str) Path to the ui folder containing 'minimum_ui.yaml'.
-    :ivar group_box: (GroupBox)
-    :ivar authors: (dict) A dictionary of Author names, Affiliations and ORCIDs.
+    :ivar ui_specification: Description of the elements on the core form.
+    :ivar experiments: UI specifications for experiments.
+    :ivar main_window: The main application widget from which all other widgets
+      are descended.
+    :ivar central_widget: The main blank area in which all other widgets sit.
+    :ivar central_widget_layout: The layout of central_widget.
+    :ivar ui_path: Path to the ui folder containing 'minimum_ui.yaml'.
+    :ivar group_box:
+    :ivar authors: A dictionary of Author names, Affiliations and ORCIDs.
     """
     def __init__(self, ui_path: str):
         self.ui_specification = {}
@@ -54,36 +55,18 @@ class DatalightUIWindow:
         self.ui_path = ui_path
         self.authors = {}
 
-    def ui_setup(self, metadata_index: str):
+    def ui_setup(self):
         """ Load UI description from files and then add widgets hierarchically."""
         # Setup menu bar
         menu_bar.setup_menu(self.main_window)
 
-        # Get and set experimental UI descriptions
-        experimental_metadata = file_readers.get_experimental_metadata(metadata_index)
-        self.add_experiments(experimental_metadata)
-
         # Get and set basic UI descriptions
-        self.ui_specification = file_readers.read_basic_ui(self.ui_path)
+        self.ui_specification = file_readers.read_ui(self.ui_path)
         self.add_base_group_box()
 
         # Get and set authors and
         self.authors = file_readers.read_author_list(self.ui_path)
         self.populate_author_list()
-
-        # Add experiments to form
-        self.populate_experimental_list()
-        self.link_experimental_group_box()
-
-    def add_experiments(self, experiment_description: dict):
-        """Add experimental UI descriptions to self."""
-        for experiment_name, description in experiment_description.items():
-            if "_name" not in description:
-                # Set to lower and remove any whitespace.
-                _name = experiment_name.lower()
-                _name = re.sub(r"\s+", "", experiment_name, flags=re.UNICODE)
-                description["_name"] = _name
-            self.experiments[experiment_name] = description
 
     def add_base_group_box(self):
         """Add a base group box that will contain all other widgets."""
@@ -107,27 +90,6 @@ class DatalightUIWindow:
 
         update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box, self.authors)
         author_list_box.currentIndexChanged[str].connect(update_method)
-
-    def populate_experimental_list(self):
-        """Take the names of the experiments and populate the selection box with them."""
-        experiment_combo_box = self.get_widget_by_name("experiment_selection")
-        for experiment in self.experiments:
-            experiment_combo_box.addItem(experiment, experiment)
-
-    def link_experimental_group_box(self):
-        """Link the experimental combo box to the method for updating experimental data."""
-        # The combo box which selects the experiment type
-        combo_box = self.get_widget_by_name("experiment_selection")
-
-        # The group box containing the experimental data
-        experimental_group_box = self.get_widget_by_name("experimental_metadata")
-
-        def update_method():
-            slot_methods.update_experimental_metadata(experimental_group_box,
-                                                      combo_box.itemData(combo_box.currentIndex()),
-                                                      self.experiments)
-
-        combo_box.currentIndexChanged[str].connect(update_method)
 
     def enable_dependent_widget(self, dependencies):
         """Process the 'activates_on' dependency. This turns a widget on or off depending

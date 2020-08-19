@@ -1,6 +1,5 @@
 # Methods for populating the menu bar and its actions.
 
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 

@@ -1,4 +1,3 @@
-# This constitutes some sort of UI description. This should allow construction and population of a UI for datalight.
 zenodo_core_metadata:
     widget: GroupBox
     layout: VBoxLayout
@@ -177,17 +176,3 @@ zenodo_core_metadata:
                     widget: PushButton
                     button_text: OK
                     tooltip: Submit this record to Zenodo
-
-experimental_metadata_selector:
-    widget: GroupBox
-    layout: VBoxLayout
-    children:
-        experiment_selection:
-            widget: ComboBox
-            values:
-                none: No Experiment Selected
-            tooltip: If the dataset represents an experiment, select a type from
-              this list to add more specific metadata.
-        experimental_metadata:
-            widget: GroupBox
-            layout: FormLayout

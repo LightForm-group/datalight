@@ -2,29 +2,21 @@
 
 import pathlib
 
-import requests
 import yaml
 
 
-def read_basic_ui(ui_path):
+def read_ui(ui_path: str, repository_name: str = "zenodo") -> dict:
     """Read the UI specification from a YAML file."""
     ui_path = pathlib.Path(ui_path)
-    ui_file = pathlib.Path("minimum_ui.yaml")
+    ui_file = pathlib.Path(f"{repository_name}.yaml")
+    metadata_file = pathlib.Path("metdata.yaml")
 
     with open(ui_path / ui_file, encoding='utf8') as input_file:
         ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
-    return ui_specification
+    with open(ui_path / metadata_file, encoding='utf8') as input_file:
+        metadata_spec = yaml.load(input_file, Loader=yaml.FullLoader)
 
-
-def get_experimental_metadata(url: str) -> dict:
-    """Get the experimental metadata file from a URL."""
-    response = requests.get(url)
-    if not response.ok:
-        response.raise_for_status()
-    response.encoding = 'utf-8'
-
-    experiment_metadata = yaml.load(response.text, Loader=yaml.FullLoader)
-    return experiment_metadata
+    return {**ui_specification, **metadata_spec}
 
 
 def read_author_list(ui_path: str) -> dict:

@@ -1,0 +1,8 @@
+experimental_metadata_selector:
+    widget: GroupBox
+    title: Experimental Metadata
+    layout: VBoxLayout
+    children:
+        experimental_metadata_box:
+            widget: PlainTextEdit
+            tooltip: Add the experimental metadata here.
