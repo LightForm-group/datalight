@@ -80,8 +80,8 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
         experiment_metadata = datalight.ui.validation.get_widget_values(experiment_child_widgets)
 
         upload_record(repository_metadata.pop("file_list"), repository_metadata,
-                      publish=repository_metadata.pop("publish"),
-                      sandbox=repository_metadata.pop("sandbox"))
+                      experiment_metadata, repository_metadata.pop("publish"),
+                      repository_metadata.pop("sandbox"))
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)

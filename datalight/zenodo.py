@@ -3,6 +3,8 @@
 import json
 import pathlib
 from typing import List, Union
+from os import PathLike
+import tempfile
 
 import requests
 
@@ -15,15 +17,20 @@ class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
-def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict, publish=False,
-                  sandbox=True, credentials_location="../datalight.config"):
+def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
+                  experimental_metadata: dict, publish=False, sandbox=True,
+                  credentials_location="../datalight.config"):
     """Run datalight scripts to upload file to data repository
+    :param experimental_metadata: The experimental metadata.
     :param file_paths: One or more paths of files to upload.
     :param repository_metadata: A dictionary of metadata describing the record.
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
     :param credentials_location: Location of the file containing zenodo API tokens.
     """
+
+    experimental_metadata = ExperimentalMetadata(experimental_metadata)
+    file_paths.append(experimental_metadata.metadata_path)
 
     credentials_location = pathlib.Path(credentials_location).resolve()
     token = common.get_authentication_token(credentials_location, sandbox)
@@ -32,12 +39,35 @@ def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict, pub
     data_repo.deposit_record(file_paths, publish)
 
 
+class ExperimentalMetadata:
+    def __init__(self, metadata: dict):
+        self.metadata = metadata
+        self.temp_directory = tempfile.TemporaryDirectory()
+        self.metadata_path = pathlib.Path(self.temp_directory.name) / pathlib.Path("metadata.txt")
+        self.generate_metadata_summary()
+
+    def generate_metadata_summary(self):
+        """
+        A method to take all of the metadata and write it to a text file which will be uploaded
+        along with the data.
+        """
+        with open(self.metadata_path, 'w') as metadata_file:
+            for value in self.metadata.values():
+                metadata_file.write(f"{value}\n")
+                metadata_file.write("\n Metadata auto recorded by Datalight "
+                                    "(https://github.com/LightForm-group/datalight)")
+
+    def remove_temp_folder(self):
+        del self.temp_directory
+
+
 class Zenodo:
     """Class to upload files to Zenodo
-    The :func:`~datalight.Zenodo.deposit_record` method handles all of the steps required to upload a file.
+    The :func:`~datalight.Zenodo.deposit_record` method handles all of the steps required to upload
+     a file.
     """
 
-    def __init__(self, token: str, metadata: Union[str, dict], sandbox: bool = False):
+    def __init__(self, token: str, metadata: Union[PathLike, dict], sandbox: bool = False):
         """
         :param token: API token for connection to Zenodo.
         :param metadata: Either a path to a metadata file or a dictionary of metadata.
@@ -65,9 +95,7 @@ class Zenodo:
 
     def deposit_record(self, files: List[pathlib.Path], publish: bool):
         """Method which calls the parts of the upload process."""
-
         self._get_metadata()
-        self.generate_metadata_summary()
         self.checked_metadata = self.validate_metadata()
         self._get_deposition_id()
         self._upload_files(files)
@@ -97,7 +125,6 @@ class Zenodo:
         """Method to upload a file to Zenodo
         :param filenames: Paths of one or more files to upload.
         """
-
         # Create the url to upload with the deposition_id
         url = self.depositions_url + '/{}/files'.format(self.deposition_id)
         logger.info('url: {}'.format(url))
@@ -111,7 +138,8 @@ class Zenodo:
             files = {'file': open(filename, 'rb')}
 
             # upload the file
-            request = requests.post(url, params={'access_token': self.token}, data=data, files=files)
+            request = requests.post(url, params={'access_token': self.token}, data=data,
+                                    files=files)
             self._check_request_response(request)
 
     def _get_metadata(self):
@@ -228,16 +256,6 @@ class Zenodo:
                                                                    response.content)
             logger.error(message)
             raise ZenodoException(message)
-
-    def generate_metadata_summary(self):
-        """
-        A method to take all of the metadata and write it to a text file which will be uploaded along
-        with the data.
-        """
-        with open("metadata_summary.txt", 'w') as output_file:
-            output_file.write("Metadata auto recorded by Datalight (https://github.com/LightForm-group/datalight)")
-            for key, value in self.raw_metadata.items():
-                output_file.write("{}: {}\n".format(key, value))
 
     def validate_metadata(self):
         """Compare the metadata to the schema and remove anything not allowed by Zenodo."""
