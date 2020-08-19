@@ -60,16 +60,24 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     it up into a dictionary.
     """
     repository_widget = datalight_ui.get_widget_by_name("zenodo_core_metadata")
-    incomplete_widgets, short_widgets = validate_widgets(repository_widget)
+    repository_child_widgets = repository_widget.findChildren(QtWidgets.QWidget)
+
+    valid_length = datalight.ui.validation.validate_output_length(repository_child_widgets)
+    valid_output = datalight.ui.validation.validate_widget_contents(repository_child_widgets)
+
+    # Validation of widget contents
+    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+    short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
     if incomplete_widgets:
         datalight.ui.validation.process_incomplete_widgets(incomplete_widgets)
     elif short_widgets:
         datalight.ui.validation.process_short_widgets(short_widgets)
     else:
-        repository_metadata = datalight.ui.validation.get_widget_values(repository_widget)
+        repository_metadata = datalight.ui.validation.get_widget_values(repository_child_widgets)
         experiment_widget = datalight_ui.get_widget_by_name("experimental_metadata")
-        experiment_metadata = datalight.ui.validation.get_widget_values(experiment_widget)
+        experiment_child_widgets = experiment_widget.findChildren(QtWidgets.QWidget)
+        experiment_metadata = datalight.ui.validation.get_widget_values(experiment_child_widgets)
 
         upload_record(repository_metadata.pop("file_list"), repository_metadata,
                       publish=repository_metadata.pop("publish"),
@@ -77,19 +85,6 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)
-
-
-def validate_widgets(widget: QtWidgets.QWidget):
-    child_widgets = widget.findChildren(QtWidgets.QWidget)
-
-    valid_length = datalight.ui.validation.validate_output_length(child_widgets)
-    valid_output = datalight.ui.validation.validate_widget_contents(child_widgets)
-
-    # Validation of widget contents
-    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
-    short_widgets = [key for key, value in list(valid_length.items()) if not value]
-
-    return incomplete_widgets, short_widgets
 
 
 def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox,
@@ -100,6 +95,9 @@ def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: Qt
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
         orcid.setText(str(author_list[name]["orcid"]))
+    else:
+        affiliation.setText("")
+        orcid.setText("")
 
 
 def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str,

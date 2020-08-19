@@ -218,6 +218,9 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
         if "minimum_length" in widget_description:
             self.minimum_length = widget_description["minimum_length"]
 
+        if "default" in widget_description:
+            self.setPlainText(str(widget_description["default"]))
+
         self.setTabChangesFocus(True)
 
     def get_value(self) -> str:

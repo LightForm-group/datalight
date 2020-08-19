@@ -19,3 +19,4 @@ datalight.egg-info/
 .eggs/
 docs/html
 /pylintrc
+/datalight/metadata_summary.txt
