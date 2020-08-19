@@ -1,5 +1,7 @@
 """This module processes and validates metadata."""
 
+from os import PathLike
+
 import json
 import urllib
 import pathlib
@@ -37,124 +39,79 @@ SCHEMAS_DIR = pathlib.Path(__file__).parent / pathlib.Path('schemas')
 SCHEMA_FILE = SCHEMAS_DIR / pathlib.Path('zenodo/zenodo_upload_metadata_schema.json5')
 
 
-class ZenodoMetadata:
-    """Class to manage the Metadata needed for a Zenodo upload.
+def read_schema_from_file() -> dict:
+    """Method to read the schema. Reads schema from self.schema_path
+    Stores schema dictionary in self.schema"""
+    logger.info('Reading schema from: {}'.format(SCHEMA_FILE))
+    try:
+        with open(SCHEMA_FILE) as input_file:
+            return json.load(input_file)
+    except FileNotFoundError:
+        raise ZenodoMetadataException('Schema file: {} not found.'.format(SCHEMA_FILE))
 
-    general schema for usage is:
-    set_schema()
-    set_metadata()
-    validate_metadata()
+
+def read_metadata_from_file(metadata_path: PathLike) -> dict:
+    """Method to read metadata from a file.
+    :param metadata_path: A path to a file which contains zenodo metadata (yaml format).
+    """
+    logger.info('Metadata read from file: {}'.format(metadata_path))
+    try:
+        with open(metadata_path) as input_file:
+            return yaml.load(input_file, Loader=yaml.FullLoader)
+    except FileNotFoundError:
+        raise ZenodoMetadataException('Metadata file {} not found.'.format(metadata_path))
+
+
+def validate_metadata(metadata: dict, schema: dict) -> dict:
+    """Method which verifies that the metadata have the correct type and that
+     dependencies are respected."""
+
+    # Validate metadata before license to be sure that the "license" and "access_right"
+    # keys are present.
+    try:
+        jsonschema.validate(metadata, schema)
+    except jsonschema.exceptions.ValidationError as err:
+        raise ZenodoMetadataException('ValidationError: {}'.format(err.message))
+
+    # Check validity of the license (if open or embargoed)
+    license_checker = _LicenseStatus(metadata["license"], metadata["access_right"])
+    license_checker.validate_license()
+    if license_checker.license_valid is False:
+        logger.error("Invalid licence type. access_right is 'open' or 'embargoed' and {}"
+                     "is not a valid Open License.".format(license_checker.license))
+        raise ZenodoMetadataException
+
+    logger.info('Metadata have been validated successfully.')
+    metadata = remove_extra_properties(metadata)
+    return metadata
+
+
+def remove_extra_properties(metadata: dict) -> dict:
+    """Method to remove properties which are not allowed by zenodo.
+
+    Json-schema has a major limitation, it does not allow the usage of::
+
+        additionalProperties: False
+
+    when using the "allOf" keyword.
+
+    This problem is described as a shortcoming
+    `<https://json-schema.org/understanding-json-schema/reference/combining.html>`_
+    which implies that we need to deal with this outside the json schema to
+    verify that only Zenodo metadata are provided. This is likely to be resolved in
+    json-schema draft-8 some time in 2019.
     """
 
-    def __init__(self):
-        """Initialise a Metadata object.
+    keys_to_remove = []
+    for key in metadata.keys():
+        if key not in ZENODO_VALID_PROPERTIES:
+            logger.warning('Zenodo metadata with key invalid: {}. Key removed.'.format(key))
+            keys_to_remove.append(key)
 
-        :attribute _metadata: (dict) the metadata
-        :attribute _schema: (MetadataSchema object) the metadata schema
-        """
+    for key in keys_to_remove:
+        del metadata[key]
 
-        self.metadata = None
-        self.schema = None
-        self.schema_path = SCHEMA_FILE
-        self.metadata_validated = False
-
-    def set_schema(self):
-        """Method to read the schema. Reads schema from self.schema_path
-        Stores schema dictionary in self.schema"""
-        logger.info('Reading schema from: {}'.format(self.schema_path))
-        try:
-            with open(self.schema_path) as input_file:
-                schema = json.load(input_file)
-                self.schema = schema
-        except FileNotFoundError:
-            message = 'Schema file: {} not found.'.format(self.schema_path)
-            logger.error(message)
-            raise ZenodoMetadataException(message)
-
-    def set_metadata(self, metadata_path):
-        """Method to set metadata from a file.
-
-        :param metadata_path: (path) A path to a file which contains zenodo metadata (yaml format).
-        """
-        if isinstance(metadata_path, str) or issubclass(type(metadata_path), pathlib.Path):
-            logger.info('Metadata provided by file: {}'.format(metadata_path))
-            self.metadata = self._read_metadata(metadata_path)
-        else:
-            raise TypeError("Metadata path of wrong type. Needs to be a path.")
-
-    @staticmethod
-    def _read_metadata(metadata_path):
-        """Method to read Zenodo metadata file
-        :param metadata_path: (path) Path to metadata file.
-        """
-        logger.info('Read metadata from: {}'.format(metadata_path))
-        try:
-            with open(metadata_path) as input_file:
-                metadata = yaml.load(input_file, Loader=yaml.FullLoader)
-        except FileNotFoundError:
-            message = 'Metadata file {} not found.'.format(metadata_path)
-            logger.error(message)
-            raise ZenodoMetadataException(message)
-
-        return metadata
-
-    def validate_metadata(self):
-        """Method which verifies that the metadata have the correct type and that
-         dependencies are respected."""
-
-        if self.metadata is None:
-            print("Metadata not set. Use set_metadata method.")
-            raise ZenodoMetadataException
-        if self.schema is None:
-            print("Schema not set. Use set_schema method.")
-            raise ZenodoMetadataException
-
-        # Validate metadata before license to be sure that the "license" and "access_right"
-        # keys are present.
-        try:
-            jsonschema.validate(self.metadata, self.schema)
-        except jsonschema.exceptions.ValidationError as err:
-            error = 'ValidationError: {}'.format(err.message)
-            logger.error(error)
-            raise ZenodoMetadataException(error)
-
-        # Check validity of the license (if open or embargoed)
-        license_checker = _LicenseStatus(self.metadata["license"], self.metadata["access_right"])
-        license_checker.validate_license()
-        if license_checker.license_valid is False:
-            logger.error("Invalid licence type. access_right is 'open' or 'embargoed' and {}"
-                         "is not a valid Open License.".format(license_checker.license))
-            raise ZenodoMetadataException
-
-        self._remove_extra_properties()
-        self.metadata_validated = True
-
-        logger.info('Metadata have been validated successfully.')
-
-    def _remove_extra_properties(self):
-        """Method to remove properties which are not allowed by zenodo.
-
-        Json-schema has a major limitation, it does not allow the usage of::
-
-            additionalProperties: False
-
-        when using the "allOf" keyword.
-
-        This problem is described as a shortcoming
-        `<https://json-schema.org/understanding-json-schema/reference/combining.html>`_
-        which implies that we need to deal with this outside the json schema to
-        verify that only Zenodo metadata are provided. This is likely to be resolved in
-        json-schema draft-8 some time in 2019.
-        """
-
-        keys_to_remove = []
-        for key in self.metadata.keys():
-            if key not in ZENODO_VALID_PROPERTIES:
-                logger.warning('Zenodo metadata with key invalid: {}. Key removed.'.format(key))
-                keys_to_remove.append(key)
-
-        for key in keys_to_remove:
-            del self.metadata[key]
+    return metadata
 
 
 class _LicenseStatus:

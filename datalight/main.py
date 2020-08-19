@@ -1,36 +1,26 @@
 """Main module for datalight."""
 
-import os
+import sys
 
-import datalight.common as common
-from datalight.zenodo import Zenodo as DataRepo
+from PyQt5 import QtWidgets
 
-
-def main(directory_name, metadata_path, zip_name="data.zip", publish=False, sandbox=True):
-    """Run datalight scripts to upload file to data repository"""
-
-    token = common.get_authentication_token(sandbox)
-    if token is None:
-        common.logger.error("Unable to load API token from datalight.config.")
-        raise FileNotFoundError("Unable to load API token from datalight.config.")
-
-    try:
-        files = common.get_files_path(directory_name)
-    except common.DatalightException:
-        common.logger.error('Problem with the files to upload.')
-        raise common.DatalightException
-
-    if not os.path.exists(metadata_path):
-        common.logger.error('Metadata file: {} does not exist.'.format(metadata_path))
-        raise FileNotFoundError
-
-    common.zip_data(files, zip_name)
-    # Change the name of the files to upload for the zip file created
-    files, directory = [zip_name], '.'
-
-    data_repo = DataRepo(token=token, metadata_path=metadata_path, sandbox=sandbox)
-    data_repo.deposit_record(files, directory, publish)
+from datalight.ui.main_form import DatalightUIWindow, connect_button_methods
 
 
-if __name__ == '__main__':
-    main("C:/Users/Peter/Desktop/test/", "../tests/metadata/minimum_valid.yml")
+def main(ui_path):
+    """The main function.
+    :param ui_path: The full path to the datalight/ui folder that contains minimum_ui.yaml.
+    metadata descriptions.
+    """
+    app = QtWidgets.QApplication(sys.argv)
+    datalight_ui = DatalightUIWindow(ui_path)
+    datalight_ui.ui_setup()
+    datalight_ui.main_window.show()
+    datalight_ui.set_window_position()
+    connect_button_methods(datalight_ui)
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    UI_PATH = sys.argv[1]
+    main(UI_PATH)

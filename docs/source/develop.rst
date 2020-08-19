@@ -11,7 +11,7 @@ Requirements
 
 To install in linked .egg mode for development development::
 
-    python -m pip install develop
+    python -m pip install . develop
 
 To run the unit tests the pytest package is required:
 

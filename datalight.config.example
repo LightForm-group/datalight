@@ -1,0 +1,14 @@
+# This is an example config file. You should make a copy of this file and save it as "datalight.config" in the same
+# directory
+
+# Once you have registered an account with Zenodo and created a token, add this to this file for DataLight to read.
+# Registration on Zenodo sandbox is optional but useful for practicing uploads. Registration is separate from the
+# main Zenodo website and requires generation of a separate code.
+
+# Keep these tokens secret. They will allow anyone with access to them to post content to Zenodo under your name.
+
+[zenodo.org]
+token = xxx
+
+[sandbox.zenodo.org]
+token = xxx

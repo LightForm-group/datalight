@@ -5,9 +5,13 @@ in the UI YAML specification.
 """
 import re
 
-import yaml
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import pyqtSlot
+
+from datalight.common import logger
+from datalight.ui import custom_widgets
+from datalight.ui.custom_widgets import GroupBox, get_new_widget
+import datalight.ui.validation
+from datalight.zenodo import upload_record
 
 
 def remove_item_button(datalight_ui):
@@ -20,20 +24,21 @@ def remove_item_button(datalight_ui):
 
 
 def select_file_button(datalight_ui):
-    """Open a dialog box to select a file to upload."""
+    """Prepare to open a dialog box to select a file to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
     open_file_window(datalight_ui, file_dialogue)
 
 
 def select_folder_button(datalight_ui):
-    """Open a dialog box to select a folder` to upload."""
+    """Prepare to open a dialog box to select a folder` to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
     open_file_window(datalight_ui, file_dialogue)
 
 
 def open_file_window(datalight_ui, file_dialogue):
+    """Open a dialogue box to select a file or folder."""
     list_widget = datalight_ui.get_widget_by_name("file_list")
     if file_dialogue.exec():
         for path in file_dialogue.selectedFiles():
@@ -41,32 +46,53 @@ def open_file_window(datalight_ui, file_dialogue):
                 list_widget.addItem(path)
             else:
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
-                                              "File {}, already selected.".format(
-                                                  re.split("[\\\/]", path)[-1]))
+                                              "File {}, already selected.".format(re.split(r"[\\/]", path)[-1]))
+
 
 def ok_button(datalight_ui):
     """
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    output = {}
     widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
-    for widget in widgets:
-        name = widget.objectName()
-        if isinstance(widget, QtWidgets.QComboBox):
-            output[name] = widget.currentText()
-        elif isinstance(widget, QtWidgets.QPlainTextEdit):
-            output[name] = widget.toPlainText()
-        elif isinstance(widget, QtWidgets.QDateEdit):
-            output[name] = widget.date()
-        else:
-            pass
-    print(output)
+
+    metadata_output = datalight.ui.validation.get_widget_values(widgets)
+    valid_length = datalight.ui.validation.validate_output_length(widgets)
+    valid_output = datalight.ui.validation.validate_widget_contents(widgets)
+
+    # Validation of widget contents
+    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+    short_widgets = [key for key, value in list(valid_length.items()) if not value]
+
+    if incomplete_widgets or short_widgets:
+        datalight.ui.validation.process_validation_warnings(incomplete_widgets, short_widgets)
+    else:
+        print(metadata_output)
+        upload_record(metadata_output.pop("file_list"), metadata_output,
+                      publish=metadata_output.pop("publish"), sandbox=metadata_output.pop("sandbox"))
+        logger.info("Datalight upload successful.")
+        custom_widgets.message_box("Datalight upload successful.", QtWidgets.QMessageBox.Information)
 
 
-def update_author_details(name, affiliation, orcid):
-    with open("author_details.yaml", 'r') as input_file:
-        author_list = yaml.load(input_file, Loader=yaml.FullLoader)
+def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox, author_list: dict):
+    """A function attached to the currentIndexChanged method of author_list_box.
+    Checks if the passed name is in the stored author list and if so, sets the relevant
+    affiliation and ORCID."""
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
-        orcid.setText(author_list[name]["orcid"])
+        orcid.setText(str(author_list[name]["orcid"]))
+
+
+def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str, ui_descriptions: dict):
+    """Clear the experimental group box and refill it with new widgets."""
+
+    # Get all children remove them from the layout and close them
+    children = experimental_group_box.children()
+    for child in reversed(children):
+        if not isinstance(child, QtWidgets.QLayout):
+            experimental_group_box.remove_widget_from_layout(child)
+            child.close()
+
+    if new_value != "none":
+        new_widget = get_new_widget(experimental_group_box, ui_descriptions[new_value])
+        experimental_group_box.add_widget(*new_widget)
