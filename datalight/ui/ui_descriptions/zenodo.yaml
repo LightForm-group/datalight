@@ -2,50 +2,9 @@ zenodo_core_metadata:
     widget: GroupBox
     layout: VBoxLayout
     children:
-        file_upload:
-            widget: GroupBox
-            title: File Upload
-            layout: GridLayout
-            children:
-                file_list:
-                    widget: ListWidget
-                    optional: False
-                    grid_layout: 0, 0, 1, 2
-                    tooltip: A list of files that will be uploaded with the record.
-                select_file_button:
-                    widget: PushButton
-                    button_text: Select file(s) to upload
-                    grid_layout: 1, 0, 1, 1
-                    tooltip: Opens a dialog to select one or more files to add to the record.
-                remove_item_button:
-                    widget: PushButton
-                    button_text: Remove Selected Files
-                    grid_layout: 1, 1, 1, 1
-                    tooltip: Removes the selected files or folders from the record.
-
-        zenodo_options:
-            widget: GroupBox
-            title: Zenodo Options
-            layout: HBoxLayout
-            children:
-                publish_label:
-                    widget: Label
-                    text: Publish after upload
-                publish:
-                    widget: CheckBox
-                    default: False
-                    tooltip: Whether to publish the record once it has been uploaded.
-                sandbox_label:
-                    widget: Label
-                    text: Use Zenodo Sandbox
-                sandbox:
-                    widget: CheckBox
-                    default: True
-                    tooltip: Whether to upload to the Zenodo sandbox or the real Zenodo.
-
         basic_metadata:
             widget: GroupBox
-            title: Basic Metadata
+            title: Zenodo Metadata
             layout: FormLayout
             children:
                 title:
@@ -53,12 +12,14 @@ zenodo_core_metadata:
                     label: Title of Record
                     optional: False
                     tooltip: The title of the record.
+                    default: Sample Title
                     minimum_length: 3
                 description:
                     widget: PlainTextEdit
                     label: Record Description
                     optional: False
                     tooltip: A description of the dataset being uploaded.
+                    default: Sample Description
                     minimum_length: 3
                 publication_date:
                     widget: DateEdit
@@ -168,11 +129,22 @@ zenodo_core_metadata:
                         -
                     tooltip: The community to associate this record with on Zenodo.
 
-        ok_button:
+        zenodo_options:
             widget: GroupBox
-            layout: FormLayout
+            title: Zenodo Options
+            layout: HBoxLayout
             children:
-                ok_button:
-                    widget: PushButton
-                    button_text: OK
-                    tooltip: Submit this record to Zenodo
+                publish_label:
+                    widget: Label
+                    text: Publish after upload
+                publish:
+                    widget: CheckBox
+                    default: False
+                    tooltip: Whether to publish the record once it has been uploaded.
+                sandbox_label:
+                    widget: Label
+                    text: Use Zenodo Sandbox
+                sandbox:
+                    widget: CheckBox
+                    default: True
+                    tooltip: Whether to upload to the Zenodo sandbox or the real Zenodo.

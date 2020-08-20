@@ -1,8 +1,38 @@
 experimental_metadata:
     widget: GroupBox
-    title: Experimental Metadata
     layout: VBoxLayout
     children:
+        file_upload:
+            widget: GroupBox
+            title: File Upload
+            layout: GridLayout
+            children:
+                file_list:
+                    widget: ListWidget
+                    optional: False
+                    grid_layout: 0, 0, 1, 2
+                    tooltip: A list of files that will be uploaded with the record.
+                select_file_button:
+                    widget: PushButton
+                    button_text: Select file(s) to upload
+                    grid_layout: 1, 0, 1, 1
+                    tooltip: Opens a dialog to select one or more files to add to the record.
+                remove_item_button:
+                    widget: PushButton
+                    button_text: Remove Selected Files
+                    grid_layout: 1, 1, 1, 1
+                    tooltip: Removes the selected files or folders from the record.
+
         experimental_metadata_editor:
             widget: PlainTextEdit
             tooltip: Add the experimental metadata here.
+            default: Sample Metadata
+
+        ok_button:
+            widget: GroupBox
+            layout: FormLayout
+            children:
+                ok_button:
+                    widget: PushButton
+                    button_text: Upload Record
+                    tooltip: Submit this record to Zenodo

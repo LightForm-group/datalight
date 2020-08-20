@@ -4,7 +4,7 @@ In order to be linked to a button, a function must have the same name as the but
 in the UI YAML specification.
 """
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
 
 from PyQt5 import QtWidgets, QtCore
 
@@ -60,32 +60,43 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    repository_widget = datalight_ui.get_widget_by_name("zenodo_core_metadata")
-    repository_child_widgets = repository_widget.findChildren(QtWidgets.QWidget)
+    repository_metadata = validate_widgets(datalight_ui, "zenodo_core_metadata")
+    experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
 
-    valid_length = datalight.ui.validation.validate_output_length(repository_child_widgets)
-    valid_output = datalight.ui.validation.validate_widget_contents(repository_child_widgets)
+    if repository_metadata and experiment_metadata:
+        upload_record(experiment_metadata.pop("file_list"), repository_metadata,
+                      experiment_metadata, repository_metadata.pop("publish"),
+                      repository_metadata.pop("sandbox"))
+        logger.info("Datalight upload successful.")
+        custom_widgets.message_box("Datalight upload successful.",
+                                   QtWidgets.QMessageBox.Information)
 
-    # Validation of widget contents
-    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+
+def validate_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> Union[None, dict]:
+    """Check if the child Widgets of `root_widget_name are valid. If all widgets are valid, return
+    their values, else return None."""
+    child_widgets = get_child_widgets(datalight_ui, root_widget_name)
+
+    valid_length = datalight.ui.validation.validate_output_length(child_widgets)
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
+
+    valid_output = datalight.ui.validation.validate_widget_contents(child_widgets)
+    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
 
     if incomplete_widgets:
         datalight.ui.validation.process_incomplete_widgets(incomplete_widgets)
     elif short_widgets:
         datalight.ui.validation.process_short_widgets(short_widgets)
     else:
-        repository_metadata = datalight.ui.validation.get_widget_values(repository_child_widgets)
-        experiment_widget = datalight_ui.get_widget_by_name("experimental_metadata")
-        experiment_child_widgets = experiment_widget.findChildren(QtWidgets.QWidget)
-        experiment_metadata = datalight.ui.validation.get_widget_values(experiment_child_widgets)
+        return datalight.ui.validation.get_widget_values(child_widgets)
 
-        upload_record(repository_metadata.pop("file_list"), repository_metadata,
-                      experiment_metadata, repository_metadata.pop("publish"),
-                      repository_metadata.pop("sandbox"))
-        logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.",
-                                   QtWidgets.QMessageBox.Information)
+    return None
+
+
+def get_child_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> List[Widget]:
+    """Return the child widgets of the widget with name `root_widget_name`"""
+    root_widget = datalight_ui.get_widget_by_name(root_widget_name)
+    return root_widget.findChildren(QtWidgets.QWidget)
 
 
 def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_list: dict):

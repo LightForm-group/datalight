@@ -56,7 +56,7 @@ def validate_widget_contents(widgets: List[QtWidgets.QWidget]) -> Dict[str, bool
 
 def process_incomplete_widgets(incomplete_widgets: List[str]):
     """If there are incomplete widgets, alert the user by listing the affected widgets."""
-    logger.warning("Has invalid output: {incomplete_widgets}")
+    logger.warning(f"Has invalid output: {incomplete_widgets}")
     warning_text = "Some mandatory fields have not been completed: \n"
     for item in incomplete_widgets:
         warning_text += f"• {item}\n"
