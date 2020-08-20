@@ -1,5 +1,5 @@
 """Generates the UI which is used to input data into Datalight"""
-import re
+
 from functools import partial
 from typing import Union
 
@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtGui
 
 from datalight.ui import slot_methods, custom_widgets, menu_bar
 from datalight.ui.ui_descriptions import file_readers
+from datalight.ui.custom_widgets import Widget
 
 
 class DatalightUIWindow:
@@ -74,7 +75,8 @@ class DatalightUIWindow:
                             "layout": "HBoxLayout",
                             "_name": "BaseGroupBox",
                             "children": self.ui_specification}
-        self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents, base_description)[0]
+        self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents,
+                                                       base_description)[0]
         self.group_box.setMinimumSize(600, 800)
         self.scroll_area_contents_layout.addWidget(self.group_box)
 
@@ -88,13 +90,14 @@ class DatalightUIWindow:
         for name in self.authors:
             author_list_box.addItem(name)
 
-        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box, self.authors)
+        def update_method(name): return slot_methods.update_author_details(name, affiliation_box,
+                                                                           orcid_box, self.authors)
         author_list_box.currentIndexChanged[str].connect(update_method)
 
-    def enable_dependent_widget(self, dependencies):
+    def enable_dependent_widget(self, dependencies: dict):
         """Process the 'activates_on' dependency. This turns a widget on or off depending
         on the value of a parent widget.
-        :param dependencies: (dictionary) Keys are the widgets to turn on or off. Values are the
+        :param dependencies: Keys are the widgets to turn on or off. Values are the
         values that activate the child element.
         """
         chosen_value = self.central_widget.sender().currentText()
@@ -105,7 +108,7 @@ class DatalightUIWindow:
             else:
                 self.get_widget_by_name(child).setEnabled(False)
 
-    def get_widget_by_name(self, name: str) -> Union[QtWidgets.QWidget, None]:
+    def get_widget_by_name(self, name: str) -> Union[Widget, None]:
         """Return the widget in self.widgets whose objectName is name.
         :param name: The name of the widget to find.
         :returns widget if widget with `name` is found else returns None."""
@@ -128,7 +131,7 @@ class DatalightUIWindow:
         self.main_window.move(window_horizontal, window_vertical)
 
 
-def connect_button_methods(datalight_ui):
+def connect_button_methods(datalight_ui: DatalightUIWindow):
     """Create an association between the buttons on the form and their functions in the code."""
     button_widgets = datalight_ui.main_window.findChildren(QtWidgets.QPushButton)
 

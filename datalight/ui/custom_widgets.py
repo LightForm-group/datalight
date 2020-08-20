@@ -3,13 +3,16 @@
 
 import datetime
 import sys
-from typing import List
+from typing import List, Tuple, Union, TypeVar
 
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5 import QtGui, QtCore
 
+Widget = TypeVar('Widget', bound=QtWidgets.QWidget)
 
-def get_new_widget(parent: "GroupBox", widget_description: dict):
+
+def get_new_widget(parent: Widget, widget_description: dict) -> Tuple[
+      Widget, Union[None, str], Union[None, List[int]]]:
     """Return an instance of a widget described by widget_description.
 
     :param widget_description: (dict) A description of the element to add.
@@ -90,7 +93,7 @@ class WidgetMixin:
 
 
 class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -106,7 +109,7 @@ class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
 
 class HelpWidget(QtWidgets.QWidget, WidgetMixin):
     """Combination of another widget and a HelpButton."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
         self.help_text = widget_description.pop("help_text")
@@ -135,7 +138,7 @@ class HelpButton(QtWidgets.QToolButton, WidgetMixin):
     Most of the time this shouldn't be called directly. In order to get the help button to line
     up nicely with other widgets on a form layout it is nested in a HelpWidget."""
 
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -165,7 +168,8 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
                 for item in combo_values:
                     self.addItem(item, item)
             else:
-                raise TypeError("Cannot add {} to ComboBox, must be dict or list Type.".format(combo_values))
+                raise TypeError(f"Cannot add {combo_values} to ComboBox, "
+                                f"must be dict or list Type.")
 
         # Keys are the values of this combobox that activate another widget. Values are the
         # widget name it activates. There may be more than one key-value pair.
@@ -174,7 +178,7 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
         else:
             self.activates_when = None
 
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+    def paintEvent(self, event: QtGui.QPaintEvent):
         """
         Overloads the method of the QComboBox superclass to do something every time the
         box is repainted. This seems to be the easiest way to make the value of one widget
@@ -211,7 +215,7 @@ class ComboBox(QtWidgets.QComboBox, WidgetMixin):
 
 class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
     """A larger box to add free-form text."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -240,7 +244,7 @@ class PlainTextEdit(QtWidgets.QPlainTextEdit, WidgetMixin):
 
 class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
     """A widget that allows date selection from a dropdown popup."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -253,7 +257,7 @@ class DateEdit(QtWidgets.QDateEdit, WidgetMixin):
 
 class PushButton(QtWidgets.QPushButton, WidgetMixin):
     """A push button. In order to make the  """
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -264,7 +268,7 @@ class PushButton(QtWidgets.QPushButton, WidgetMixin):
 
 class ListWidget(QtWidgets.QListWidget, WidgetMixin):
     """Allows display and selection of items from a scrolling list."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -282,7 +286,7 @@ class ListWidget(QtWidgets.QListWidget, WidgetMixin):
 
 class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
     """A free text box that spans a single line."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -309,7 +313,7 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
 
 class Label(QtWidgets.QLabel, WidgetMixin):
     """A label to annotate the form."""
-    def __init__(self, parent_widget, widget_description):
+    def __init__(self, parent_widget: Widget, widget_description: dict):
         super().__init__(parent_widget)
         super().set_common_properties(widget_description)
 
@@ -325,11 +329,11 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
     :ivar _widgets: (list of QWidget) The widgets contained within this GroupBox.
     """
 
-    def __init__(self, parent, group_box_description):
+    def __init__(self, parent: Widget, group_box_description: dict):
         """ Initialise a new GroupBox
 
-        :param parent: (QWidget) The parent of the group box.
-        :param group_box_description: (dict) Specification of the group box and widgets
+        :param parent: The parent of the group box.
+        :param group_box_description: Specification of the group box and widgets
         contained by this GroupBox.
         """
         super().__init__(parent)
@@ -338,7 +342,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         self.element_description = group_box_description
         self.parent = parent
         self._layout = None
-        self._widgets = []
+        self._widgets: List[Widget] = []
 
         if "title" in self.element_description:
             self.setTitle(self.element_description["title"])
@@ -373,16 +377,17 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
                 element_description = element_setup(element_name, element_description)
                 self.add_widget(*get_new_widget(self, element_description))
 
-    def add_widget(self, widget, label=None, grid_layout=None):
+    def add_widget(self, widget: Widget, label: str = None, grid_layout=None):
         """Add 'widget' to this layout."""
         self._widgets.append(widget)
         self._add_widget_to_layout(self._widgets[-1], label, grid_layout)
 
-    def _add_widget_to_layout(self, widget, label=None, grid_layout=None):
+    def _add_widget_to_layout(self, widget: Widget, label: str = None,
+                              grid_position: List[int] = None):
         if isinstance(self._layout, QtWidgets.QFormLayout):
             self._add_widget_to_form_layout(widget, label)
         elif isinstance(self._layout, QtWidgets.QGridLayout):
-            self._add_widget_to_grid_layout(widget, grid_layout)
+            self._add_widget_to_grid_layout(widget, grid_position)
         elif isinstance(self._layout, QtWidgets.QHBoxLayout):
             self._layout.addWidget(widget)
         elif isinstance(self._layout, QtWidgets.QVBoxLayout):
@@ -390,18 +395,18 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         else:
             print("Unknown layout type '{}'".format(self._layout))
 
-    def remove_widget_from_layout(self, widget):
+    def remove_widget_from_layout(self, widget: Widget):
         """Remove a widget from this layout."""
         self._layout.removeWidget(widget)
 
-    def _add_widget_to_form_layout(self, widget, label=None):
+    def _add_widget_to_form_layout(self, widget: Widget, label: str = None):
         if label is None:
             self._layout.addRow(widget)
         else:
             self._layout.addRow(label, widget)
 
-    def _add_widget_to_grid_layout(self, widget, grid_layout):
-        self._layout.addWidget(widget, *grid_layout)
+    def _add_widget_to_grid_layout(self, widget: Widget, grid_position: List[int]):
+        self._layout.addWidget(widget, *grid_position)
 
     def list_widgets(self) -> List[QtWidgets.QWidget]:
         """Recursively list widgets in this GroupBox and contained GroupBoxes."""
@@ -413,7 +418,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         return widgets
 
 
-def message_box(message_text, message_type):
+def message_box(message_text: str, message_type: QtWidgets.QMessageBox.Icon):
     """A generic message box to alert the user of something."""
     warning_widget = QtWidgets.QMessageBox()
     warning_widget.setIcon(message_type)

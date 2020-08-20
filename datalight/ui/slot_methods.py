@@ -13,6 +13,7 @@ from datalight.ui import custom_widgets
 from datalight.ui.custom_widgets import GroupBox, get_new_widget
 import datalight.ui.validation
 from datalight.zenodo import upload_record
+from datalight.ui.custom_widgets import Widget
 
 if TYPE_CHECKING:
     from datalight.ui.main_form import DatalightUIWindow
@@ -87,8 +88,7 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
                                    QtWidgets.QMessageBox.Information)
 
 
-def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox,
-                          author_list: dict):
+def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_list: dict):
     """A function attached to the currentIndexChanged method of author_list_box.
     Checks if the passed name is in the stored author list and if so, sets the relevant
     affiliation and ORCID."""
