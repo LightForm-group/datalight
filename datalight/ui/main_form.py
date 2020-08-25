@@ -1,12 +1,13 @@
 """Generates the UI which is used to input data into Datalight"""
-import re
+
 from functools import partial
 from typing import Union
 
 from PyQt5 import QtWidgets, QtGui
 
+import datalight.common
 from datalight.ui import slot_methods, custom_widgets, menu_bar
-from datalight.ui.ui_descriptions import file_readers
+from datalight.ui.custom_widgets import Widget
 
 
 class DatalightUIWindow:
@@ -30,7 +31,7 @@ class DatalightUIWindow:
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setWindowIcon(QtGui.QIcon("ui/images/icon.png"))
-        self.main_window.setGeometry(0, 0, 500, 800)
+        self.main_window.setGeometry(0, 0, 600, 700)
 
         # Central widget and its layout
         self.central_widget = QtWidgets.QWidget(self.main_window)
@@ -58,14 +59,16 @@ class DatalightUIWindow:
     def ui_setup(self):
         """ Load UI description from files and then add widgets hierarchically."""
         # Setup menu bar
-        menu_bar.setup_menu(self.main_window)
+        menu_bar.setup_menu(self.main_window, self.ui_path)
 
         # Get and set basic UI descriptions
-        self.ui_specification = file_readers.read_ui(self.ui_path)
+        self.ui_specification = datalight.common.read_yaml(self.ui_path, 'zenodo.yaml')
+        self.ui_specification = {**self.ui_specification,
+                                 **datalight.common.read_yaml(self.ui_path, "metadata.yaml")}
         self.add_base_group_box()
 
         # Get and set authors and
-        self.authors = file_readers.read_author_list(self.ui_path)
+        self.authors = datalight.common.read_yaml(self.ui_path, "author_details.yaml")
         self.populate_author_list()
 
     def add_base_group_box(self):
@@ -74,7 +77,8 @@ class DatalightUIWindow:
                             "layout": "HBoxLayout",
                             "_name": "BaseGroupBox",
                             "children": self.ui_specification}
-        self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents, base_description)[0]
+        self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents,
+                                                       base_description)[0]
         self.group_box.setMinimumSize(600, 800)
         self.scroll_area_contents_layout.addWidget(self.group_box)
 
@@ -88,13 +92,14 @@ class DatalightUIWindow:
         for name in self.authors:
             author_list_box.addItem(name)
 
-        update_method = lambda name: slot_methods.update_author_details(name, affiliation_box, orcid_box, self.authors)
+        def update_method(name): return slot_methods.update_author_details(name, affiliation_box,
+                                                                           orcid_box, self.authors)
         author_list_box.currentIndexChanged[str].connect(update_method)
 
-    def enable_dependent_widget(self, dependencies):
+    def enable_dependent_widget(self, dependencies: dict):
         """Process the 'activates_on' dependency. This turns a widget on or off depending
         on the value of a parent widget.
-        :param dependencies: (dictionary) Keys are the widgets to turn on or off. Values are the
+        :param dependencies: Keys are the widgets to turn on or off. Values are the
         values that activate the child element.
         """
         chosen_value = self.central_widget.sender().currentText()
@@ -105,7 +110,7 @@ class DatalightUIWindow:
             else:
                 self.get_widget_by_name(child).setEnabled(False)
 
-    def get_widget_by_name(self, name: str) -> Union[QtWidgets.QWidget, None]:
+    def get_widget_by_name(self, name: str) -> Union[Widget, None]:
         """Return the widget in self.widgets whose objectName is name.
         :param name: The name of the widget to find.
         :returns widget if widget with `name` is found else returns None."""
@@ -128,7 +133,7 @@ class DatalightUIWindow:
         self.main_window.move(window_horizontal, window_vertical)
 
 
-def connect_button_methods(datalight_ui):
+def connect_button_methods(datalight_ui: DatalightUIWindow):
     """Create an association between the buttons on the form and their functions in the code."""
     button_widgets = datalight_ui.main_window.findChildren(QtWidgets.QPushButton)
 
@@ -137,7 +142,6 @@ def connect_button_methods(datalight_ui):
         try:
             button_method = getattr(slot_methods, button_name)
         except AttributeError:
-            print("Warning, button '{}' has no method in button_methods.py.".format(
-                button.objectName()))
-            continue
-        button.clicked.connect(partial(button_method, datalight_ui))
+            print(f"Warning, button '{button.objectName()}' has no method in button_methods.py.")
+        else:
+            button.clicked.connect(partial(button_method, datalight_ui))

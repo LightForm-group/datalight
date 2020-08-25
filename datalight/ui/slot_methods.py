@@ -4,14 +4,19 @@ In order to be linked to a button, a function must have the same name as the but
 in the UI YAML specification.
 """
 import re
+from typing import TYPE_CHECKING, List, Union
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
+import datalight.common
 from datalight.common import logger
 from datalight.ui import custom_widgets
-from datalight.ui.custom_widgets import GroupBox, get_new_widget
 import datalight.ui.validation
 from datalight.zenodo import upload_record
+from datalight.ui.custom_widgets import Widget, get_new_widget
+
+if TYPE_CHECKING:
+    from datalight.ui.main_form import DatalightUIWindow
 
 
 def remove_item_button(datalight_ui):
@@ -45,54 +50,101 @@ def open_file_window(datalight_ui, file_dialogue):
             if not list_widget.findItems(path, QtCore.Qt.MatchExactly):
                 list_widget.addItem(path)
             else:
+                file_name = re.split(r"[\\/]", path)[-1]
                 QtWidgets.QMessageBox.warning(datalight_ui.central_widget, "Warning",
-                                              "File {}, already selected.".format(re.split(r"[\\/]", path)[-1]))
+                                              f"File {file_name}, already selected.")
 
 
-def ok_button(datalight_ui):
+def ok_button(datalight_ui: "DatalightUIWindow"):
     """
     The on click method for the OK button. Take all data from the form and package
     it up into a dictionary.
     """
-    widgets = datalight_ui.central_widget.findChildren(QtWidgets.QWidget)
+    repository_metadata = validate_widgets(datalight_ui, "zenodo_core_metadata")
+    experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
 
-    metadata_output = datalight.ui.validation.get_widget_values(widgets)
-    valid_length = datalight.ui.validation.validate_output_length(widgets)
-    valid_output = datalight.ui.validation.validate_widget_contents(widgets)
+    if repository_metadata and experiment_metadata:
+        upload_record(experiment_metadata.pop("file_list"), repository_metadata,
+                      experiment_metadata, repository_metadata.pop("publish"),
+                      repository_metadata.pop("sandbox"))
+        logger.info("Datalight upload successful.")
+        custom_widgets.message_box("Datalight upload successful.",
+                                   QtWidgets.QMessageBox.Information)
 
-    # Validation of widget contents
-    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+
+def validate_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> Union[None, dict]:
+    """Check if the child Widgets of `root_widget_name are valid. If all widgets are valid, return
+    their values, else return None."""
+    child_widgets = get_child_widgets(datalight_ui, root_widget_name)
+
+    valid_length = datalight.ui.validation.validate_output_length(child_widgets)
     short_widgets = [key for key, value in list(valid_length.items()) if not value]
 
-    if incomplete_widgets or short_widgets:
-        datalight.ui.validation.process_validation_warnings(incomplete_widgets, short_widgets)
+    valid_output = datalight.ui.validation.validate_widget_contents(child_widgets)
+    incomplete_widgets = [key for key, value in list(valid_output.items()) if not value]
+
+    if incomplete_widgets:
+        datalight.ui.validation.process_incomplete_widgets(incomplete_widgets)
+    elif short_widgets:
+        datalight.ui.validation.process_short_widgets(short_widgets)
     else:
-        print(metadata_output)
-        upload_record(metadata_output.pop("file_list"), metadata_output,
-                      publish=metadata_output.pop("publish"), sandbox=metadata_output.pop("sandbox"))
-        logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.", QtWidgets.QMessageBox.Information)
+        return datalight.ui.validation.get_widget_values(child_widgets)
+
+    return None
 
 
-def update_author_details(name: str, affiliation: QtWidgets.QComboBox, orcid: QtWidgets.QComboBox, author_list: dict):
+def get_child_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> List[Widget]:
+    """Return the child widgets of the widget with name `root_widget_name`"""
+    root_widget = datalight_ui.get_widget_by_name(root_widget_name)
+    return root_widget.findChildren(QtWidgets.QWidget)
+
+
+def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_list: dict):
     """A function attached to the currentIndexChanged method of author_list_box.
     Checks if the passed name is in the stored author list and if so, sets the relevant
     affiliation and ORCID."""
     if name in author_list:
         affiliation.setText(author_list[name]["affiliation"])
         orcid.setText(str(author_list[name]["orcid"]))
+    else:
+        affiliation.setText("")
+        orcid.setText("")
 
 
-def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str, ui_descriptions: dict):
-    """Clear the experimental group box and refill it with new widgets."""
+def about_menu_action():
+    """Open a dialog with information about Datalight. This method is called from the about menu."""
+    about_widget = QtWidgets.QMessageBox()
+    datalight_icon = QtGui.QPixmap("ui/images/icon.png").\
+        scaledToHeight(150, QtCore.Qt.SmoothTransformation)
+    about_widget.setIconPixmap(datalight_icon)
+    about_widget.setTextFormat(QtCore.Qt.RichText)
+    about_widget.setText("<a href='https://github.com/LightForm-group/datalight'>"
+                         "Click here to find out more about DataLight</a><br><br>"
+                         "<a href='https://datalight.readthedocs.io'>Click here "
+                         "for documentation.</a><br><br>"
+                         "<a href='https://github.com/merrygoat'>Peter Crowther</a> 2019-2020.")
+    about_widget.setWindowTitle("About Datalight")
+    about_widget.exec()
 
-    # Get all children remove them from the layout and close them
-    children = experimental_group_box.children()
-    for child in reversed(children):
-        if not isinstance(child, QtWidgets.QLayout):
-            experimental_group_box.remove_widget_from_layout(child)
-            child.close()
 
-    if new_value != "none":
-        new_widget = get_new_widget(experimental_group_box, ui_descriptions[new_value])
-        experimental_group_box.add_widget(*new_widget)
+def author_menu_action(ui_path: str):
+    """Open a dialog to add new Authors. This method is called from the about menu."""
+    author_window = QtWidgets.QDialog()
+
+    # Set up the dialog widgets
+    author_ui = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+    base_description = {"widget": "GroupBox",
+                        "layout": "HBoxLayout",
+                        "_name": "BaseGroupBox",
+                        "children": author_ui}
+    group_box = get_new_widget(author_window, base_description)[0]
+
+    # Set up dialog layout
+    layout = QtWidgets.QHBoxLayout(author_window)
+    layout.addWidget(group_box)
+    layout.setContentsMargins(0, 0, 0, 0)
+    author_window.setLayout(layout)
+
+    authors = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+
+    author_window.show()

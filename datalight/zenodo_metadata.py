@@ -42,24 +42,24 @@ SCHEMA_FILE = SCHEMAS_DIR / pathlib.Path('zenodo/zenodo_upload_metadata_schema.j
 def read_schema_from_file() -> dict:
     """Method to read the schema. Reads schema from self.schema_path
     Stores schema dictionary in self.schema"""
-    logger.info('Reading schema from: {}'.format(SCHEMA_FILE))
+    logger.info(f'Reading schema from: {SCHEMA_FILE}')
     try:
         with open(SCHEMA_FILE) as input_file:
             return json.load(input_file)
     except FileNotFoundError:
-        raise ZenodoMetadataException('Schema file: {} not found.'.format(SCHEMA_FILE))
+        raise ZenodoMetadataException(f'Schema file: {SCHEMA_FILE} not found.')
 
 
 def read_metadata_from_file(metadata_path: PathLike) -> dict:
     """Method to read metadata from a file.
     :param metadata_path: A path to a file which contains zenodo metadata (yaml format).
     """
-    logger.info('Metadata read from file: {}'.format(metadata_path))
+    logger.info(f'Metadata read from file: {metadata_path}')
     try:
         with open(metadata_path) as input_file:
             return yaml.load(input_file, Loader=yaml.FullLoader)
     except FileNotFoundError:
-        raise ZenodoMetadataException('Metadata file {} not found.'.format(metadata_path))
+        raise ZenodoMetadataException(f'Metadata file {metadata_path} not found.')
 
 
 def validate_metadata(metadata: dict, schema: dict) -> dict:
@@ -71,7 +71,7 @@ def validate_metadata(metadata: dict, schema: dict) -> dict:
     try:
         jsonschema.validate(metadata, schema)
     except jsonschema.exceptions.ValidationError as err:
-        raise ZenodoMetadataException('ValidationError: {}'.format(err.message))
+        raise ZenodoMetadataException(f'ValidationError: {err.message}')
 
     # Check validity of the license (if open or embargoed)
     license_checker = _LicenseStatus(metadata["license"], metadata["access_right"])
@@ -105,7 +105,7 @@ def remove_extra_properties(metadata: dict) -> dict:
     keys_to_remove = []
     for key in metadata.keys():
         if key not in ZENODO_VALID_PROPERTIES:
-            logger.warning('Zenodo metadata with key invalid: {}. Key removed.'.format(key))
+            logger.warning(f'Zenodo metadata with key invalid: {key}. Key removed.')
             keys_to_remove.append(key)
 
     for key in keys_to_remove:
@@ -159,10 +159,10 @@ class _LicenseStatus:
         try:
             with urllib.request.urlopen(url) as input_file:
                 licenses = json.load(input_file)
-                logger.info('open licenses file use for validation: {}'.format(url))
+                logger.info(f'open licenses file use for validation: {url}')
                 return licenses
         except urllib.error.URLError:
-            logger.warning('Not possible to access open license list from: {}'.format(url))
+            logger.warning(f'Not possible to access open license list from: {url}')
             return None
 
     @staticmethod
@@ -175,11 +175,10 @@ class _LicenseStatus:
         try:
             with open(license_path) as input_file:
                 open_licenses = json.load(input_file)
-                logger.info('Using file: {} to validate license'.format(license_path))
+                logger.info(f'Using file: {license_path} to validate license')
                 return open_licenses
         except FileNotFoundError:
-            error = "Could not get open license definitions from local file {}.".format(
-                license_path)
+            error = f"Could not get open license definitions from local file {license_path}."
             logger.error(error)
             raise ZenodoMetadataException(error)
 
@@ -192,11 +191,11 @@ class _LicenseStatus:
         else:
             metadata_license = self.license.upper()
 
-            logger.info('Specified license type is: {}'.format(self.license))
-            logger.info('access_right: "{}"'.format(self.access_right))
+            logger.info(f'Specified license type is: {self.license}')
+            logger.info(f'access_right: "{self.access_right}"')
 
             for lic in self.open_licenses.keys():
                 if lic.startswith(metadata_license):
-                    logger.info('license: "{}" validated.'.format(lic))
+                    logger.info(f'license: "{lic}" validated.')
                     self.license_valid = True
                     break

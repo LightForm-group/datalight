@@ -54,17 +54,20 @@ def validate_widget_contents(widgets: List[QtWidgets.QWidget]) -> Dict[str, bool
     return valid_output
 
 
-def process_validation_warnings(incomplete_widgets: List[str], short_widgets: List[str]):
-    """If there are any problems with user input validation, alert the user by listing the affected widgets."""
-    if incomplete_widgets:
-        logger.warning("Has invalid output: {}".format(incomplete_widgets))
-        warning_text = "Some mandatory fields have not been completed: \n"
-        for item in incomplete_widgets:
-            warning_text += "• {}\n".format(item)
-        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
-    elif short_widgets:
-        logger.warning("Has invalid length: {}".format(short_widgets))
-        warning_text = "Some fields have a minimum length that has not been met: \n"
-        for item in short_widgets:
-            warning_text += "• {}\n".format(item)
-        custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
+def process_incomplete_widgets(incomplete_widgets: List[str]):
+    """If there are incomplete widgets, alert the user by listing the affected widgets."""
+    logger.warning(f"Has invalid output: {incomplete_widgets}")
+    warning_text = "Some mandatory fields have not been completed: \n"
+    for item in incomplete_widgets:
+        warning_text += f"• {item}\n"
+    custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
+
+
+def process_short_widgets(short_widgets: List[str]):
+    """If there are widgets with insufficient input, alert the user by listing the  affected
+    widgets."""
+    logger.warning(f"Has invalid length: {short_widgets}")
+    warning_text = "Some fields have a minimum length that has not been met: \n"
+    for item in short_widgets:
+        warning_text += f"• {item}\n"
+    custom_widgets.message_box(warning_text, QtWidgets.QMessageBox.Warning)
