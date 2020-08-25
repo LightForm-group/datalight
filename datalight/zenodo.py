@@ -5,6 +5,7 @@ import pathlib
 from typing import List, Union
 from os import PathLike
 import tempfile
+import enum
 
 import requests
 
@@ -85,7 +86,7 @@ class Zenodo:
         else:
             self.api_base_url = 'https://zenodo.org/api/'
 
-        self.depositions_url = self.api_base_url + 'deposit/depositions'
+        self.depositions_url = f'{self.api_base_url}deposit/depositions'
         self.deposition_id = None
         self.checked_metadata = None
         self.status_code = None
@@ -112,27 +113,27 @@ class Zenodo:
         """Get the deposition id needed to upload a new record to Zenodo"""
         headers = {'Content-Type': 'application/json'}
 
-        logger.debug('deposition url: {}'.format(self.depositions_url))
+        logger.debug(f'deposition url: {self.depositions_url}')
         request = requests.post(self.depositions_url, params={'access_token': self.token},
                                 json={}, headers=headers)
 
         self._check_request_response(request)
 
         self.deposition_id = request.json()['id']
-        logger.info('Deposition id: {}'.format(self.deposition_id))
+        logger.info(f'Deposition id: {self.deposition_id}')
 
     def _upload_files(self, filenames: List[pathlib.Path]):
         """Method to upload a file to Zenodo
         :param filenames: Paths of one or more files to upload.
         """
         # Create the url to upload with the deposition_id
-        url = self.depositions_url + '/{}/files'.format(self.deposition_id)
-        logger.info('url: {}'.format(url))
+        url = f'{self.depositions_url}/{self.deposition_id}/files'
+        logger.info(f'url: {url}')
 
         for filename in filenames:
             # Create the zenodo data dictionary which contains the name of the file
             data = {'filename': filename}
-            logger.info('filename: {}'.format(filename))
+            logger.info(f'filename: {filename}')
 
             # Open the file to upload in binary mode.
             files = {'file': open(filename, 'rb')}
@@ -172,8 +173,8 @@ class Zenodo:
         """
 
         # Create the url to upload with the deposition_id
-        url = self.depositions_url + '/{}'.format(self.deposition_id)
-        logger.info('url: {}'.format(url))
+        url = f'{self.depositions_url}/{self.deposition_id}'
+        logger.info(f'url: {url}')
 
         headers = {"Content-Type": "application/json"}
         request = requests.put(url, params={'access_token': self.token},
@@ -189,7 +190,7 @@ class Zenodo:
         :exception ZenodoException: Raise if connection return status >= 400
         """
 
-        publish_url = (self.depositions_url + '/{}/actions/publish'.format(self.deposition_id))
+        publish_url = f'{self.depositions_url}/{self.deposition_id}/actions/publish'
         request = requests.post(publish_url, params={'access_token': self.token})
 
         self._check_request_response(request)
@@ -208,13 +209,13 @@ class Zenodo:
             self.deposition_id = _id
 
         # Create the request url
-        request_url = (self.depositions_url + '/{}'.format(self.deposition_id))
+        request_url = f'{self.depositions_url}/{self.deposition_id}'
 
         logger.info('Delete url: {}'.format(request_url))
         request = requests.delete(request_url, params={'access_token': self.token})
         self._check_request_response(request)
 
-    def _check_request_response(self, response: requests.models.Response):
+    def _check_request_response(self, response: requests.models.Response) -> int:
         """Check the status code returned from an interaction with the Zenodo API.
 
         :param response: A response to an HTTP request.
@@ -224,36 +225,35 @@ class Zenodo:
         self.status_code = response.status_code
 
         if response.status_code in [200, 201, 202, 204]:
-            logger.debug('Request succeed with status code: {}'.format(response.status_code))
+            logger.debug(f'Request succeed with status code: {response.status_code}')
             return response.status_code
 
         if response.status_code == 400:
-            message = 'Request failed with error: {}. ' \
-                      'The details are: {}.'.format(response.status_code, response.content)
+            message = f'Request failed with error: {response.status_code}. ' \
+                      f'The details are: {response.content}.'
             logger.error(message)
             raise ZenodoException(message)
 
         if response.status_code == 401:
-            message = 'Request failed with error: {}. This is ' \
-                      'due to a bad access token.'.format(response.status_code)
+            message = f'Request failed with error: {response.status_code}. This is ' \
+                      'due to a bad access token.'
             logger.error(message)
             raise ZenodoException(message)
 
         if response.status_code == 403:
-            message = 'Request failed with error: {}. This is' \
-                      ' due to insufficient privileges.'.format(response.status_code)
+            message = f'Request failed with error: {response.status_code}. This is' \
+                      ' due to insufficient privileges.'
             logger.error(message)
             raise ZenodoException(message)
 
         if response.status_code == 500:
-            message = 'Zenodo server error {}. It is likely to be their problem ' \
-                      'not ours. Details: {}'.format(response.status_code, response.content)
+            message = f'Zenodo server error {response.status_code}. It is likely to be their ' \
+                      f'problem not ours. Details: {response.content}'
             logger.error(message)
             raise ZenodoException(message)
 
         else:
-            message = 'Unclassified error: {}. Details: {}'.format(response.status_code,
-                                                                   response.content)
+            message = 'Unclassified error: {response.status_code}. Details: {response.content}'
             logger.error(message)
             raise ZenodoException(message)
 

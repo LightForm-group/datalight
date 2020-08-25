@@ -22,8 +22,8 @@ def get_authentication_token(credentials_location: pathlib.Path, sandbox: bool) 
     """
 
     if not credentials_location.exists():
-        raise FileNotFoundError(
-            "Unable to load API token from datalight.config. {} was not found.".format(credentials_location))
+        raise FileNotFoundError(f"Unable to load API token from datalight.config. "
+                                f"{credentials_location} was not found.")
 
     zeno_config = configparser.ConfigParser()
     zeno_config.read(credentials_location)

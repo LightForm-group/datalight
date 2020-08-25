@@ -140,7 +140,6 @@ def connect_button_methods(datalight_ui: DatalightUIWindow):
         try:
             button_method = getattr(slot_methods, button_name)
         except AttributeError:
-            print("Warning, button '{}' has no method in button_methods.py.".format(
-                button.objectName()))
-            continue
-        button.clicked.connect(partial(button_method, datalight_ui))
+            print(f"Warning, button '{button.objectName()}' has no method in button_methods.py.")
+        else:
+            button.clicked.connect(partial(button_method, datalight_ui))

@@ -29,7 +29,7 @@ def get_new_widget(parent: Widget, widget_description: dict) -> Tuple[
         try:
             widget_method = getattr(sys.modules[__name__], widget_type)
         except AttributeError:
-            raise AttributeError("No method to add widget {}.".format(widget_type))
+            raise AttributeError(f"No method to add widget {widget_type}.")
         new_widget = widget_method(parent, widget_description)
 
     # Set widget properties common to all widgets
@@ -115,7 +115,7 @@ class HelpWidget(QtWidgets.QWidget, WidgetMixin):
         self.help_text = widget_description.pop("help_text")
 
         # Add the help button and the actual widget that needs the help button.
-        button_name = {"_name": "{}_help".format(widget_description["_name"])}
+        button_name = {f"_name": "{widget_description['_name'])}_help"}
         self.help_button = HelpButton(self, button_name)
         self.help_button.clicked.connect(lambda: self.set_tooltip())
         self.input_widget = get_new_widget(self, widget_description)
@@ -262,7 +262,7 @@ class PushButton(QtWidgets.QPushButton, WidgetMixin):
         super().set_common_properties(widget_description)
 
         if "button_text" not in widget_description:
-            raise KeyError("PushButton {} must have a 'button_text' property.".format(self.name))
+            raise KeyError(f"PushButton {self.name} must have a 'button_text' property.")
         self.setText(widget_description["button_text"])
 
 
@@ -354,8 +354,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
 
     def _add_layout(self):
         if "layout" not in self.element_description:
-            raise KeyError("Must specify layout type in QGroupBox widget:'{}'".format(
-                self.objectName()))
+            raise KeyError(f"Must specify layout type in QGroupBox widget:'{self.objectName()}'")
         layout = self.element_description["layout"]
         if layout == "FormLayout":
             self._layout = QtWidgets.QFormLayout(self)
@@ -366,8 +365,8 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         elif layout == "VBoxLayout":
             self._layout = QtWidgets.QVBoxLayout(self)
         else:
-            raise KeyError("layout type {} in GroupBox {} not understood.".format(
-                self.element_description["layout"], self.objectName()))
+            raise KeyError(f"layout type {self.element_description['layout']} in "
+                           f"GroupBox {self.objectName()} not understood.")
         self._layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
 
     def _add_children(self):
@@ -393,7 +392,7 @@ class GroupBox(QtWidgets.QGroupBox, WidgetMixin):
         elif isinstance(self._layout, QtWidgets.QVBoxLayout):
             self._layout.addWidget(widget)
         else:
-            print("Unknown layout type '{}'".format(self._layout))
+            print("Unknown layout type '{self._layout}'")
 
     def remove_widget_from_layout(self, widget: Widget):
         """Remove a widget from this layout."""
@@ -437,6 +436,6 @@ def element_setup(element_name: str, element_description: dict) -> dict:
     element_description["_name"] = element_name
     # Every element must have a widget type
     if "widget" not in element_description:
-        raise KeyError("Missing 'widget:' type in UI element {}".format(element_name))
+        raise KeyError(f"Missing 'widget:' type in UI element {element_name}")
 
     return element_description
