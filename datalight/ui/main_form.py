@@ -5,8 +5,8 @@ from typing import Union
 
 from PyQt5 import QtWidgets, QtGui
 
+import datalight.common
 from datalight.ui import slot_methods, custom_widgets, menu_bar
-from datalight.ui.ui_descriptions import file_readers
 from datalight.ui.custom_widgets import Widget
 
 
@@ -59,14 +59,16 @@ class DatalightUIWindow:
     def ui_setup(self):
         """ Load UI description from files and then add widgets hierarchically."""
         # Setup menu bar
-        menu_bar.setup_menu(self.main_window)
+        menu_bar.setup_menu(self.main_window, self.ui_path)
 
         # Get and set basic UI descriptions
-        self.ui_specification = file_readers.read_ui(self.ui_path)
+        self.ui_specification = datalight.common.read_yaml(self.ui_path, 'zenodo.yaml')
+        self.ui_specification = {**self.ui_specification,
+                                 **datalight.common.read_yaml(self.ui_path, "metadata.yaml")}
         self.add_base_group_box()
 
         # Get and set authors and
-        self.authors = file_readers.read_author_list(self.ui_path)
+        self.authors = datalight.common.read_yaml(self.ui_path, "author_details.yaml")
         self.populate_author_list()
 
     def add_base_group_box(self):

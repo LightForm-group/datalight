@@ -12,14 +12,12 @@ zenodo_core_metadata:
                     label: Title of Record
                     optional: False
                     tooltip: The title of the record.
-                    default: Sample Title
                     minimum_length: 3
                 description:
                     widget: PlainTextEdit
                     label: Record Description
                     optional: False
                     tooltip: A description of the dataset being uploaded.
-                    default: Sample Description
                     minimum_length: 3
                 publication_date:
                     widget: DateEdit

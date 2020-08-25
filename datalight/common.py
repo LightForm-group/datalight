@@ -6,6 +6,8 @@ import pathlib
 import configparser
 from typing import Union
 
+import yaml
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('datalight')
 
@@ -36,3 +38,12 @@ def get_authentication_token(credentials_location: pathlib.Path, sandbox: bool) 
     except KeyError:
         raise KeyError("Key not found in datalight.config.")
 
+
+def read_yaml(folder_path: str, file_name: str) -> dict:
+    """Read the UI specification from a YAML file."""
+    file_path = pathlib.Path(folder_path).joinpath(file_name)
+
+    with open(file_path, encoding='utf8') as input_file:
+        ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
+
+    return ui_specification

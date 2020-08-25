@@ -1,0 +1,24 @@
+add_authors:
+    widget: GroupBox
+    layout: VBoxLayout
+    children:
+        author_list:
+            widget: GroupBox
+            title: Add author details
+            layout: GridLayout
+            children:
+                file_list:
+                    widget: ListWidget
+                    optional: False
+                    grid_layout: 0, 0, 1, 2
+                    tooltip: A list of authors that are currently stored.
+                select_file_button:
+                    widget: PushButton
+                    button_text: Add Author
+                    grid_layout: 1, 0, 1, 1
+                    tooltip: Opens a dialog to select one or more authors to add to the record.
+                remove_item_button:
+                    widget: PushButton
+                    button_text: Remove Selected Author
+                    grid_layout: 1, 1, 1, 1
+                    tooltip: Removes the selected author or authors from the record.

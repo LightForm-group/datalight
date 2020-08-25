@@ -6,14 +6,14 @@ in the UI YAML specification.
 import re
 from typing import TYPE_CHECKING, List, Union
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
+import datalight.common
 from datalight.common import logger
 from datalight.ui import custom_widgets
-from datalight.ui.custom_widgets import GroupBox, get_new_widget
 import datalight.ui.validation
 from datalight.zenodo import upload_record
-from datalight.ui.custom_widgets import Widget
+from datalight.ui.custom_widgets import Widget, get_new_widget
 
 if TYPE_CHECKING:
     from datalight.ui.main_form import DatalightUIWindow
@@ -111,17 +111,40 @@ def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_
         orcid.setText("")
 
 
-def update_experimental_metadata(experimental_group_box: GroupBox, new_value: str,
-                                 ui_descriptions: dict):
-    """Clear the experimental group box and refill it with new widgets."""
+def about_menu_action():
+    """Open a dialog with information about Datalight. This method is called from the about menu."""
+    about_widget = QtWidgets.QMessageBox()
+    datalight_icon = QtGui.QPixmap("ui/images/icon.png").\
+        scaledToHeight(150, QtCore.Qt.SmoothTransformation)
+    about_widget.setIconPixmap(datalight_icon)
+    about_widget.setTextFormat(QtCore.Qt.RichText)
+    about_widget.setText("<a href='https://github.com/LightForm-group/datalight'>"
+                         "Click here to find out more about DataLight</a><br><br>"
+                         "<a href='https://datalight.readthedocs.io'>Click here "
+                         "for documentation.</a><br><br>"
+                         "<a href='https://github.com/merrygoat'>Peter Crowther</a> 2019-2020.")
+    about_widget.setWindowTitle("About Datalight")
+    about_widget.exec()
 
-    # Get all children remove them from the layout and close them
-    children = experimental_group_box.children()
-    for child in reversed(children):
-        if not isinstance(child, QtWidgets.QLayout):
-            experimental_group_box.remove_widget_from_layout(child)
-            child.close()
 
-    if new_value != "none":
-        new_widget = get_new_widget(experimental_group_box, ui_descriptions[new_value])
-        experimental_group_box.add_widget(*new_widget)
+def author_menu_action(ui_path: str):
+    """Open a dialog to add new Authors. This method is called from the about menu."""
+    author_window = QtWidgets.QDialog()
+
+    # Set up the dialog widgets
+    author_ui = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+    base_description = {"widget": "GroupBox",
+                        "layout": "HBoxLayout",
+                        "_name": "BaseGroupBox",
+                        "children": author_ui}
+    group_box = get_new_widget(author_window, base_description)[0]
+
+    # Set up dialog layout
+    layout = QtWidgets.QHBoxLayout(author_window)
+    layout.addWidget(group_box)
+    layout.setContentsMargins(0, 0, 0, 0)
+    author_window.setLayout(layout)
+
+    authors = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+
+    author_window.show()

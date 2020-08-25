@@ -23,10 +23,15 @@ experimental_metadata:
                     grid_layout: 1, 1, 1, 1
                     tooltip: Removes the selected files or folders from the record.
 
-        experimental_metadata_editor:
-            widget: PlainTextEdit
-            tooltip: Add the experimental metadata here.
-            default: Sample Metadata
+        experimental_metadata_group_box:
+            widget: GroupBox
+            title: Experimental Metadata
+            layout: FormLayout
+            children:
+                experimental_metadata_editor:
+                    widget: PlainTextEdit
+                    tooltip: Add the experimental metadata here.
+                    default: Sample Metadata
 
         ok_button:
             widget: GroupBox

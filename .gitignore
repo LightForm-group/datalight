@@ -20,3 +20,4 @@ datalight.egg-info/
 docs/html
 /pylintrc
 /datalight/metadata_summary.txt
+/datalight/ui/ui_descriptions/author_details.yaml
