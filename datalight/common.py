@@ -5,6 +5,7 @@ import logging
 import pathlib
 import configparser
 from typing import Union
+from os import getcwd
 
 import yaml
 
@@ -25,7 +26,8 @@ def get_authentication_token(credentials_location: pathlib.Path, sandbox: bool) 
 
     if not credentials_location.exists():
         raise FileNotFoundError(f"Unable to load API token from datalight.config. "
-                                f"{credentials_location} was not found.")
+                                f"{credentials_location} was not found.\n\n"
+                                f"Current working directory is {getcwd()}.")
 
     zeno_config = configparser.ConfigParser()
     zeno_config.read(credentials_location)

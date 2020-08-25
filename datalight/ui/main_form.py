@@ -23,7 +23,7 @@ class DatalightUIWindow:
     :ivar group_box:
     :ivar authors: A dictionary of Author names, Affiliations and ORCIDs.
     """
-    def __init__(self, ui_path: str):
+    def __init__(self, ui_path: str, credentials_path: str):
         self.ui_specification = {}
         self.experiments = {}
 
@@ -54,6 +54,7 @@ class DatalightUIWindow:
         # Inside the scroll area will go the first group box - the first "user content".
         self.group_box = None
         self.ui_path = ui_path
+        self.credentials_path = credentials_path
         self.authors = {}
 
     def ui_setup(self):
