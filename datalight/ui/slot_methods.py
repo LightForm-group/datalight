@@ -64,12 +64,10 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     repository_metadata = validate_widgets(datalight_ui, "zenodo_core_metadata")
     experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
 
-    config_path = datalight_ui.root_path.joinpath("datalight.config")
-
     if repository_metadata and experiment_metadata:
         upload_record(experiment_metadata.pop("file_list"), repository_metadata,
-                      experiment_metadata, repository_metadata.pop("publish"),
-                      repository_metadata.pop("sandbox"), config_path)
+                      experiment_metadata, datalight_ui.config_path, repository_metadata.pop("publish"),
+                      repository_metadata.pop("sandbox"))
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)

@@ -8,6 +8,7 @@ from PyQt5 import QtWidgets, QtGui
 import datalight.common
 from datalight.ui import slot_methods, custom_widgets, menu_bar
 from datalight.ui.custom_widgets import Widget
+from datalight.common import logger
 
 
 class DatalightUIWindow:
@@ -53,6 +54,9 @@ class DatalightUIWindow:
         # Inside the scroll area will go the first group box - the first "user content".
         self.group_box = None
         self.root_path = pathlib.Path(root_path).resolve()
+        self._check_root_path()
+        self.config_path = self.root_path.joinpath("datalight.ini")
+        self._check_config()
         self.ui_path = self.root_path.joinpath("datalight/ui/")
         self.authors = {}
 
@@ -135,6 +139,21 @@ class DatalightUIWindow:
         window_vertical = (screen_height - window_height) / 2
         window_horizontal = (screen_width - window_width) / 2
         self.main_window.move(window_horizontal, window_vertical)
+
+    def _check_root_path(self):
+        main_file = self.root_path.joinpath("datalight/main.py")
+        if not main_file.exists() and main_file.is_file():
+            raise FileNotFoundError("Cannot find main.py."
+                                    "You have probably specified given an incorrect root path.")
+
+    def _check_config(self):
+        if not self.config_path.exists():
+            logger.info("No config file found so creating empty config file.")
+            template_path = self.root_path.joinpath("datalight/config_template.txt")
+            with open(template_path) as input_file:
+                config_text = input_file.read()
+            with open(self.config_path, 'w') as output_file:
+                output_file.write(config_text)
 
 
 def connect_button_methods(datalight_ui: DatalightUIWindow):
