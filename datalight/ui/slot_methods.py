@@ -3,6 +3,7 @@ This script contains functions which are linked to buttons in the UI.
 In order to be linked to a button, a function must have the same name as the button as specified
 in the UI YAML specification.
 """
+import pathlib
 import re
 from typing import TYPE_CHECKING, List, Union
 
@@ -65,8 +66,8 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
 
     if repository_metadata and experiment_metadata:
         upload_record(experiment_metadata.pop("file_list"), repository_metadata,
-                      experiment_metadata, repository_metadata.pop("publish"),
-                      repository_metadata.pop("sandbox"), datalight_ui.credentials_path)
+                      experiment_metadata, datalight_ui.config_path, repository_metadata.pop("publish"),
+                      repository_metadata.pop("sandbox"))
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)
@@ -111,11 +112,11 @@ def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_
         orcid.setText("")
 
 
-def about_menu_action():
+def about_menu_action(ui_path: pathlib.Path):
     """Open a dialog with information about Datalight. This method is called from the about menu."""
     about_widget = QtWidgets.QMessageBox()
-    datalight_icon = QtGui.QPixmap("ui/images/icon.png").\
-        scaledToHeight(150, QtCore.Qt.SmoothTransformation)
+    icon_path = ui_path.joinpath("images/icon.png")
+    datalight_icon = QtGui.QPixmap(icon_path).scaledToHeight(150, QtCore.Qt.SmoothTransformation)
     about_widget.setIconPixmap(datalight_icon)
     about_widget.setTextFormat(QtCore.Qt.RichText)
     about_widget.setText("<a href='https://github.com/LightForm-group/datalight'>"
@@ -127,12 +128,13 @@ def about_menu_action():
     about_widget.exec()
 
 
-def author_menu_action(ui_path: str):
+def author_menu_action(ui_path: pathlib.Path):
     """Open a dialog to add new Authors. This method is called from the about menu."""
     author_window = QtWidgets.QDialog()
-
     # Set up the dialog widgets
-    author_ui = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+
+    author_widget_path = ui_path.joinpath("ui_descriptions/add_authors.yaml")
+    author_ui = datalight.common.read_yaml(author_widget_path)
     base_description = {"widget": "GroupBox",
                         "layout": "HBoxLayout",
                         "_name": "BaseGroupBox",
@@ -145,6 +147,7 @@ def author_menu_action(ui_path: str):
     layout.setContentsMargins(0, 0, 0, 0)
     author_window.setLayout(layout)
 
-    authors = datalight.common.read_yaml(ui_path, "add_authors.yaml")
+    author_path = ui_path.joinpath("ui_descriptions/author_details.yaml")
+    authors = datalight.common.read_yaml(author_path)
 
     author_window.show()

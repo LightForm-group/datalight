@@ -5,7 +5,6 @@ import pathlib
 from typing import List, Union
 from os import PathLike
 import tempfile
-import enum
 
 import requests
 
@@ -19,21 +18,21 @@ class ZenodoException(Exception):
 
 
 def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
-                  experimental_metadata: dict, publish=False, sandbox=True,
-                  credentials_location="../datalight.config"):
+                  experimental_metadata: dict, config_path: Union[pathlib.Path, str],
+                  publish: bool = False, sandbox: bool = True):
     """Run datalight scripts to upload file to data repository
     :param experimental_metadata: The experimental metadata.
     :param file_paths: One or more paths of files to upload.
     :param repository_metadata: A dictionary of metadata describing the record.
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
-    :param credentials_location: Location of the file containing zenodo API tokens.
+    :param config_path: Path to the file containing zenodo API tokens.
     """
 
     experimental_metadata = ExperimentalMetadata(experimental_metadata)
     file_paths.append(experimental_metadata.metadata_path)
 
-    credentials_location = pathlib.Path(credentials_location).resolve()
+    credentials_location = pathlib.Path(config_path).resolve()
     token = common.get_authentication_token(credentials_location, sandbox)
 
     data_repo = Zenodo(token, repository_metadata, sandbox)
@@ -55,7 +54,7 @@ class ExperimentalMetadata:
         with open(self.metadata_path, 'w') as metadata_file:
             for value in self.metadata.values():
                 metadata_file.write(f"{value}\n")
-                metadata_file.write("\n Metadata auto recorded by Datalight "
+                metadata_file.write("\n\nMetadata auto recorded by Datalight "
                                     "(https://github.com/LightForm-group/datalight)")
 
     def remove_temp_folder(self):

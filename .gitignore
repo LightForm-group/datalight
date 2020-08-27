@@ -5,7 +5,8 @@
 __pycache__/
 
 #Datalight config file
-datalight.config
+/datalight.ini
+/datalight/ui/ui_descriptions/author_details.yaml
 
 #Python virtual environment
 venv/
@@ -19,5 +20,4 @@ datalight.egg-info/
 .eggs/
 docs/html
 /pylintrc
-/datalight/metadata_summary.txt
-/datalight/ui/ui_descriptions/author_details.yaml
+

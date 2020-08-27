@@ -8,10 +8,7 @@ requirements = [
     'requests',
     'PyYaml>=5.1',
     'jsonschema',
-]
-
-test_requirements = [
-    'pytest',
+    'PyQt5'
 ]
 
 setup(name='datalight',
@@ -19,9 +16,9 @@ setup(name='datalight',
       version=0.7,
       description='Data uploader to Zenodo repository',
       long_description=readme,
-      author='Nicolas Gruel',
-      author_email='nicolas.gruel@mgmail.com',
-      url='https://github.com/gruel/datalight',
+      author='Peter Crowther',
+      author_email='peter.crowther-3@manchester.ac.uk',
+      url='https://github.com/LightForm-group/datalight',
       classifiers=[
           'Development Status :: 1 - RC',
           'Intended Audience :: Science/Research',
@@ -35,18 +32,5 @@ setup(name='datalight',
                   ],
       keywords=[],
       install_requires=requirements,
-      setup_requires=['pytest-runner'],
-      test_suite='test',
-      tests_require=test_requirements,
-      entry_points={
-         'console_scripts': [
-             ' datalight = datalight.datalight:main']
-                   },
-      package_data={
-          '': ['LICENSE'],
-          'datalight': ['schemas/zenodo/zenodo_upload_metadata_schema.json5',
-                        'schemas/zenodo/opendefinition-licenses.json'],
-      },
-      include_package_data=True,
       license='MIT',
       )
