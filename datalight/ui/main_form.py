@@ -1,5 +1,5 @@
 """Generates the UI which is used to input data into Datalight"""
-
+import pathlib
 from functools import partial
 from typing import Union
 
@@ -19,11 +19,10 @@ class DatalightUIWindow:
       are descended.
     :ivar central_widget: The main blank area in which all other widgets sit.
     :ivar central_widget_layout: The layout of central_widget.
-    :ivar ui_path: Path to the ui folder containing 'minimum_ui.yaml'.
     :ivar group_box:
     :ivar authors: A dictionary of Author names, Affiliations and ORCIDs.
     """
-    def __init__(self, ui_path: str, credentials_path: str):
+    def __init__(self, root_path: str):
         self.ui_specification = {}
         self.experiments = {}
 
@@ -53,8 +52,8 @@ class DatalightUIWindow:
 
         # Inside the scroll area will go the first group box - the first "user content".
         self.group_box = None
-        self.ui_path = ui_path
-        self.credentials_path = credentials_path
+        self.root_path = pathlib.Path(root_path).resolve()
+        self.ui_path = self.root_path.joinpath("datalight/ui/")
         self.authors = {}
 
     def ui_setup(self):
@@ -63,13 +62,17 @@ class DatalightUIWindow:
         menu_bar.setup_menu(self.main_window, self.ui_path)
 
         # Get and set basic UI descriptions
-        self.ui_specification = datalight.common.read_yaml(self.ui_path, 'zenodo.yaml')
+        repository_path = self.ui_path.joinpath("ui_descriptions/zenodo.yaml")
+        experimental_path = self.ui_path.joinpath("ui_descriptions/metadata.yaml")
+
+        self.ui_specification = datalight.common.read_yaml(repository_path)
         self.ui_specification = {**self.ui_specification,
-                                 **datalight.common.read_yaml(self.ui_path, "metadata.yaml")}
+                                 **datalight.common.read_yaml(experimental_path)}
         self.add_base_group_box()
 
         # Get and set authors and
-        self.authors = datalight.common.read_yaml(self.ui_path, "author_details.yaml")
+        author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
+        self.authors = datalight.common.read_yaml(author_path)
         self.populate_author_list()
 
     def add_base_group_box(self):

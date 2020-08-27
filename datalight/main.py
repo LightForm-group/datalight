@@ -7,14 +7,13 @@ from PyQt5 import QtWidgets
 from datalight.ui.main_form import DatalightUIWindow, connect_button_methods
 
 
-def main(credentials_path: str, ui_path: str):
+def main(root_path: str):
     """The main function.
-    :param credentials_path: The path to the config file with API tokens
-    :param ui_path: The full path to the datalight/ui folder that contains minimum_ui.yaml.
+    :param root_path: The path to the root of the RoboTA project
     metadata descriptions.
     """
     app = QtWidgets.QApplication(sys.argv)
-    datalight_ui = DatalightUIWindow(ui_path, credentials_path)
+    datalight_ui = DatalightUIWindow(root_path)
     datalight_ui.ui_setup()
     datalight_ui.main_window.show()
     datalight_ui.set_window_position()
@@ -23,6 +22,5 @@ def main(credentials_path: str, ui_path: str):
 
 
 if __name__ == "__main__":
-    CRED_PATH = sys.argv[1]
-    UI_PATH = sys.argv[2]
-    main(CRED_PATH, UI_PATH)
+    ROOT_PATH = sys.argv[1]
+    main(ROOT_PATH)

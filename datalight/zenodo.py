@@ -5,7 +5,6 @@ import pathlib
 from typing import List, Union
 from os import PathLike
 import tempfile
-import enum
 
 import requests
 
@@ -55,7 +54,7 @@ class ExperimentalMetadata:
         with open(self.metadata_path, 'w') as metadata_file:
             for value in self.metadata.values():
                 metadata_file.write(f"{value}\n")
-                metadata_file.write("\n Metadata auto recorded by Datalight "
+                metadata_file.write("\n\nMetadata auto recorded by Datalight "
                                     "(https://github.com/LightForm-group/datalight)")
 
     def remove_temp_folder(self):

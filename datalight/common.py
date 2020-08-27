@@ -41,11 +41,7 @@ def get_authentication_token(credentials_location: pathlib.Path, sandbox: bool) 
         raise KeyError("Key not found in datalight.config.")
 
 
-def read_yaml(folder_path: str, file_name: str) -> dict:
-    """Read the UI specification from a YAML file."""
-    file_path = pathlib.Path(folder_path).joinpath(file_name)
-
+def read_yaml(file_path: Union[pathlib.Path, str]) -> dict:
+    """Read a YAML file and return its contents."""
     with open(file_path, encoding='utf8') as input_file:
-        ui_specification = yaml.load(input_file, Loader=yaml.FullLoader)
-
-    return ui_specification
+        return yaml.load(input_file, Loader=yaml.FullLoader)
