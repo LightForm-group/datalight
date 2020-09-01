@@ -14,7 +14,7 @@ from datalight.common import logger
 from datalight.ui import custom_widgets
 import datalight.ui.validation
 from datalight.zenodo import upload_record
-from datalight.ui.custom_widgets import Widget, get_new_widget
+from datalight.ui.custom_widgets import Widget, get_new_widget, Table
 
 if TYPE_CHECKING:
     from datalight.ui.main_form import DatalightUIWindow
@@ -71,6 +71,20 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
         logger.info("Datalight upload successful.")
         custom_widgets.message_box("Datalight upload successful.",
                                    QtWidgets.QMessageBox.Information)
+
+
+def add_row_button(datalight_ui: "DatalightUIWindow"):
+    """Add a new row to the author table."""
+    table_widget: Table = datalight_ui.get_widget_by_name("author_details")
+    table_widget.insertRow(table_widget.rowCount())
+
+
+def delete_row_button(datalight_ui: "DatalightUIWindow"):
+    """Add a new row to the author table."""
+    table_widget: Table = datalight_ui.get_widget_by_name("author_details")
+    selected_rows = sorted(set([row.row() for row in table_widget.selectedIndexes()]), reverse=True)
+    for row_index in selected_rows:
+        table_widget.removeRow(row_index)
 
 
 def validate_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> Union[None, dict]:

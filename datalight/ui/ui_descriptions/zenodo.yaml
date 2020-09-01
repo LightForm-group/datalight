@@ -77,23 +77,27 @@ zenodo_core_metadata:
                     tooltip: If the upload type is "image", select an image type.
                 creators:
                     widget: GroupBox
+                    layout: GridLayout
                     title: Author details
-                    layout: FormLayout
                     children:
-                        name:
-                            widget: ComboBox
-                            label: Author name
-                            editable: True
-                            optional: False
-                            tooltip: The name(s) of the people who created the dataset.
-                        affiliation:
-                            widget: LineEdit
-                            label: Affiliation
-                            tooltip: The affiliation of the Author.
-                        orcid:
-                            widget: LineEdit
-                            label: ORCiD
-                            tooltip: The ORCiD of the Author.
+                        author_details:
+                            widget: Table
+                            grid_layout: 0, 0, 1, 2
+                            column_titles:
+                                - Name
+                                - Affiliation
+                                - ORCID
+                        add_row_button:
+                            widget: PushButton
+                            button_text: Add row
+                            grid_layout: 1, 0, 1, 1
+                            tooltip: Adds a new blank row to the table.
+                        delete_row_button:
+                            widget: PushButton
+                            button_text: Delete Selected Row(s)
+                            grid_layout: 1, 1, 1, 1
+                            tooltip: Removes the selected rows from the table.
+
                 access_right:
                     widget: ComboBox
                     label: Access Right

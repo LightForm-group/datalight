@@ -31,7 +31,7 @@ class DatalightUIWindow:
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setWindowIcon(QtGui.QIcon("ui/images/icon.png"))
-        self.main_window.setGeometry(0, 0, 600, 700)
+        self.main_window.setGeometry(0, 0, 800, 700)
 
         # Central widget and its layout
         self.central_widget = QtWidgets.QWidget(self.main_window)
@@ -77,7 +77,7 @@ class DatalightUIWindow:
         # Get and set authors and
         author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
         self.authors = datalight.common.read_yaml(author_path)
-        self.populate_author_list()
+        #self.populate_author_list()
 
     def setup_menu(self):
         """Add the menu bar to the form."""
@@ -93,7 +93,6 @@ class DatalightUIWindow:
                             "children": self.ui_specification}
         self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents,
                                                        base_description)[0]
-        self.group_box.setMinimumSize(600, 800)
         self.scroll_area_contents_layout.addWidget(self.group_box)
 
     def populate_author_list(self):
