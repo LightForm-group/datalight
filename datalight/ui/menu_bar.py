@@ -1,20 +1,17 @@
 # Methods for populating the menu bar and its actions.
-import pathlib
+from typing import TYPE_CHECKING
 
 from PyQt5 import QtWidgets
 
-from datalight.ui.slot_methods import about_menu_action, author_menu_action
+import datalight.ui.slot_methods as slot_methods
+
+if TYPE_CHECKING:
+    from datalight.ui.main_form import DatalightUIWindow
 
 
-def setup_menu(main_window: QtWidgets.QMainWindow, root_path: pathlib.Path):
-    """Add the menu bar to the form."""
-    main_menu = main_window.menuBar()
+def setup_file_menu(main_menu: QtWidgets.QMenuBar, datalight_ui: "DatalightUIWindow"):
+    main_window = datalight_ui.main_window
 
-    setup_file_menu(main_menu, main_window)
-    setup_about_menu(main_menu, main_window, root_path)
-
-
-def setup_file_menu(main_menu: QtWidgets.QMenuBar, main_window: QtWidgets.QMainWindow):
     file_menu = main_menu.addMenu('&File')
 
     # Exit entry
@@ -24,20 +21,19 @@ def setup_file_menu(main_menu: QtWidgets.QMenuBar, main_window: QtWidgets.QMainW
     file_menu.addAction(exit_action)
 
 
-def setup_about_menu(menu_bar: QtWidgets.QMenuBar, main_window: QtWidgets.QMainWindow,
-                     ui_path: pathlib.Path):
+def setup_about_menu(menu_bar: QtWidgets.QMenuBar, datalight_ui: "DatalightUIWindow"):
     about_menu = menu_bar.addMenu('&About')
 
     # Author entry
-    author_action = QtWidgets.QAction('&Add Author Details', main_window)
+    author_action = QtWidgets.QAction('&Add Author Details', datalight_ui.main_window)
     author_action.setStatusTip('&Add default author details')
-    def author_function(): author_menu_action(ui_path)
+    def author_function(): slot_methods.author_menu_action(datalight_ui)
     author_action.triggered.connect(author_function)
     about_menu.addAction(author_action)
 
     # About entry
-    about_action = QtWidgets.QAction('&About', main_window)
+    about_action = QtWidgets.QAction('&About', datalight_ui.main_window)
     about_action.setStatusTip('&About Datalight')
-    def about_function(): about_menu_action(ui_path)
+    def about_function(): slot_methods.about_menu_action(datalight_ui.ui_path)
     about_action.triggered.connect(about_function)
     about_menu.addAction(about_action)

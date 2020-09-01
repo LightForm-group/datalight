@@ -63,7 +63,7 @@ class DatalightUIWindow:
     def ui_setup(self):
         """ Load UI description from files and then add widgets hierarchically."""
         # Setup menu bar
-        menu_bar.setup_menu(self.main_window, self.ui_path)
+        self.setup_menu()
 
         # Get and set basic UI descriptions
         repository_path = self.ui_path.joinpath("ui_descriptions/zenodo.yaml")
@@ -78,6 +78,12 @@ class DatalightUIWindow:
         author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
         self.authors = datalight.common.read_yaml(author_path)
         self.populate_author_list()
+
+    def setup_menu(self):
+        """Add the menu bar to the form."""
+        main_menu = self.main_window.menuBar()
+        menu_bar.setup_file_menu(main_menu, self)
+        menu_bar.setup_about_menu(main_menu, self)
 
     def add_base_group_box(self):
         """Add a base group box that will contain all other widgets."""
