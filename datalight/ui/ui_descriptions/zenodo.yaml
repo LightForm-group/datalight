@@ -83,6 +83,7 @@ zenodo_core_metadata:
                         author_details:
                             widget: Table
                             grid_layout: 0, 0, 1, 2
+                            optional: False
                             column_titles:
                                 - Name
                                 - Affiliation
