@@ -343,7 +343,7 @@ class Table(QtWidgets.QTableWidget, WidgetMixin):
         for row_index in range(self.rowCount()):
             row = []
             for column_index in range(self.columnCount()):
-                cell_data = self.itemAt(row_index, column_index)
+                cell_data = self.item(row_index, column_index)
                 if cell_data:
                     row.append(cell_data.data(QtCore.Qt.ItemDataRole.DisplayRole))
                 else:
