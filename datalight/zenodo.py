@@ -149,15 +149,16 @@ class Zenodo:
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
         else:
             # If metadata comes from the UI, need to get some data into the right format.
-            creators = {}
-            if "name" in self.raw_metadata:
-                creators["name"] = self.raw_metadata.pop("name")
-            if "affiliation" in self.raw_metadata:
-                creators["affiliation"] = self.raw_metadata.pop("affiliation")
-            if "orcid" in self.raw_metadata:
-                creators["orcid"] = self.raw_metadata.pop("orcid")
-            # A list of a dictionary makes a JSON array type.
-            self.raw_metadata["creators"] = [creators]
+            # A list of dictionaries makes a JSON array type.
+            creators = []
+            if "author_details" in self.raw_metadata:
+                creator = {}
+                for author in self.raw_metadata["author_details"]:
+                    creator["name"] = author[0]
+                    creator["affiliation"] = author[1]
+                    creator["orcid"] = author[2]
+                creators.append(creator)
+            self.raw_metadata["creators"] = creators
 
             # Communities must also be a JSON array
             if "communities" in self.raw_metadata:
