@@ -14,13 +14,13 @@ from datalight.common import logger
 from datalight.ui import custom_widgets
 import datalight.ui.validation
 from datalight.zenodo import upload_record
-from datalight.ui.custom_widgets import Widget, get_new_widget
+from datalight.ui.custom_widgets import Widget, get_new_widget, Table
 
 if TYPE_CHECKING:
     from datalight.ui.main_form import DatalightUIWindow
 
 
-def remove_item_button(datalight_ui):
+def remove_item_button(datalight_ui: "DatalightUIWindow"):
     """Remove the selected item(s) from the file/folder upload list."""
     list_widget = datalight_ui.get_widget_by_name("file_list")
     files = list_widget.selectedItems()
@@ -29,21 +29,21 @@ def remove_item_button(datalight_ui):
         list_widget.takeItem(row_index)
 
 
-def select_file_button(datalight_ui):
+def select_file_button(datalight_ui: "DatalightUIWindow"):
     """Prepare to open a dialog box to select a file to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
     open_file_window(datalight_ui, file_dialogue)
 
 
-def select_folder_button(datalight_ui):
+def select_folder_button(datalight_ui: "DatalightUIWindow"):
     """Prepare to open a dialog box to select a folder` to upload."""
     file_dialogue = QtWidgets.QFileDialog()
     file_dialogue.setFileMode(QtWidgets.QFileDialog.Directory)
     open_file_window(datalight_ui, file_dialogue)
 
 
-def open_file_window(datalight_ui, file_dialogue):
+def open_file_window(datalight_ui: "DatalightUIWindow", file_dialogue):
     """Open a dialogue box to select a file or folder."""
     list_widget = datalight_ui.get_widget_by_name("file_list")
     if file_dialogue.exec():
@@ -65,12 +65,30 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
 
     if repository_metadata and experiment_metadata:
-        upload_record(experiment_metadata.pop("file_list"), repository_metadata,
-                      experiment_metadata, datalight_ui.config_path, repository_metadata.pop("publish"),
-                      repository_metadata.pop("sandbox"))
-        logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.",
-                                   QtWidgets.QMessageBox.Information)
+        upload_status = upload_record(experiment_metadata.pop("file_list"), repository_metadata,
+                                      experiment_metadata, datalight_ui.config_path,
+                                      repository_metadata.pop("publish"),
+                                      repository_metadata.pop("sandbox"))
+        if upload_status is None:
+            custom_widgets.message_box("Datalight upload successful.",
+                                       QtWidgets.QMessageBox.Information)
+        else:
+            custom_widgets.message_box(f"Error in upload. Error: '{upload_status}'",
+                                       QtWidgets.QMessageBox.Warning)
+
+
+def add_row_button(datalight_ui: "DatalightUIWindow"):
+    """Add a new row to the author table."""
+    table_widget: Table = datalight_ui.get_widget_by_name("author_details")
+    table_widget.insertRow(table_widget.rowCount())
+
+
+def delete_row_button(datalight_ui: "DatalightUIWindow"):
+    """Add a new row to the author table."""
+    table_widget: Table = datalight_ui.get_widget_by_name("author_details")
+    selected_rows = sorted(set([row.row() for row in table_widget.selectedIndexes()]), reverse=True)
+    for row_index in selected_rows:
+        table_widget.removeRow(row_index)
 
 
 def validate_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) -> Union[None, dict]:
@@ -115,7 +133,7 @@ def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_
 def about_menu_action(ui_path: pathlib.Path):
     """Open a dialog with information about Datalight. This method is called from the about menu."""
     about_widget = QtWidgets.QMessageBox()
-    icon_path = ui_path.joinpath("images/icon.png")
+    icon_path = str(ui_path.joinpath("images/icon.png"))
     datalight_icon = QtGui.QPixmap(icon_path).scaledToHeight(150, QtCore.Qt.SmoothTransformation)
     about_widget.setIconPixmap(datalight_icon)
     about_widget.setTextFormat(QtCore.Qt.RichText)
@@ -128,12 +146,12 @@ def about_menu_action(ui_path: pathlib.Path):
     about_widget.exec()
 
 
-def author_menu_action(ui_path: pathlib.Path):
+def author_menu_action(datalight_ui: "DatalightUIWindow"):
     """Open a dialog to add new Authors. This method is called from the about menu."""
     author_window = QtWidgets.QDialog()
     # Set up the dialog widgets
 
-    author_widget_path = ui_path.joinpath("ui_descriptions/add_authors.yaml")
+    author_widget_path = datalight_ui.ui_path.joinpath("ui_descriptions/add_authors.yaml")
     author_ui = datalight.common.read_yaml(author_widget_path)
     base_description = {"widget": "GroupBox",
                         "layout": "HBoxLayout",
@@ -147,7 +165,9 @@ def author_menu_action(ui_path: pathlib.Path):
     layout.setContentsMargins(0, 0, 0, 0)
     author_window.setLayout(layout)
 
-    author_path = ui_path.joinpath("ui_descriptions/author_details.yaml")
+    author_path = datalight_ui.ui_path.joinpath("ui_descriptions/author_details.yaml")
     authors = datalight.common.read_yaml(author_path)
+
+    list_widget = author_window.findChildren(QtWidgets.QWidget, "file_list")[0]
 
     author_window.show()

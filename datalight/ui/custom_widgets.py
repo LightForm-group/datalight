@@ -312,6 +312,46 @@ class LineEdit(QtWidgets.QLineEdit, WidgetMixin):
         return False
 
 
+class Table(QtWidgets.QTableWidget, WidgetMixin):
+    """A table to display tabular data."""
+    def __init__(self, parent_widget: Widget, widget_description: dict):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
+
+        column_titles = widget_description["column_titles"]
+        for _ in column_titles:
+            self.insertColumn(0)
+        self.insertRow(0)
+        self.setHorizontalHeaderLabels(widget_description["column_titles"])
+
+    def validate_input(self) -> bool:
+        if self.optional:
+            return True
+
+        data = self._collect_data()
+        for row in data:
+            for column in row:
+                if column == "":
+                    return False
+        return True
+
+    def get_value(self) -> List[list]:
+        return self._collect_data()
+
+    def _collect_data(self) -> List[list]:
+        data = []
+        for row_index in range(self.rowCount()):
+            row = []
+            for column_index in range(self.columnCount()):
+                cell_data = self.item(row_index, column_index)
+                if cell_data:
+                    row.append(cell_data.data(QtCore.Qt.ItemDataRole.DisplayRole))
+                else:
+                    row.append("")
+            data.append(row)
+        return data
+
+
 class Label(QtWidgets.QLabel, WidgetMixin):
     """A label to annotate the form."""
     def __init__(self, parent_widget: Widget, widget_description: dict):

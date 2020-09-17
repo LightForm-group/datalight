@@ -238,7 +238,8 @@
           "type": "string"
         },
         "orcid": {
-          "type": "string"
+          "type": "string",
+          "pattern": "(\\d{4}-?){3}\\d{4}$"
         },
         "gnd": {
           "type": "string"

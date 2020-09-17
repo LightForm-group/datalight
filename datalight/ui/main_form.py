@@ -31,7 +31,7 @@ class DatalightUIWindow:
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setWindowIcon(QtGui.QIcon("ui/images/icon.png"))
-        self.main_window.setGeometry(0, 0, 600, 700)
+        self.main_window.setGeometry(0, 0, 800, 700)
 
         # Central widget and its layout
         self.central_widget = QtWidgets.QWidget(self.main_window)
@@ -63,7 +63,7 @@ class DatalightUIWindow:
     def ui_setup(self):
         """ Load UI description from files and then add widgets hierarchically."""
         # Setup menu bar
-        menu_bar.setup_menu(self.main_window, self.ui_path)
+        self.setup_menu()
 
         # Get and set basic UI descriptions
         repository_path = self.ui_path.joinpath("ui_descriptions/zenodo.yaml")
@@ -77,7 +77,13 @@ class DatalightUIWindow:
         # Get and set authors and
         author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
         self.authors = datalight.common.read_yaml(author_path)
-        self.populate_author_list()
+        #self.populate_author_list()
+
+    def setup_menu(self):
+        """Add the menu bar to the form."""
+        main_menu = self.main_window.menuBar()
+        menu_bar.setup_file_menu(main_menu, self)
+        menu_bar.setup_about_menu(main_menu, self)
 
     def add_base_group_box(self):
         """Add a base group box that will contain all other widgets."""
@@ -87,7 +93,6 @@ class DatalightUIWindow:
                             "children": self.ui_specification}
         self.group_box = custom_widgets.get_new_widget(self.scroll_area_contents,
                                                        base_description)[0]
-        self.group_box.setMinimumSize(600, 800)
         self.scroll_area_contents_layout.addWidget(self.group_box)
 
     def populate_author_list(self):
