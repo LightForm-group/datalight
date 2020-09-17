@@ -65,12 +65,16 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
 
     if repository_metadata and experiment_metadata:
-        upload_record(experiment_metadata.pop("file_list"), repository_metadata,
-                      experiment_metadata, datalight_ui.config_path, repository_metadata.pop("publish"),
-                      repository_metadata.pop("sandbox"))
-        logger.info("Datalight upload successful.")
-        custom_widgets.message_box("Datalight upload successful.",
-                                   QtWidgets.QMessageBox.Information)
+        upload_status = upload_record(experiment_metadata.pop("file_list"), repository_metadata,
+                                      experiment_metadata, datalight_ui.config_path,
+                                      repository_metadata.pop("publish"),
+                                      repository_metadata.pop("sandbox"))
+        if upload_status is None:
+            custom_widgets.message_box("Datalight upload successful.",
+                                       QtWidgets.QMessageBox.Information)
+        else:
+            custom_widgets.message_box(f"Error in upload. Error: '{upload_status}'",
+                                       QtWidgets.QMessageBox.Warning)
 
 
 def add_row_button(datalight_ui: "DatalightUIWindow"):

@@ -19,7 +19,7 @@ class ZenodoException(Exception):
 
 def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
                   experimental_metadata: dict, config_path: Union[pathlib.Path, str],
-                  publish: bool = False, sandbox: bool = True):
+                  publish: bool = False, sandbox: bool = True) -> Union[None, str]:
     """Run datalight scripts to upload file to data repository
     :param experimental_metadata: The experimental metadata.
     :param file_paths: One or more paths of files to upload.
@@ -27,6 +27,7 @@ def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
     :param config_path: Path to the file containing zenodo API tokens.
+    :returns: None if upload successful else returns a string describing the error.
     """
 
     experimental_metadata = ExperimentalMetadata(experimental_metadata)
@@ -37,6 +38,8 @@ def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
 
     data_repo = Zenodo(token, repository_metadata, sandbox)
     data_repo.deposit_record(file_paths, publish)
+
+    return data_repo.error_message
 
 
 class ExperimentalMetadata:
@@ -74,6 +77,7 @@ class Zenodo:
         :param sandbox: If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
         self.raw_metadata = None
         self.metadata_path = None
+        self.error_message = ""
 
         if isinstance(metadata, dict):
             self.raw_metadata = metadata
@@ -93,15 +97,36 @@ class Zenodo:
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files: List[pathlib.Path], publish: bool):
-        """Method which calls the parts of the upload process."""
+    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> Union[None, str]:
+        """Method which calls the parts of the upload process.
+        :returns: None if upload successful else returns a string which describes the error."""
         self._get_metadata()
-        self.checked_metadata = self.validate_metadata()
+
+        self.validate_metadata()
+        if self.error_message:
+            return self.error_message
+
         self._get_deposition_id()
+        if self.error_message:
+            return self.error_message
+
         self._upload_files(files)
+        if self.error_message:
+            self.delete(self.deposition_id)
+            return self.error_message
+
         self._upload_metadata()
+        if self.error_message:
+            self.delete(self.deposition_id)
+            return self.error_message
+
         if publish:
             self.publish()
+        if self.error_message:
+            self.delete(self.deposition_id)
+            return self.error_message
+        else:
+            return None
 
     def _try_connection(self):
         """Method to test that the API token and connection with Zenodo website is working."""
@@ -116,10 +141,10 @@ class Zenodo:
         request = requests.post(self.depositions_url, params={'access_token': self.token},
                                 json={}, headers=headers)
 
-        self._check_request_response(request)
-
-        self.deposition_id = request.json()['id']
-        logger.info(f'Deposition id: {self.deposition_id}')
+        self.error_message = self._check_request_response(request)
+        if self.error_message is None:
+            self.deposition_id = request.json()['id']
+            logger.info(f'Deposition id: {self.deposition_id}')
 
     def _upload_files(self, filenames: List[pathlib.Path]):
         """Method to upload a file to Zenodo
@@ -140,10 +165,10 @@ class Zenodo:
             # upload the file
             request = requests.post(url, params={'access_token': self.token}, data=data,
                                     files=files)
-            self._check_request_response(request)
+            self.error_message = self._check_request_response(request)
 
     def _get_metadata(self):
-        """Method to get and validate metadata."""
+        """Method to pre-process metadata into the Zenodo format for upload."""
         if self.raw_metadata is None:
             # If metadata was provided as a path then read it from a file.
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
@@ -180,7 +205,7 @@ class Zenodo:
         request = requests.put(url, params={'access_token': self.token},
                                data=json.dumps(self.checked_metadata), headers=headers)
 
-        self._check_request_response(request)
+        self.error_message = self._check_request_response(request)
 
     def publish(self):
         """Method which will publish the deposition linked with the id.
@@ -193,7 +218,7 @@ class Zenodo:
         publish_url = f'{self.depositions_url}/{self.deposition_id}/actions/publish'
         request = requests.post(publish_url, params={'access_token': self.token})
 
-        self._check_request_response(request)
+        self.error_message = self._check_request_response(request)
 
     def delete(self, _id=None):
         """Method to delete an unpublished deposition.
@@ -215,7 +240,7 @@ class Zenodo:
         request = requests.delete(request_url, params={'access_token': self.token})
         self._check_request_response(request)
 
-    def _check_request_response(self, response: requests.models.Response) -> int:
+    def _check_request_response(self, response: requests.models.Response) -> Union[str, None]:
         """Check the status code returned from an interaction with the Zenodo API.
 
         :param response: A response to an HTTP request.
@@ -226,39 +251,43 @@ class Zenodo:
 
         if response.status_code in [200, 201, 202, 204]:
             logger.debug(f'Request succeed with status code: {response.status_code}')
-            return response.status_code
+            return None
 
         if response.status_code == 400:
             message = f'Request failed with error: {response.status_code}. ' \
                       f'The details are: {response.content}.'
             logger.error(message)
-            raise ZenodoException(message)
+            return message
 
         if response.status_code == 401:
             message = f'Request failed with error: {response.status_code}. This is ' \
                       'due to a bad access token.'
             logger.error(message)
-            raise ZenodoException(message)
+            return message
 
         if response.status_code == 403:
             message = f'Request failed with error: {response.status_code}. This is' \
                       ' due to insufficient privileges.'
             logger.error(message)
-            raise ZenodoException(message)
+            return message
 
         if response.status_code == 500:
             message = f'Zenodo server error {response.status_code}. It is likely to be their ' \
                       f'problem not ours. Details: {response.content}'
             logger.error(message)
-            raise ZenodoException(message)
+            return message
 
         else:
             message = 'Unclassified error: {response.status_code}. Details: {response.content}'
             logger.error(message)
-            raise ZenodoException(message)
+            return message
 
     def validate_metadata(self):
         """Compare the metadata to the schema and remove anything not allowed by Zenodo."""
         schema = zenodo_metadata.read_schema_from_file()
-        validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
-        return {'metadata': validated_metadata}
+        try:
+            validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
+        except zenodo_metadata.ZenodoMetadataException as e:
+            self.error_message = e
+        else:
+            self.checked_metadata = {'metadata': validated_metadata}
