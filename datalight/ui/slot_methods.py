@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, List, Union
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import datalight.common
-from datalight.common import logger
 from datalight.ui import custom_widgets
 import datalight.ui.validation
 from datalight.zenodo import upload_record
@@ -69,11 +68,14 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
                                       experiment_metadata, datalight_ui.config_path,
                                       repository_metadata.pop("publish"),
                                       repository_metadata.pop("sandbox"))
-        if upload_status is None:
+        if upload_status.code == 200:
             custom_widgets.message_box("Datalight upload successful.",
                                        QtWidgets.QMessageBox.Information)
         else:
-            custom_widgets.message_box(f"Error in upload. Error: '{upload_status}'",
+            custom_widgets.message_box(f"Error in upload.\n"
+                                       f"Error type: '{upload_status.message}'\n"
+                                       f"Affected field: '{upload_status.error_field}'\n"
+                                       f"Error details: '{upload_status.error_message}'\n",
                                        QtWidgets.QMessageBox.Warning)
 
 

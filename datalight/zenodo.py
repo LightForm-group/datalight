@@ -21,12 +21,11 @@ class ZenodoException(Exception):
 
 class UploadStatus:
     """The status of the upload as it goes through the upload process."""
-    def __init__(self, description: dict):
-        self.code = description["status"]
-        self.message = description["message"]
-        if "errors" in description:
-            self.error_field = description["errors"][0]["field"]
-            self.error_message = description["errors"][0]["message"]
+    def __init__(self, code: int, message: str, error_field: str = None, error_message: str = None):
+        self.code = code
+        self.message = message
+        self.error_field = error_field
+        self.error_message = error_message
 
 
 def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
@@ -103,12 +102,11 @@ class Zenodo:
         self.depositions_url = f'{self.api_base_url}deposit/depositions'
         self.deposition_id = None
         self.checked_metadata = None
-        self.status_code = None
 
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> Union[None, UploadStatus]:
+    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> UploadStatus:
         """Method which calls the parts of the upload process.
         :returns: None if upload successful else returns a string which describes the error."""
         self._get_metadata()
@@ -117,34 +115,34 @@ class Zenodo:
         if status.code not in STATUS_SUCCESS:
             return status
 
-        self._get_deposition_id()
+        status = self._get_deposition_id()
         if status.code not in STATUS_SUCCESS:
             return status
 
-        self._upload_files(files)
+        status = self._upload_files(files)
         if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
             return status
 
-        self._upload_metadata()
+        status = self._upload_metadata()
         if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
             return status
 
         if publish:
-            self.publish()
+            status = self.publish()
         if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
             return status
         else:
-            return None
+            return UploadStatus(200, "Upload Completed successfully")
 
     def _try_connection(self):
         """Method to test that the API token and connection with Zenodo website is working."""
         request = requests.get(self.depositions_url, params={'access_token': self.token})
         self._check_request_response(request)
 
-    def _get_deposition_id(self):
+    def _get_deposition_id(self) -> UploadStatus:
         """Get the deposition id needed to upload a new record to Zenodo"""
         headers = {'Content-Type': 'application/json'}
 
@@ -152,10 +150,11 @@ class Zenodo:
         request = requests.post(self.depositions_url, params={'access_token': self.token},
                                 json={}, headers=headers)
 
-        self.upload_status = self._check_request_response(request)
-        if self.error_message is None:
+        upload_status = self._check_request_response(request)
+        if upload_status.code in STATUS_SUCCESS:
             self.deposition_id = request.json()['id']
             logger.info(f'Deposition id: {self.deposition_id}')
+        return upload_status
 
     def _upload_files(self, filenames: List[pathlib.Path]) -> UploadStatus:
         """Method to upload a file to Zenodo
@@ -176,7 +175,10 @@ class Zenodo:
             # upload the file
             request = requests.post(url, params={'access_token': self.token}, data=data,
                                     files=files)
-            return self._check_request_response(request)
+            status = self._check_request_response(request)
+            if status.code not in STATUS_SUCCESS:
+                return status
+        return UploadStatus(200, "All files uploaded successfully.")
 
     def _get_metadata(self):
         """Method to pre-process metadata into the Zenodo format for upload."""
@@ -201,7 +203,7 @@ class Zenodo:
                 communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
                 self.raw_metadata["communities"] = communities
 
-    def _upload_metadata(self):
+    def _upload_metadata(self) -> UploadStatus:
         """Upload metadata to Zenodo repository.
 
         After creating the request and uploading the file(s) we need to update
@@ -216,7 +218,7 @@ class Zenodo:
         request = requests.put(url, params={'access_token': self.token},
                                data=json.dumps(self.checked_metadata), headers=headers)
 
-        self.error_message = self._check_request_response(request)
+        return self._check_request_response(request)
 
     def publish(self) -> UploadStatus:
         """Method which will publish the deposition linked with the id.
@@ -259,13 +261,14 @@ class Zenodo:
         :return status_code: If status code represents success.
         :raises ZenodoException: If status code represents a failure.
         """
-        content = json.loads(response.text)
 
         if response.status_code in STATUS_SUCCESS:
-            logger.debug(f'Request succeeded with status code: {response.status_code}')
-            return UploadStatus({"status": response.status_code})
+            message = f'Request succeeded with status code: {response.status_code}'
+            return UploadStatus(response.status_code, message)
 
-        elif response.status_code == 400:
+        content = json.loads(response.text)
+
+        if response.status_code == 400:
             message = f'Request failed with error: {response.status_code}. ' \
                       f'The details are: {content}.'
 
@@ -285,7 +288,13 @@ class Zenodo:
             message = f'Unclassified error: {response.status_code}. Details: {content}'
 
         logger.error(message)
-        return UploadStatus(content)
+        code = content["status"]
+        message = content["message"]
+        if "errors" in content:
+            error_field = content["errors"][0]["field"]
+            error_content = content["errors"][0]["message"]
+            return UploadStatus(code, message, error_field, error_content)
+        return UploadStatus(code, message)
 
     def validate_metadata(self) -> UploadStatus:
         """Compare the metadata to the schema and remove anything not allowed by Zenodo."""
@@ -293,6 +302,7 @@ class Zenodo:
         try:
             validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         except zenodo_metadata.ZenodoMetadataException as e:
-            self.error_message = e
+            return UploadStatus(401, e)
         else:
             self.checked_metadata = {'metadata': validated_metadata}
+            return UploadStatus(200, "Metadata successfully validated.")
