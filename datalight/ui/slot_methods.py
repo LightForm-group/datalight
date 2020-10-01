@@ -5,6 +5,7 @@ in the UI YAML specification.
 """
 import pathlib
 import re
+from functools import partial
 from typing import TYPE_CHECKING, List, Union
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -88,7 +89,7 @@ def add_row_button(datalight_ui: "DatalightUIWindow"):
 def delete_row_button(datalight_ui: "DatalightUIWindow"):
     """Add a new row to the author table."""
     table_widget: Table = datalight_ui.get_widget_by_name("author_details")
-    selected_rows = sorted(set([row.row() for row in table_widget.selectedIndexes()]), reverse=True)
+    selected_rows = sorted({row.row() for row in table_widget.selectedIndexes()}, reverse=True)
     for row_index in selected_rows:
         table_widget.removeRow(row_index)
 
@@ -120,18 +121,6 @@ def get_child_widgets(datalight_ui: "DatalightUIWindow", root_widget_name: str) 
     return root_widget.findChildren(QtWidgets.QWidget)
 
 
-def update_author_details(name: str, affiliation: Widget, orcid: Widget, author_list: dict):
-    """A function attached to the currentIndexChanged method of author_list_box.
-    Checks if the passed name is in the stored author list and if so, sets the relevant
-    affiliation and ORCID."""
-    if name in author_list:
-        affiliation.setText(author_list[name]["affiliation"])
-        orcid.setText(str(author_list[name]["orcid"]))
-    else:
-        affiliation.setText("")
-        orcid.setText("")
-
-
 def about_menu_action(ui_path: pathlib.Path):
     """Open a dialog with information about Datalight. This method is called from the about menu."""
     about_widget = QtWidgets.QMessageBox()
@@ -148,11 +137,12 @@ def about_menu_action(ui_path: pathlib.Path):
     about_widget.exec()
 
 
-def author_menu_action(datalight_ui: "DatalightUIWindow"):
-    """Open a dialog to add new Authors. This method is called from the about menu."""
+def add_author_button(datalight_ui: "DatalightUIWindow"):
+    """Open a dialog to add authors to the main form from the list of store authors."""
     author_window = QtWidgets.QDialog()
-    # Set up the dialog widgets
+    author_window.setWindowTitle("Add author from stored authors")
 
+    # Set up the dialog widgets
     author_widget_path = datalight_ui.ui_path.joinpath("ui_descriptions/add_authors.yaml")
     author_ui = datalight.common.read_yaml(author_widget_path)
     base_description = {"widget": "GroupBox",
@@ -161,15 +151,34 @@ def author_menu_action(datalight_ui: "DatalightUIWindow"):
                         "children": author_ui}
     group_box = get_new_widget(author_window, base_description)[0]
 
-    # Set up dialog layout
+    # Set up dialog layout and add it to the generated dialog
     layout = QtWidgets.QHBoxLayout(author_window)
     layout.addWidget(group_box)
     layout.setContentsMargins(0, 0, 0, 0)
     author_window.setLayout(layout)
 
+    # Get the list of authors and add them to the combobox
     author_path = datalight_ui.ui_path.joinpath("ui_descriptions/author_details.yaml")
     authors = datalight.common.read_yaml(author_path)
 
-    list_widget = author_window.findChildren(QtWidgets.QWidget, "file_list")[0]
+    list_widget = author_window.findChildren(QtWidgets.QWidget, "author_list")[0]
+    for author_name in authors:
+        list_widget.addItem(author_name)
+
+    # Add an action to the add author button
+    add_selected_button = author_window.findChildren(QtWidgets.QWidget, "select_author_button")[0]
+    add_selected_button.clicked.connect(partial(add_selected_author_button, datalight_ui,
+                                                author_window))
 
     author_window.show()
+
+
+def add_selected_author_button(datalight_ui: "DatalightUIWindow", author_window: QtWidgets.QDialog):
+    """Method for the add selected combo button in the add authors dialog."""
+    author_list_widget = author_window.findChildren(QtWidgets.QWidget, "author_list")[0]
+    selected_authors = [item.text() for item in author_list_widget.selectedItems()]
+
+    for author in selected_authors:
+        datalight_ui.add_author(author)
+
+    author_window.close()

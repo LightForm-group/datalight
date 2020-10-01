@@ -74,10 +74,9 @@ class DatalightUIWindow:
                                  **datalight.common.read_yaml(experimental_path)}
         self.add_base_group_box()
 
-        # Get and set authors and
+        # Get authors from file
         author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
         self.authors = datalight.common.read_yaml(author_path)
-        #self.populate_author_list()
 
     def setup_menu(self):
         """Add the menu bar to the form."""
@@ -95,19 +94,22 @@ class DatalightUIWindow:
                                                        base_description)[0]
         self.scroll_area_contents_layout.addWidget(self.group_box)
 
-    def populate_author_list(self):
-        """Populate the author combo_box with the names read from the authors file."""
-        author_list_box = self.get_widget_by_name("name")
-        affiliation_box = self.get_widget_by_name("affiliation")
-        orcid_box = self.get_widget_by_name("orcid")
+    def add_author(self, name: str):
+        """Given the name of an author in the authors file, add their details to the author details
+        table."""
+        author_table = self.group_box.findChildren(QtWidgets.QWidget, "author_details")[0]
+        if author_table.rowCount() == 1 and author_table.item(0, 0) is None:
+            row_num = 0
+        else:
+            row_num = author_table.rowCount()
+            author_table.insertRow(author_table.rowCount())
 
-        author_list_box.addItem("")
-        for name in self.authors:
-            author_list_box.addItem(name)
-
-        def update_method(name): return slot_methods.update_author_details(name, affiliation_box,
-                                                                           orcid_box, self.authors)
-        author_list_box.currentIndexChanged[str].connect(update_method)
+        name_cell = QtWidgets.QTableWidgetItem(name)
+        author_table.setItem(row_num, 0, name_cell)
+        affiliation_cell = QtWidgets.QTableWidgetItem(self.authors[name]["affiliation"])
+        author_table.setItem(row_num, 1, affiliation_cell)
+        orcid_cell = QtWidgets.QTableWidgetItem(self.authors[name]["orcid"])
+        author_table.setItem(row_num, 2, orcid_cell)
 
     def enable_dependent_widget(self, dependencies: dict):
         """Process the 'activates_on' dependency. This turns a widget on or off depending

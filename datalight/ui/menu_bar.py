@@ -25,11 +25,11 @@ def setup_about_menu(menu_bar: QtWidgets.QMenuBar, datalight_ui: "DatalightUIWin
     about_menu = menu_bar.addMenu('&About')
 
     # Author entry
-    author_action = QtWidgets.QAction('&Add Author Details', datalight_ui.main_window)
-    author_action.setStatusTip('&Add default author details')
-    def author_function(): slot_methods.author_menu_action(datalight_ui)
-    author_action.triggered.connect(author_function)
-    about_menu.addAction(author_action)
+    #author_action = QtWidgets.QAction('&Add Author Details', datalight_ui.main_window)
+    #author_action.setStatusTip('&Add default author details')
+    #def author_function(): slot_methods.author_menu_action(datalight_ui)
+    #author_action.triggered.connect(author_function)
+    #about_menu.addAction(author_action)
 
     # About entry
     about_action = QtWidgets.QAction('&About', datalight_ui.main_window)
