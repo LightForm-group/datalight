@@ -131,7 +131,6 @@ zenodo_core_metadata:
                         - LightForm
                         -
                     tooltip: The community to associate this record with on Zenodo.
-
                 keywords:
                     widget: LineEdit
                     label: Keywords
@@ -140,6 +139,14 @@ zenodo_core_metadata:
                         Keywords to associate with the record.
                         Keywords should be seperated by a comma e.g.:
                         Titanium, Texture, Heat Treatement, EBSD
+                grants:
+                    widget: ComboBox
+                    label: Grant
+                    editable: True
+                    optional: True
+                    values:
+                        - 10.13039/501100000690::EP/R001715/1
+                        -
         zenodo_options:
             widget: GroupBox
             title: Zenodo Options

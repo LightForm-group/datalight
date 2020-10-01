@@ -188,6 +188,7 @@ class Zenodo:
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
         else:
             # If metadata comes from the UI, need to get some data into the right format.
+            # Creators must be a JSON array
             # A list of dictionaries makes a JSON array type.
             creators = []
             if "author_details" in self.raw_metadata:
@@ -209,6 +210,11 @@ class Zenodo:
                 keywords = self.raw_metadata["keywords"].split(",")
                 keywords = [word.strip() for word in keywords]
                 self.raw_metadata["keywords"] = keywords
+
+            # Grants must be a JSON array
+            if "grants" in self.raw_metadata:
+                grants = [{'id': self.raw_metadata["grants"]}]
+                self.raw_metadata["grants"] = grants
 
     def _upload_metadata(self) -> UploadStatus:
         """Upload metadata to Zenodo repository.
