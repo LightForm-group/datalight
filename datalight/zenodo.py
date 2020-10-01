@@ -108,8 +108,9 @@ class Zenodo:
 
     def deposit_record(self, files: List[pathlib.Path], publish: bool) -> UploadStatus:
         """Method which calls the parts of the upload process.
-        :returns: None if upload successful else returns a string which describes the error."""
-        self._get_metadata()
+        :returns: An UploadStatus object indicating whether there was an error or if the upload
+            was successful."""
+        self._preprocess_metadata()
 
         status = self.validate_metadata()
         if status.code not in STATUS_SUCCESS:
@@ -180,7 +181,7 @@ class Zenodo:
                 return status
         return UploadStatus(200, "All files uploaded successfully.")
 
-    def _get_metadata(self):
+    def _preprocess_metadata(self):
         """Method to pre-process metadata into the Zenodo format for upload."""
         if self.raw_metadata is None:
             # If metadata was provided as a path then read it from a file.
@@ -202,6 +203,12 @@ class Zenodo:
             if "communities" in self.raw_metadata:
                 communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
                 self.raw_metadata["communities"] = communities
+
+            # Keywords must be a list
+            if "keywords" in self.raw_metadata:
+                keywords = self.raw_metadata["keywords"].split(",")
+                keywords = [word.strip() for word in keywords]
+                self.raw_metadata["keywords"] = keywords
 
     def _upload_metadata(self) -> UploadStatus:
         """Upload metadata to Zenodo repository.
@@ -302,7 +309,7 @@ class Zenodo:
         try:
             validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         except zenodo_metadata.ZenodoMetadataException as e:
-            return UploadStatus(401, e)
+            return UploadStatus(401, str(e))
         else:
             self.checked_metadata = {'metadata': validated_metadata}
             return UploadStatus(200, "Metadata successfully validated.")

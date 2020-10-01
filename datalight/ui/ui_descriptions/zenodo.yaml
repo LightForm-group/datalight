@@ -132,6 +132,14 @@ zenodo_core_metadata:
                         -
                     tooltip: The community to associate this record with on Zenodo.
 
+                keywords:
+                    widget: LineEdit
+                    label: Keywords
+                    optional: True
+                    help_text: |-
+                        Keywords to associate with the record.
+                        Keywords should be seperated by a comma e.g.:
+                        Titanium, Texture, Heat Treatement, EBSD
         zenodo_options:
             widget: GroupBox
             title: Zenodo Options
