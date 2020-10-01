@@ -12,14 +12,25 @@ import datalight.zenodo_metadata as zenodo_metadata
 from datalight import common
 from datalight.common import logger
 
+STATUS_SUCCESS = [200, 201, 202, 204]
+
 
 class ZenodoException(Exception):
     """General exception raised when there is some failure to interface with Zenodo."""
 
 
+class UploadStatus:
+    """The status of the upload as it goes through the upload process."""
+    def __init__(self, code: int, message: str, error_field: str = None, error_message: str = None):
+        self.code = code
+        self.message = message
+        self.error_field = error_field
+        self.error_message = error_message
+
+
 def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
                   experimental_metadata: dict, config_path: Union[pathlib.Path, str],
-                  publish: bool = False, sandbox: bool = True) -> Union[None, str]:
+                  publish: bool = False, sandbox: bool = True) -> UploadStatus:
     """Run datalight scripts to upload file to data repository
     :param experimental_metadata: The experimental metadata.
     :param file_paths: One or more paths of files to upload.
@@ -37,9 +48,9 @@ def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
     token = common.get_authentication_token(credentials_location, sandbox)
 
     data_repo = Zenodo(token, repository_metadata, sandbox)
-    data_repo.deposit_record(file_paths, publish)
+    upload_status = data_repo.deposit_record(file_paths, publish)
 
-    return data_repo.error_message
+    return upload_status
 
 
 class ExperimentalMetadata:
@@ -77,7 +88,6 @@ class Zenodo:
         :param sandbox: If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
         self.raw_metadata = None
         self.metadata_path = None
-        self.error_message = ""
 
         if isinstance(metadata, dict):
             self.raw_metadata = metadata
@@ -92,48 +102,48 @@ class Zenodo:
         self.depositions_url = f'{self.api_base_url}deposit/depositions'
         self.deposition_id = None
         self.checked_metadata = None
-        self.status_code = None
 
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> Union[None, str]:
+    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> UploadStatus:
         """Method which calls the parts of the upload process.
-        :returns: None if upload successful else returns a string which describes the error."""
-        self._get_metadata()
+        :returns: An UploadStatus object indicating whether there was an error or if the upload
+            was successful."""
+        self._preprocess_metadata()
 
-        self.validate_metadata()
-        if self.error_message:
-            return self.error_message
+        status = self.validate_metadata()
+        if status.code not in STATUS_SUCCESS:
+            return status
 
-        self._get_deposition_id()
-        if self.error_message:
-            return self.error_message
+        status = self._get_deposition_id()
+        if status.code not in STATUS_SUCCESS:
+            return status
 
-        self._upload_files(files)
-        if self.error_message:
+        status = self._upload_files(files)
+        if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
-            return self.error_message
+            return status
 
-        self._upload_metadata()
-        if self.error_message:
+        status = self._upload_metadata()
+        if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
-            return self.error_message
+            return status
 
         if publish:
-            self.publish()
-        if self.error_message:
+            status = self.publish()
+        if status.code not in STATUS_SUCCESS:
             self.delete(self.deposition_id)
-            return self.error_message
+            return status
         else:
-            return None
+            return UploadStatus(200, "Upload Completed successfully")
 
     def _try_connection(self):
         """Method to test that the API token and connection with Zenodo website is working."""
         request = requests.get(self.depositions_url, params={'access_token': self.token})
         self._check_request_response(request)
 
-    def _get_deposition_id(self):
+    def _get_deposition_id(self) -> UploadStatus:
         """Get the deposition id needed to upload a new record to Zenodo"""
         headers = {'Content-Type': 'application/json'}
 
@@ -141,12 +151,13 @@ class Zenodo:
         request = requests.post(self.depositions_url, params={'access_token': self.token},
                                 json={}, headers=headers)
 
-        self.error_message = self._check_request_response(request)
-        if self.error_message is None:
+        upload_status = self._check_request_response(request)
+        if upload_status.code in STATUS_SUCCESS:
             self.deposition_id = request.json()['id']
             logger.info(f'Deposition id: {self.deposition_id}')
+        return upload_status
 
-    def _upload_files(self, filenames: List[pathlib.Path]):
+    def _upload_files(self, filenames: List[pathlib.Path]) -> UploadStatus:
         """Method to upload a file to Zenodo
         :param filenames: Paths of one or more files to upload.
         """
@@ -165,15 +176,19 @@ class Zenodo:
             # upload the file
             request = requests.post(url, params={'access_token': self.token}, data=data,
                                     files=files)
-            self.error_message = self._check_request_response(request)
+            status = self._check_request_response(request)
+            if status.code not in STATUS_SUCCESS:
+                return status
+        return UploadStatus(200, "All files uploaded successfully.")
 
-    def _get_metadata(self):
+    def _preprocess_metadata(self):
         """Method to pre-process metadata into the Zenodo format for upload."""
         if self.raw_metadata is None:
             # If metadata was provided as a path then read it from a file.
             self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
         else:
             # If metadata comes from the UI, need to get some data into the right format.
+            # Creators must be a JSON array
             # A list of dictionaries makes a JSON array type.
             creators = []
             if "author_details" in self.raw_metadata:
@@ -190,7 +205,18 @@ class Zenodo:
                 communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
                 self.raw_metadata["communities"] = communities
 
-    def _upload_metadata(self):
+            # Keywords must be a list
+            if "keywords" in self.raw_metadata:
+                keywords = self.raw_metadata["keywords"].split(",")
+                keywords = [word.strip() for word in keywords]
+                self.raw_metadata["keywords"] = keywords
+
+            # Grants must be a JSON array
+            if "grants" in self.raw_metadata:
+                grants = [{'id': self.raw_metadata["grants"]}]
+                self.raw_metadata["grants"] = grants
+
+    def _upload_metadata(self) -> UploadStatus:
         """Upload metadata to Zenodo repository.
 
         After creating the request and uploading the file(s) we need to update
@@ -205,9 +231,9 @@ class Zenodo:
         request = requests.put(url, params={'access_token': self.token},
                                data=json.dumps(self.checked_metadata), headers=headers)
 
-        self.error_message = self._check_request_response(request)
+        return self._check_request_response(request)
 
-    def publish(self):
+    def publish(self) -> UploadStatus:
         """Method which will publish the deposition linked with the id.
 
         .. warning: After publishing a record it is not possible to delete it.
@@ -218,9 +244,9 @@ class Zenodo:
         publish_url = f'{self.depositions_url}/{self.deposition_id}/actions/publish'
         request = requests.post(publish_url, params={'access_token': self.token})
 
-        self.error_message = self._check_request_response(request)
+        return self._check_request_response(request)
 
-    def delete(self, _id=None):
+    def delete(self, _id=None) -> UploadStatus:
         """Method to delete an unpublished deposition.
         If id not provided, use self.deposition_id, else use provided id
 
@@ -238,56 +264,58 @@ class Zenodo:
 
         logger.info('Delete url: {}'.format(request_url))
         request = requests.delete(request_url, params={'access_token': self.token})
-        self._check_request_response(request)
+        return self._check_request_response(request)
 
-    def _check_request_response(self, response: requests.models.Response) -> Union[str, None]:
+    @staticmethod
+    def _check_request_response(response: requests.models.Response) -> Union[UploadStatus, None]:
         """Check the status code returned from an interaction with the Zenodo API.
 
         :param response: A response to an HTTP request.
         :return status_code: If status code represents success.
         :raises ZenodoException: If status code represents a failure.
         """
-        self.status_code = response.status_code
 
-        if response.status_code in [200, 201, 202, 204]:
-            logger.debug(f'Request succeed with status code: {response.status_code}')
-            return None
+        if response.status_code in STATUS_SUCCESS:
+            message = f'Request succeeded with status code: {response.status_code}'
+            return UploadStatus(response.status_code, message)
+
+        content = json.loads(response.text)
 
         if response.status_code == 400:
             message = f'Request failed with error: {response.status_code}. ' \
-                      f'The details are: {response.content}.'
-            logger.error(message)
-            return message
+                      f'The details are: {content}.'
 
-        if response.status_code == 401:
+        elif response.status_code == 401:
             message = f'Request failed with error: {response.status_code}. This is ' \
                       'due to a bad access token.'
-            logger.error(message)
-            return message
 
-        if response.status_code == 403:
+        elif response.status_code == 403:
             message = f'Request failed with error: {response.status_code}. This is' \
                       ' due to insufficient privileges.'
-            logger.error(message)
-            return message
 
-        if response.status_code == 500:
+        elif response.status_code == 500:
             message = f'Zenodo server error {response.status_code}. It is likely to be their ' \
-                      f'problem not ours. Details: {response.content}'
-            logger.error(message)
-            return message
+                      f'problem not ours. Details: {content}'
 
         else:
-            message = 'Unclassified error: {response.status_code}. Details: {response.content}'
-            logger.error(message)
-            return message
+            message = f'Unclassified error: {response.status_code}. Details: {content}'
 
-    def validate_metadata(self):
+        logger.error(message)
+        code = content["status"]
+        message = content["message"]
+        if "errors" in content:
+            error_field = content["errors"][0]["field"]
+            error_content = content["errors"][0]["message"]
+            return UploadStatus(code, message, error_field, error_content)
+        return UploadStatus(code, message)
+
+    def validate_metadata(self) -> UploadStatus:
         """Compare the metadata to the schema and remove anything not allowed by Zenodo."""
         schema = zenodo_metadata.read_schema_from_file()
         try:
             validated_metadata = zenodo_metadata.validate_metadata(self.raw_metadata, schema)
         except zenodo_metadata.ZenodoMetadataException as e:
-            self.error_message = e
+            return UploadStatus(401, str(e))
         else:
             self.checked_metadata = {'metadata': validated_metadata}
+            return UploadStatus(200, "Metadata successfully validated.")
