@@ -63,21 +63,38 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     """
     repository_metadata = validate_widgets(datalight_ui, "zenodo_core_metadata")
     experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
-
     if repository_metadata and experiment_metadata:
-        upload_status = upload_record(experiment_metadata.pop("file_list"), repository_metadata,
-                                      experiment_metadata, datalight_ui.config_path,
-                                      repository_metadata.pop("publish"),
-                                      repository_metadata.pop("sandbox"))
-        if upload_status.code == 200:
-            custom_widgets.message_box("Datalight upload successful.",
-                                       QtWidgets.QMessageBox.Information)
-        else:
-            custom_widgets.message_box(f"Error in upload.\n"
-                                       f"Error type: '{upload_status.message}'\n"
-                                       f"Affected field: '{upload_status.error_field}'\n"
-                                       f"Error details: '{upload_status.error_message}'\n",
-                                       QtWidgets.QMessageBox.Warning)
+        if repository_metadata["publish"] is True:
+            publish = show_publish_warning()
+            if publish:
+                upload_status = upload_record(experiment_metadata.pop("file_list"),
+                                              repository_metadata, experiment_metadata,
+                                              datalight_ui.config_path,
+                                              repository_metadata.pop("publish"),
+                                              repository_metadata.pop("sandbox"))
+                if upload_status.code == 200:
+                    custom_widgets.message_box("Datalight upload successful.",
+                                               QtWidgets.QMessageBox.Information)
+                else:
+                    custom_widgets.message_box(f"Error in upload.\n"
+                                               f"Error type: '{upload_status.message}'\n"
+                                               f"Affected field: '{upload_status.error_field}'\n"
+                                               f"Error details: '{upload_status.error_message}'\n",
+                                               QtWidgets.QMessageBox.Warning)
+
+
+def show_publish_warning() -> bool:
+    """Open a dialog asking the user whether they want to publish their record. Return True if the
+    user wants to publish and False to abort the upload."""
+
+    warning_widget = QtWidgets.QMessageBox()
+    warning_widget.setIcon(QtWidgets.QMessageBox.Warning)
+    warning_widget.setText("You have selected to publish the record.\n\n"
+                           "If you select OK, the record will be immediately published after "
+                           "upload.")
+    warning_widget.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
+    warning_widget.setWindowTitle("Publishing Warning")
+    return bool(warning_widget.exec())
 
 
 def add_row_button(datalight_ui: "DatalightUIWindow"):
