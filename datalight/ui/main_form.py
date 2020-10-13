@@ -20,7 +20,7 @@ class DatalightUIWindow:
       are descended.
     :ivar central_widget: The main blank area in which all other widgets sit.
     :ivar central_widget_layout: The layout of central_widget.
-    :ivar group_box:
+    :ivar group_box: The base group box.
     :ivar authors: A dictionary of Author names, Affiliations and ORCIDs.
     """
     def __init__(self, root_path: str):
@@ -31,7 +31,7 @@ class DatalightUIWindow:
         self.main_window = QtWidgets.QMainWindow()
         self.main_window.setWindowTitle("Datalight Record Creator")
         self.main_window.setWindowIcon(QtGui.QIcon("ui/images/icon.png"))
-        self.main_window.setGeometry(0, 0, 800, 700)
+        self.main_window.setGeometry(0, 0, 1100, 700)
 
         # Central widget and its layout
         self.central_widget = QtWidgets.QWidget(self.main_window)
@@ -45,7 +45,7 @@ class DatalightUIWindow:
         self.scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.central_widget_layout.addWidget(self.scroll_area)
 
-        # Add a child of scroll area and its layout
+        # Add a child of scroll area and its layout (Scroll area must have a QWidget as a child)
         self.scroll_area_contents = QtWidgets.QWidget(self.scroll_area)
         self.scroll_area.setWidget(self.scroll_area_contents)
         self.scroll_area_contents_layout = QtWidgets.QHBoxLayout(self.scroll_area_contents)
@@ -70,8 +70,11 @@ class DatalightUIWindow:
         experimental_path = self.ui_path.joinpath("ui_descriptions/metadata.yaml")
 
         self.ui_specification = datalight.common.read_yaml(repository_path)
-        self.ui_specification = {**self.ui_specification,
-                                 **datalight.common.read_yaml(experimental_path)}
+        combined_ui = {**self.ui_specification, **datalight.common.read_yaml(experimental_path)}
+        self.ui_specification = {"splitter": {"widget": "Splitter",
+                                              "_name": "BaseSplitter",
+                                              "children": combined_ui}
+                                 }
         self.add_base_group_box()
 
         # Get authors from file
