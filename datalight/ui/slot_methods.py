@@ -64,37 +64,52 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
     repository_metadata = validate_widgets(datalight_ui, "zenodo_core_metadata")
     experiment_metadata = validate_widgets(datalight_ui, "experimental_metadata")
     if repository_metadata and experiment_metadata:
-        if repository_metadata["publish"] is True:
-            publish = show_publish_warning()
-            if publish:
-                upload_status = upload_record(experiment_metadata.pop("file_list"),
-                                              repository_metadata, experiment_metadata,
-                                              datalight_ui.config_path,
-                                              repository_metadata.pop("publish"),
-                                              repository_metadata.pop("sandbox"))
-                if upload_status.code == 200:
-                    custom_widgets.message_box("Datalight upload successful.",
-                                               QtWidgets.QMessageBox.Information)
-                else:
-                    custom_widgets.message_box(f"Error in upload.\n"
-                                               f"Error type: '{upload_status.message}'\n"
-                                               f"Affected field: '{upload_status.error_field}'\n"
-                                               f"Error details: '{upload_status.error_message}'\n",
-                                               QtWidgets.QMessageBox.Warning)
+        publish = repository_metadata["publish"]
+        if publish:
+            publish_result = show_publish_warning()
+            if publish_result == QtWidgets.QMessageBox.YesRole:
+                publish = True
+            elif publish_result == QtWidgets.QMessageBox.NoRole:
+                publish = False
+            else:
+                # If the user presses cancel then abort the upload and return to the form.
+                return True
+
+        upload_status = upload_record(experiment_metadata.pop("file_list"),
+                                      repository_metadata, experiment_metadata,
+                                      datalight_ui.config_path,
+                                      publish,
+                                      repository_metadata.pop("sandbox"))
+        if upload_status.code == 200:
+            custom_widgets.message_box("Datalight upload successful.",
+                                       QtWidgets.QMessageBox.Information)
+        else:
+            custom_widgets.message_box(f"Error in upload.\n"
+                                       f"Error type: '{upload_status.message}'\n"
+                                       f"Affected field: '{upload_status.error_field}'\n"
+                                       f"Error details: '{upload_status.error_message}'\n",
+                                       QtWidgets.QMessageBox.Warning)
 
 
-def show_publish_warning() -> bool:
+def show_publish_warning() -> QtWidgets.QMessageBox.ButtonRole:
     """Open a dialog asking the user whether they want to publish their record. Return True if the
     user wants to publish and False to abort the upload."""
 
     warning_widget = QtWidgets.QMessageBox()
     warning_widget.setIcon(QtWidgets.QMessageBox.Warning)
     warning_widget.setText("You have selected to publish the record.\n\n"
-                           "If you select OK, the record will be immediately published after "
-                           "upload.")
-    warning_widget.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
+                           "If you select Upload and Publish, the record will be immediately "
+                           "published after upload.\n\n"
+                           "If you select Upload Only the record will be uploaded but not "
+                           "published.")
+    warning_widget.addButton("Upload and Publish", QtWidgets.QMessageBox.YesRole)
+    warning_widget.addButton("Upload Only", QtWidgets.QMessageBox.NoRole)
+    cancel_button = warning_widget.addButton("Cancel Upload", QtWidgets.QMessageBox.RejectRole)
+    warning_widget.setEscapeButton(cancel_button)
     warning_widget.setWindowTitle("Publishing Warning")
-    return bool(warning_widget.exec())
+    warning_widget.exec()
+    clicked_button = warning_widget.clickedButton()
+    return warning_widget.buttonRole(clicked_button)
 
 
 def add_row_button(datalight_ui: "DatalightUIWindow"):
