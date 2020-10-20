@@ -3,10 +3,10 @@
 import json
 import pathlib
 from typing import List, Union
-from os import PathLike
 import tempfile
 
 import requests
+import yaml
 
 import datalight.zenodo_metadata as zenodo_metadata
 from datalight import common
@@ -28,21 +28,38 @@ class UploadStatus:
         self.error_message = error_message
 
 
-def upload_record(file_paths: List[pathlib.Path], repository_metadata: dict,
-                  experimental_metadata: dict, config_path: Union[pathlib.Path, str],
-                  publish: bool = False, sandbox: bool = True) -> UploadStatus:
+def load_yaml(metadata_path: str) -> dict:
+    """Method to read metadata from a file.
+    :param metadata_path: A path to a file which contains zenodo metadata (yaml format).
+    """
+    logger.info(f'Metadata read from file: {metadata_path}')
+    try:
+        with open(metadata_path) as input_file:
+            return yaml.load(input_file, Loader=yaml.FullLoader)
+    except FileNotFoundError:
+        raise FileNotFoundError(f'Metadata file {metadata_path} not found.')
+
+
+def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
+                  config_path: Union[pathlib.Path, str], experimental_metadata: dict,
+                  publish: bool, sandbox: bool) -> UploadStatus:
     """Run datalight scripts to upload file to data repository
-    :param experimental_metadata: The experimental metadata.
     :param file_paths: One or more paths of files to upload.
-    :param repository_metadata: A dictionary of metadata describing the record.
+    :param repository_metadata: Either a path to load metadata from or a dictionary of metadata
+      describing the record.
+    :param config_path: Path to the file containing zenodo API tokens.
+    :param experimental_metadata: A dictionary of experimental metadata - if not None, this will
+      be written to a text file and added to the upload.
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
-    :param config_path: Path to the file containing zenodo API tokens.
     :returns: None if upload successful else returns a string describing the error.
     """
+    if isinstance(repository_metadata, str):
+        repository_metadata = load_yaml(repository_metadata)
 
-    experimental_metadata = ExperimentalMetadata(experimental_metadata)
-    file_paths.append(experimental_metadata.metadata_path)
+    if experimental_metadata:
+        experimental_metadata = ExperimentalMetadata(experimental_metadata)
+        file_paths.append(experimental_metadata.metadata_path)
 
     credentials_location = pathlib.Path(config_path).resolve()
     token = common.get_authentication_token(credentials_location, sandbox)
@@ -81,18 +98,12 @@ class Zenodo:
      a file.
     """
 
-    def __init__(self, token: str, metadata: Union[PathLike, dict], sandbox: bool = False):
+    def __init__(self, token: str, metadata: dict, sandbox: bool = False):
         """
         :param token: API token for connection to Zenodo.
-        :param metadata: Either a path to a metadata file or a dictionary of metadata.
+        :param metadata: A dictionary of metadata.
         :param sandbox: If True, upload to the Zenodo sandbox. If false, upload to Zenodo."""
-        self.raw_metadata = None
-        self.metadata_path = None
-
-        if isinstance(metadata, dict):
-            self.raw_metadata = metadata
-        else:
-            self.metadata_path = metadata
+        self.raw_metadata = metadata
 
         if sandbox:
             self.api_base_url = 'https://sandbox.zenodo.org/api/'
@@ -106,12 +117,10 @@ class Zenodo:
         self.token = token
         self._try_connection()
 
-    def deposit_record(self, files: List[pathlib.Path], publish: bool) -> UploadStatus:
+    def deposit_record(self, files: List[str], publish: bool) -> UploadStatus:
         """Method which calls the parts of the upload process.
         :returns: An UploadStatus object indicating whether there was an error or if the upload
             was successful."""
-        self._preprocess_metadata()
-
         status = self.validate_metadata()
         if status.code not in STATUS_SUCCESS:
             return status
@@ -157,7 +166,7 @@ class Zenodo:
             logger.info(f'Deposition id: {self.deposition_id}')
         return upload_status
 
-    def _upload_files(self, filenames: List[pathlib.Path]) -> UploadStatus:
+    def _upload_files(self, filenames: List[str]) -> UploadStatus:
         """Method to upload a file to Zenodo
         :param filenames: Paths of one or more files to upload.
         """
@@ -180,41 +189,6 @@ class Zenodo:
             if status.code not in STATUS_SUCCESS:
                 return status
         return UploadStatus(200, "All files uploaded successfully.")
-
-    def _preprocess_metadata(self):
-        """Method to pre-process metadata into the Zenodo format for upload."""
-        if self.raw_metadata is None:
-            # If metadata was provided as a path then read it from a file.
-            self.raw_metadata = zenodo_metadata.read_metadata_from_file(self.metadata_path)
-        else:
-            # If metadata comes from the UI, need to get some data into the right format.
-            # Creators must be a JSON array
-            # A list of dictionaries makes a JSON array type.
-            creators = []
-            if "author_details" in self.raw_metadata:
-                creator = {}
-                for author in self.raw_metadata["author_details"]:
-                    creator["name"] = author[0]
-                    creator["affiliation"] = author[1]
-                    creator["orcid"] = author[2]
-                creators.append(creator)
-            self.raw_metadata["creators"] = creators
-
-            # Communities must also be a JSON array
-            if "communities" in self.raw_metadata:
-                communities = [{"identifier": (self.raw_metadata["communities"]).lower()}]
-                self.raw_metadata["communities"] = communities
-
-            # Keywords must be a list
-            if "keywords" in self.raw_metadata:
-                keywords = self.raw_metadata["keywords"].split(",")
-                keywords = [word.strip() for word in keywords]
-                self.raw_metadata["keywords"] = keywords
-
-            # Grants must be a JSON array
-            if "grants" in self.raw_metadata:
-                grants = [{'id': self.raw_metadata["grants"]}]
-                self.raw_metadata["grants"] = grants
 
     def _upload_metadata(self) -> UploadStatus:
         """Upload metadata to Zenodo repository.

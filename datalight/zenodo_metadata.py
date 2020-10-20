@@ -1,11 +1,7 @@
 """This module processes and validates metadata."""
-
-from os import PathLike
-
 import json
 import urllib
 import pathlib
-import yaml
 import jsonschema
 
 from datalight.common import logger
@@ -48,18 +44,6 @@ def read_schema_from_file() -> dict:
             return json.load(input_file)
     except FileNotFoundError:
         raise ZenodoMetadataException(f'Schema file: {SCHEMA_FILE} not found.')
-
-
-def read_metadata_from_file(metadata_path: PathLike) -> dict:
-    """Method to read metadata from a file.
-    :param metadata_path: A path to a file which contains zenodo metadata (yaml format).
-    """
-    logger.info(f'Metadata read from file: {metadata_path}')
-    try:
-        with open(metadata_path) as input_file:
-            return yaml.load(input_file, Loader=yaml.FullLoader)
-    except FileNotFoundError:
-        raise ZenodoMetadataException(f'Metadata file {metadata_path} not found.')
 
 
 def validate_metadata(metadata: dict, schema: dict) -> dict:

@@ -75,10 +75,10 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
                 # If the user presses cancel then abort the upload and return to the form.
                 return True
 
-        upload_status = upload_record(experiment_metadata.pop("file_list"),
-                                      repository_metadata, experiment_metadata,
-                                      datalight_ui.config_path,
-                                      publish,
+        repository_metadata = preprocess_zenodo_metadata(repository_metadata)
+
+        upload_status = upload_record(experiment_metadata.pop("file_list"), repository_metadata,
+                                      datalight_ui.config_path, experiment_metadata, publish,
                                       repository_metadata.pop("sandbox"))
         if upload_status.code == 200:
             custom_widgets.message_box("Datalight upload successful.",
@@ -89,6 +89,41 @@ def ok_button(datalight_ui: "DatalightUIWindow"):
                                        f"Affected field: '{upload_status.error_field}'\n"
                                        f"Error details: '{upload_status.error_message}'\n",
                                        QtWidgets.QMessageBox.Warning)
+
+
+def preprocess_zenodo_metadata(raw_metadata: dict):
+    """Method to pre-process metadata into the Zenodo format for upload."""
+
+    # If metadata comes from the UI, need to get some data into the right format.
+    # Creators must be a JSON array
+    # A list of dictionaries makes a JSON array type.
+    creators = []
+    if "author_details" in raw_metadata:
+        creator = {}
+        for author in raw_metadata["author_details"]:
+            creator["name"] = author[0]
+            creator["affiliation"] = author[1]
+            creator["orcid"] = author[2]
+        creators.append(creator)
+    raw_metadata["creators"] = creators
+
+    # Communities must also be a JSON array
+    if "communities" in raw_metadata:
+        communities = [{"identifier": (raw_metadata["communities"]).lower()}]
+        raw_metadata["communities"] = communities
+
+    # Keywords must be a list
+    if "keywords" in raw_metadata:
+        keywords = raw_metadata["keywords"].split(",")
+        keywords = [word.strip() for word in keywords]
+        raw_metadata["keywords"] = keywords
+
+    # Grants must be a JSON array
+    if "grants" in raw_metadata:
+        grants = [{'id': raw_metadata["grants"]}]
+        raw_metadata["grants"] = grants
+
+    return raw_metadata
 
 
 def show_publish_warning() -> QtWidgets.QMessageBox.ButtonRole:
