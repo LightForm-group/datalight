@@ -1,36 +1,40 @@
 """Main module for datalight."""
+import pathlib
+import sys
+from typing import List, Union
 
-import os
+from PyQt5 import QtWidgets
 
-import datalight.common as common
-from datalight.zenodo import Zenodo as DataRepo
-
-
-def main(directory_name, metadata_path, zip_name="data.zip", publish=False, sandbox=True):
-    """Run datalight scripts to upload file to data repository"""
-
-    token = common.get_authentication_token(sandbox)
-    if token is None:
-        common.logger.error("Unable to load API token from datalight.config.")
-        raise FileNotFoundError("Unable to load API token from datalight.config.")
-
-    try:
-        files = common.get_files_path(directory_name)
-    except common.DatalightException:
-        common.logger.error('Problem with the files to upload.')
-        raise common.DatalightException
-
-    if not os.path.exists(metadata_path):
-        common.logger.error('Metadata file: {} does not exist.'.format(metadata_path))
-        raise FileNotFoundError
-
-    common.zip_data(files, zip_name)
-    # Change the name of the files to upload for the zip file created
-    files, directory = [zip_name], '.'
-
-    data_repo = DataRepo(token=token, metadata_path=metadata_path, sandbox=sandbox)
-    data_repo.deposit_record(files, directory, publish)
+from datalight.ui.main_form import DatalightUIWindow, connect_button_methods
+from datalight import zenodo
 
 
-if __name__ == '__main__':
-    main("C:/Users/Peter/Desktop/test/", "../tests/metadata/minimum_valid.yml")
+def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
+                  config_path: Union[pathlib.Path, str],
+                  experimental_metadata: Union[dict, None] = None, publish: bool = False,
+                  sandbox: bool = True, repository: str = "Zenodo"):
+
+    if repository == "Zenodo":
+        zenodo.upload_record(file_paths, repository_metadata, config_path, experimental_metadata,
+                             publish, sandbox)
+    else:
+        raise TypeError(f"Unknown repository type: '{repository}'.")
+
+
+def open_gui(root_path: str):
+    """The main function. This opens the DataLight GUI.
+    :param root_path: The path to the root of the RoboTA project
+    metadata descriptions.
+    """
+    app = QtWidgets.QApplication(sys.argv)
+    datalight_ui = DatalightUIWindow(root_path)
+    datalight_ui.ui_setup()
+    datalight_ui.main_window.show()
+    datalight_ui.set_window_position()
+    connect_button_methods(datalight_ui)
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    ROOT_PATH = sys.argv[1]
+    open_gui(ROOT_PATH)

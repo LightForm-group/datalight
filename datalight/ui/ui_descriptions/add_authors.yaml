@@ -1,0 +1,18 @@
+add_authors:
+    widget: GroupBox
+    layout: VBoxLayout
+    children:
+        author_details:
+            widget: GroupBox
+            layout: GridLayout
+            children:
+                author_list:
+                    widget: ListWidget
+                    optional: False
+                    grid_layout: 0, 0, 1, 1
+                    tooltip: A list of authors that are currently stored.
+                select_author_button:
+                    widget: PushButton
+                    button_text: Add Selected Author
+                    grid_layout: 1, 0, 1, 1
+                    tooltip: Opens a dialog to select one or more authors to add to the record.

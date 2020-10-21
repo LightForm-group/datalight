@@ -1,0 +1,173 @@
+zenodo_core_metadata:
+    widget: GroupBox
+    layout: VBoxLayout
+    children:
+        basic_metadata:
+            widget: GroupBox
+            title: Zenodo Metadata
+            layout: FormLayout
+            children:
+                title:
+                    widget: LineEdit
+                    label: Title of Record
+                    optional: False
+                    tooltip: The title of the record.
+                    minimum_length: 3
+                description:
+                    widget: PlainTextEdit
+                    label: Record Description
+                    optional: False
+                    tooltip: A description of the dataset being uploaded.
+                    minimum_length: 3
+                publication_date:
+                    widget: DateEdit
+                    label: Publication Date
+                    optional: False
+                    tooltip: The date of the publication of the record (you likely want todays date).
+                upload_type:
+                    widget: ComboBox
+                    label: Upload Type
+                    optional: False
+                    activates_when:
+                        publication: publication_type
+                        image: image_type
+                    values:
+                        publication: Publication
+                        poster: Poster
+                        presentation: Presentation
+                        dataset: Dataset
+                        image: Image
+                        video: Video/Audio
+                        software: Software
+                        lesson: Lesson
+                        other: Other
+                    tooltip: The data type of the upload.
+                publication_type:
+                    widget: ComboBox
+                    label: Publication Type
+                    optional: False
+                    values:
+                        book: Book
+                        section: Book section
+                        conferencepaper: Conference paper
+                        article: Journal article
+                        patent: Patent
+                        preprint: Preprint
+                        report: Report
+                        deliverable: Project deliverable
+                        milestone: Project milestone
+                        proposal: Proposal
+                        softwaredocumentation: Software documentation
+                        thesis: Thesis
+                        technicalnote: Technical note
+                        workingpaper: Working paper
+                        other: Other
+                    tooltip: If the upload type is "publication", select a publication type.
+                image_type:
+                    widget: ComboBox
+                    label: Image Type
+                    optional: False
+                    values:
+                        figure: Figure
+                        plot: Plot
+                        drawing: Drawing
+                        diagram: Diagram
+                        photo: Photo
+                        other: Other
+                    tooltip: If the upload type is "image", select an image type.
+                creators:
+                    widget: GroupBox
+                    layout: GridLayout
+                    title: Author details
+                    children:
+                        author_details:
+                            widget: Table
+                            grid_layout: 0, 0, 1, 3
+                            optional: False
+                            column_titles:
+                                - Name
+                                - Affiliation
+                                - ORCID
+                        add_row_button:
+                            widget: PushButton
+                            button_text: Add row
+                            grid_layout: 1, 0, 1, 1
+                            tooltip: Adds a new blank row to the table.
+                        add_author_button:
+                            widget: PushButton
+                            button_text: Add Author
+                            grid_layout: 1, 1, 1, 1
+                            tooltip: Adds an author from the list of stored authors.
+                        delete_row_button:
+                            widget: PushButton
+                            button_text: Delete Selected Row(s)
+                            grid_layout: 1, 2, 1, 1
+                            tooltip: Removes the selected rows from the table.
+
+                access_right:
+                    widget: ComboBox
+                    label: Access Right
+                    optional: False
+                    values:
+                        open: Open Access
+                        embargoed: Embargoed Access
+                        restricted: Restricted Access
+                        closed: Closed Access
+                    tooltip: Whether the record will be accessible to the public once published.
+                license:
+                    widget: ComboBox
+                    label: License
+                    optional: False
+                    values:
+                        CC-BY-4.0: CC-BY-4.0
+                        CC-BY-SA-4.0: CC-BY-SA-4.0
+                        GPL-3.0: GNU GPLv3
+                        MIT: MIT
+                    help_text: |-
+                        CC-BY-4: For data. Permits almost any use subject to providing credit.
+                        CC-BY-SA-4: For data. Similar to CC-BY-4 but any derivative work must be distributed under the same license.
+                        GPL-3.0: For software. People can do anything with it but derivatives must stay open source.
+                        MIT: For software. Lets people do almost anything with your software. Very permissive.
+                communities:
+                    widget: ComboBox
+                    label: Zenodo Community
+                    editable: True
+                    values:
+                        - LightForm
+                        -
+                    tooltip: The community to associate this record with on Zenodo.
+                keywords:
+                    widget: LineEdit
+                    label: Keywords
+                    optional: True
+                    help_text: |-
+                        Keywords to associate with the record.
+                        Keywords should be seperated by a comma e.g.:
+                        Titanium, Texture, Heat Treatement, EBSD
+                grants:
+                    widget: ComboBox
+                    label: Grant
+                    editable: True
+                    optional: True
+                    values:
+                        - 10.13039/501100000690::EP/R001715/1
+                        -
+        zenodo_options:
+            widget: GroupBox
+            title: Zenodo Options
+            layout: HBoxLayout
+            children:
+                publish_label:
+                    widget: Label
+                    text: Publish after upload
+                publish:
+                    widget: CheckBox
+                    default: False
+                    tooltip: Whether to publish the record once it has been uploaded.
+                sandbox_label:
+                    widget: Label
+                    text: Use Zenodo Sandbox
+                sandbox:
+                    widget: CheckBox
+                    default: True
+                    tooltip: Whether to upload to the Zenodo sandbox or the real Zenodo.
