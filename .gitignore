@@ -21,3 +21,5 @@ datalight.egg-info/
 docs/html
 /pylintrc
 
+/build
+/dist

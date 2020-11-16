@@ -45,3 +45,12 @@ def read_yaml(file_path: Union[pathlib.Path, str]) -> dict:
     """Read a YAML file and return its contents."""
     with open(file_path, encoding='utf8') as input_file:
         return yaml.load(input_file, Loader=yaml.FullLoader)
+
+
+class UploadStatus:
+    """The status of the upload as it goes through the upload process."""
+    def __init__(self, code: int, message: str, error_field: str = None, error_message: str = None):
+        self.code = code
+        self.message = message
+        self.error_field = error_field
+        self.error_message = error_message
