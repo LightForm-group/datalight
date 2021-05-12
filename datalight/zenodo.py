@@ -109,11 +109,14 @@ def deposit_record(files: List[str], raw_metadata: dict, deposition_url: str, to
     if status.code not in STATUS_SUCCESS:
         return status
 
-    status, deposition_id = _get_deposition_id(deposition_url, token)
+    status, upload_details = _get_upload_details(deposition_url, token)
     if status.code not in STATUS_SUCCESS:
         return status
 
-    status = _upload_files(deposition_url, deposition_id, token, files)
+    deposition_id = upload_details['id']
+    upload_url = upload_details['links']["bucket"]
+
+    status = _upload_files(upload_url, token, files)
     if status.code not in STATUS_SUCCESS:
         delete_record(deposition_url, deposition_id, token)
         return status
@@ -138,9 +141,9 @@ def try_connection(deposition_url: str, token: str) -> UploadStatus:
     return _check_request_response(request)
 
 
-def _get_deposition_id(deposition_url: str, token: str) -> Tuple[UploadStatus, int]:
-    """Get the deposition id needed to upload a new record to Zenodo"""
-    deposition_id = ""
+def _get_upload_details(deposition_url: str, token: str) -> Tuple[UploadStatus, dict]:
+    """Get a dictionary of data about where to upload the files."""
+    upload_details = {}
     headers = {'Content-Type': 'application/json'}
 
     logger.debug(f'deposition url: {deposition_url}')
@@ -149,31 +152,23 @@ def _get_deposition_id(deposition_url: str, token: str) -> Tuple[UploadStatus, i
 
     upload_status = _check_request_response(request)
     if upload_status.code in STATUS_SUCCESS:
-        deposition_id = request.json()['id']
-        logger.info(f'Deposition id: {deposition_id}')
-    return upload_status, deposition_id
+        upload_details = request.json()
+    return upload_status, upload_details
 
 
-def _upload_files(deposition_url: str, deposition_id: int, token: str,
-                  filenames: List[str]) -> UploadStatus:
+def _upload_files(upload_url: int, token: str, filenames: List[str]) -> UploadStatus:
     """Method to upload a file to Zenodo
     :param filenames: Paths of one or more files to upload.
     """
-    # Create the url to upload with the deposition_id
-    url = f'{deposition_url}/{deposition_id}/files'
-    logger.info(f'url: {url}')
-
     for filename in filenames:
-        # Create the zenodo data dictionary which contains the name of the file
-        data = {'filename': filename}
-        logger.info(f'filename: {filename}')
+        logger.info(f'Uploading file: "{filename}"')
 
-        # Open the file to upload in binary mode.
-        files = {'file': open(filename, 'rb')}
+        url = f'{upload_url}/{filename}'
 
-        # upload the file
-        request = requests.post(url, params={'access_token': token}, data=data,
-                                files=files)
+        # Open the file to upload in binary mode and upload it.
+        with open(filename, 'rb') as input_file:
+            request = requests.put(url, data=input_file, params={'access_token': token})
+
         status = _check_request_response(request)
         if status.code not in STATUS_SUCCESS:
             return status

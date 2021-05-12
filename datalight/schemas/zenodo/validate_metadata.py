@@ -24,4 +24,3 @@ try:
     print('metadata validated')
 except jsonschema.exceptions.ValidationError as err:
     print('ValidationError:', err.message)
-

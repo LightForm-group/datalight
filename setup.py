@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from setuptools import setup
 
 with open('README.md') as readme_file:
@@ -13,7 +12,7 @@ requirements = [
 
 setup(name='datalight',
       packages=['datalight'],
-      version="0.8.1",
+      version="0.9.0",
       description='Data uploader to Zenodo repository',
       long_description=readme,
       author='Peter Crowther',
