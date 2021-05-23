@@ -156,17 +156,18 @@ def _get_upload_details(deposition_url: str, token: str) -> Tuple[UploadStatus, 
     return upload_status, upload_details
 
 
-def _upload_files(upload_url: int, token: str, filenames: List[str]) -> UploadStatus:
+def _upload_files(upload_url: int, token: str, filepaths: List[str]) -> UploadStatus:
     """Method to upload a file to Zenodo
-    :param filenames: Paths of one or more files to upload.
+    :param filepaths: Paths of one or more files to upload.
     """
-    for filename in filenames:
-        logger.info(f'Uploading file: "{filename}"')
+    for filepath in filepaths:
+        filepath = pathlib.Path(filepath)
+        logger.info(f'Uploading file "{filepath.name}" from {filepath.parent}')
 
-        url = f'{upload_url}/{filename}'
+        url = f'{upload_url}/{filepath.name}'
 
         # Open the file to upload in binary mode and upload it.
-        with open(filename, 'rb') as input_file:
+        with open(filepath, 'rb') as input_file:
             request = requests.put(url, data=input_file, params={'access_token': token})
 
         status = _check_request_response(request)
