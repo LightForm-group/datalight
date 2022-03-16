@@ -24,9 +24,9 @@ copyright = '2019, Peter Crowther'
 author = 'Peter Crowther'
 
 # The short X.Y version
-version = ''
+version = '0.9'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = '0.9.1'
 
 
 # -- General configuration ---------------------------------------------------
