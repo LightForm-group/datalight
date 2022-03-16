@@ -12,7 +12,7 @@ requirements = [
 
 setup(name='datalight',
       packages=['datalight'],
-      version="0.9.0",
+      version="0.9.1",
       description='Data uploader to Zenodo repository',
       long_description=readme,
       author='Peter Crowther',
