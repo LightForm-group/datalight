@@ -33,7 +33,7 @@ def load_yaml(metadata_path: str) -> dict:
 
 def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
                   config_path: Union[pathlib.Path, str], experimental_metadata: dict,
-                  publish: bool, sandbox: bool) -> UploadStatus:
+                  publish: bool, sandbox: bool, deposition_ID: int = None) -> UploadStatus:
     """Run datalight scripts to upload file to data repository
     :param file_paths: One or more paths of files to upload.
     :param repository_metadata: Either a path to load metadata from or a dictionary of metadata
@@ -43,6 +43,7 @@ def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
       be written to a text file and added to the upload.
     :param publish: Whether to publish this record on Zenodo after uploading.
     :param sandbox: Whether to put the record on Zenodo sandbox or the real Zenodo.
+    :param deposition_ID: If provided, an existing Zenodo deposition to amend.
     :returns: None if upload successful else returns a string describing the error.
     """
     if isinstance(repository_metadata, str):
@@ -58,7 +59,7 @@ def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
     depositions_url = get_deposition_url(sandbox)
 
     upload_status = deposit_record(file_paths, repository_metadata, depositions_url,
-                                   token, publish)
+                                   token, publish, deposition_ID)
 
     return upload_status
 
@@ -97,7 +98,7 @@ class ExperimentalMetadata:
 
 
 def deposit_record(files: List[str], raw_metadata: dict, deposition_url: str, token: str,
-                   publish: bool) -> UploadStatus:
+                   publish: bool, deposition_ID: int) -> UploadStatus:
     """Method which calls the parts of the upload process.
     :returns: An UploadStatus object indicating whether there was an error or if the upload
         was successful."""
@@ -109,7 +110,7 @@ def deposit_record(files: List[str], raw_metadata: dict, deposition_url: str, to
     if status.code not in STATUS_SUCCESS:
         return status
 
-    status, upload_details = _get_upload_details(deposition_url, token)
+    status, upload_details = _get_upload_details(deposition_url, token, deposition_ID)
     if status.code not in STATUS_SUCCESS:
         return status
 
@@ -141,14 +142,25 @@ def try_connection(deposition_url: str, token: str) -> UploadStatus:
     return _check_request_response(request)
 
 
-def _get_upload_details(deposition_url: str, token: str) -> Tuple[UploadStatus, dict]:
+def _get_upload_details(deposition_url: str, token: str, deposition_ID : int) -> Tuple[UploadStatus, dict]:
     """Get a dictionary of data about where to upload the files."""
     upload_details = {}
     headers = {'Content-Type': 'application/json'}
 
     logger.debug(f'deposition url: {deposition_url}')
-    request = requests.post(deposition_url, params={'access_token': token},
-                            json={}, headers=headers)
+    
+    if deposition_ID:
+        req_method = requests.get
+        deposition_url = f"{deposition_url}/{deposition_ID}"
+    else:
+        req_method = requests.post
+
+    request = req_method(
+        deposition_url,
+        params={'access_token': token}, 
+        json={},
+        headers=headers,
+    )
 
     upload_status = _check_request_response(request)
     if upload_status.code in STATUS_SUCCESS:
