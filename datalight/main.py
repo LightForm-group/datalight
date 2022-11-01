@@ -12,11 +12,12 @@ from datalight import zenodo, common
 def upload_record(file_paths: List[str], repository_metadata: Union[dict, str],
                   config_path: Union[pathlib.Path, str],
                   experimental_metadata: Union[dict, None] = None, publish: bool = False,
-                  sandbox: bool = True, repository: str = "Zenodo"):
+                  sandbox: bool = True, repository: str = "Zenodo", 
+                  deposition_ID: int = None):
     """Upload a new record to a data repository."""
     if repository == "Zenodo":
         zenodo.upload_record(file_paths, repository_metadata, config_path, experimental_metadata,
-                             publish, sandbox)
+                             publish, sandbox, deposition_ID)
     else:
         raise TypeError(f"Unknown repository type: '{repository}'.")
 
