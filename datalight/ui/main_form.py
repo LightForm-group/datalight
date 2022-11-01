@@ -148,7 +148,7 @@ class DatalightUIWindow:
 
         window_vertical = (screen_height - window_height) / 2
         window_horizontal = (screen_width - window_width) / 2
-        self.main_window.move(window_horizontal, window_vertical)
+        self.main_window.move(int(window_horizontal), int(window_vertical))
 
     def _check_root_path(self):
         main_file = self.root_path.joinpath("datalight/main.py")
