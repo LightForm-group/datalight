@@ -92,6 +92,21 @@ class WidgetMixin:
         raise AttributeError
 
 
+class Splitter(QtWidgets.QSplitter, WidgetMixin):
+    def __init__(self, parent_widget, widget_description: dict):
+        super().__init__(parent_widget)
+        super().set_common_properties(widget_description)
+        self.setOrientation(QtCore.Qt.Horizontal)
+        self._add_children(widget_description)
+
+    def _add_children(self, widget_description: dict):
+        if "children" in widget_description:
+            for element_name in widget_description["children"]:
+                element_description = widget_description["children"][element_name]
+                element_description = element_setup(element_name, element_description)
+                self.addWidget(get_new_widget(self, element_description)[0])
+
+
 class CheckBox(QtWidgets.QCheckBox, WidgetMixin):
     def __init__(self, parent_widget, widget_description: dict):
         super().__init__(parent_widget)
