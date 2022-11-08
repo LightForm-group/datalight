@@ -70,12 +70,13 @@ class DatalightUIWindow:
         experimental_path = self.ui_path.joinpath("ui_descriptions/metadata.yaml")
 
         self.ui_specification = datalight.common.read_yaml(repository_path)
+        self.ui_specification = {**self.ui_specification,**datalight.common.read_yaml(experimental_path)}
         combined_ui = {**self.ui_specification, **datalight.common.read_yaml(experimental_path)}
+        self.add_base_group_box()
         self.ui_specification = {"splitter": {"widget": "Splitter",
                                               "_name": "BaseSplitter",
                                               "children": combined_ui}
                                  }
-        self.add_base_group_box()
 
         # Get authors from file
         author_path = self.ui_path.joinpath("ui_descriptions/author_details.yaml")
