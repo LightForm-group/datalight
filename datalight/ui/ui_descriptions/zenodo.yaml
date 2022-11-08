@@ -108,12 +108,25 @@ zenodo_core_metadata:
                     widget: ComboBox
                     label: Access Right
                     optional: False
+                    activates_when:
+                        embargoed: embargo_date
+                        restricted: access_conditions
                     values:
                         open: Open Access
                         embargoed: Embargoed Access
                         restricted: Restricted Access
                         closed: Closed Access
                     tooltip: Whether the record will be accessible to the public once published.
+                embargo_date:
+                    widget: DateEdit
+                    label: Embargo Date
+                    optional: False
+                    tooltip: The date of the embargo will be lifted from the record.
+                access_conditions:
+                    widget: LineEdit
+                    label: Access Conditions
+                    optional: True
+                    tooltip: Users can request access under the specified conditions.
                 license:
                     widget: ComboBox
                     label: License
