@@ -1,7 +1,7 @@
 Datalight
 -----------
 
-[![Documentation](https://readthedocs.org/projects/datalight/badge/?version=latest)(https://datalight.readthedocs.io/en/latest/?badge=latest)
+[![Documentation](https://readthedocs.org/projects/datalight/badge/?version=latest)](https://datalight.readthedocs.io/en/latest/?badge=latest)
 
 A Python 3 program to upload research data to a data repository.
 
